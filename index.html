@@ -26,11 +26,12 @@
         .teyvat-window {
             display: flex;
             gap: 20px;
-            width: 90%;
+            width: 95%;
             max-width: 1100px;
-            height: 580px;
+            height: 600px;
         }
 
+        /* Left Sidebar */
         .profile-pane {
             flex: 0 0 300px;
             background: var(--genshin-slate);
@@ -50,6 +51,7 @@
             border: 4px solid var(--genshin-gold);
             object-fit: cover;
             margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(219, 179, 97, 0.3);
         }
 
         .name-text {
@@ -58,8 +60,20 @@
             font-weight: bold;
             color: var(--genshin-gold);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
+        .ar-badge {
+            background-color: var(--genshin-cream);
+            color: var(--genshin-slate);
+            padding: 4px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+
+        /* Right Content Area */
         .content-pane {
             flex: 1;
             background: var(--genshin-slate);
@@ -67,6 +81,8 @@
             border-radius: 12px;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
         }
 
         .tabs-header {
@@ -85,39 +101,44 @@
             padding: 8px 20px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-size: 0.85rem;
         }
 
         .tab-btn.active {
             background-color: var(--genshin-gold);
             color: var(--genshin-deep-dark);
+            transform: translateY(-2px);
         }
 
         .content-body {
             padding: 30px;
             overflow-y: auto;
+            flex: 1;
         }
 
-        .tab-content {
-            display: none;
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        h2 { color: var(--genshin-gold); margin-top: 0; }
-        .attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .attr-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-left: 3px solid var(--genshin-gold); }
+        h2 { color: var(--genshin-gold); margin-top: 0; border-bottom: 1px solid rgba(219, 179, 97, 0.2); padding-bottom: 8px; }
+        .attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .attr-item { background: rgba(255, 255, 255, 0.05); padding: 12px; border-left: 3px solid var(--genshin-gold); border-radius: 0 4px 4px 0; }
         
         .quest-item {
             background: rgba(219, 179, 97, 0.1);
-            margin-bottom: 10px;
-            padding: 12px;
-            border-radius: 6px;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             gap: 15px;
+            border: 1px solid rgba(219, 179, 97, 0.2);
         }
     </style>
 </head>
@@ -127,14 +148,14 @@
         <div class="profile-pane">
             <img src="YOUR_IMAGE_LINK_HERE" alt="Byorne" class="profile-img">
             <div class="name-text">Byorne Myco Coyunes</div>
-            <div style="margin-top:10px; color:var(--genshin-gold)">AR Level 60</div>
+            <div class="ar-badge">AR Level 60</div>
         </div>
 
         <div class="content-pane">
             <div class="tabs-header">
-                <button class="tab-btn active" onclick="openTab(event, 'about')">ABOUT</button>
-                <button class="tab-btn" onclick="openTab(event, 'portfolio')">PORTFOLIO</button>
-                <button class="tab-btn" onclick="openTab(event, 'education')">EDUCATION</button>
+                <button class="tab-btn active" onclick="openTab(event, 'about')">About</button>
+                <button class="tab-btn" onclick="openTab(event, 'portfolio')">Portfolio</button>
+                <button class="tab-btn" onclick="openTab(event, 'education')">Education</button>
             </div>
 
             <div class="content-body">
@@ -142,36 +163,46 @@
                     <h2>✧ Character Profile</h2>
                     <div class="attr-grid">
                         <div class="attr-item"><small style="color:var(--genshin-gold)">VISION</small><br>Web Development</div>
-                        <div class="attr-item"><small style="color:var(--genshin-gold)">AFFILIATION</small><br>IT University</div>
+                        <div class="attr-item"><small style="color:var(--genshin-gold)">AFFILIATION</small><br>PUP Sto. Tomas</div>
                     </div>
-                    <p style="font-style:italic; margin-top:20px; border-left: 2px solid var(--genshin-gold); padding-left:15px; color: #bdc3c7;">
+                    <p style="font-style:italic; border-left: 3px solid var(--genshin-gold); padding-left:15px; color: #bdc3c7; line-height: 1.6;">
                         "I am passionate about learning how technology works and how to build useful applications. Every line of code is a step further into the Teyvat of software development."
                     </p>
                     
-                    <h2 style="margin-top: 25px;">✧ Current Quests</h2>
-                    <div class="quest-item"><span>📜</span> <strong>Mastering Web Development</strong></div>
-                    <div class="quest-item"><span>🎓</span> <strong>Graduate College (Main Story Quest)</strong></div>
+                    <h2 style="margin-top: 30px;">✧ Current Quests</h2>
+                    <div class="quest-item"><span style="font-size:1.2rem">📜</span> <strong>Mastering Web Development</strong></div>
+                    <div class="quest-item"><span style="font-size:1.2rem">🎓</span> <strong>Graduate College (Main Story Quest)</strong></div>
                 </div>
 
                 <div id="portfolio" class="tab-content">
                     <h2>✧ Elemental Skills (Tech Stack)</h2>
-                    <div style="margin-bottom: 25px;">
+                    <div style="margin-bottom: 30px; display: flex; gap: 10px; flex-wrap: wrap;">
                         <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" />
                         <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
                         <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
                     </div>
                     <h2>✧ Archive</h2>
-                    <ul>
-                        <li>Genshin UI Profile Development</li>
-                        <li>Responsive Web Design Mastery</li>
-                    </ul>
+                    <div class="attr-item">
+                        <strong>Genshin UI Profile</strong><br>
+                        <small>A fully responsive web-based character showcase built with HTML/CSS/JS.</small>
+                    </div>
                 </div>
 
                 <div id="education" class="tab-content">
                     <h2>✧ Academic Archive</h2>
+                    <div class="attr-item" style="margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span style="font-size: 2rem;">🏛️</span>
+                            <div>
+                                <strong style="color: var(--genshin-gold); font-size: 1.1rem;">PUP Sto. Tomas Campus</strong><br>
+                                <span style="font-size: 0.9rem; opacity: 0.8;">Polytechnic University of the Philippines</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="attr-item">
-                        <strong>Information Technology University</strong><br>
-                        DIT 2-1 Student | Incoming Professional
+                        <small style="color:var(--genshin-gold)">DIPLOMA STATUS</small><br>
+                        <strong>Diploma in Information Technology (DIT 2-1)</strong>
+                        <p style="font-size: 0.9rem; margin-top: 10px; color: #bdc3c7;">Currently pursuing technical excellence and navigating the IT curriculum at the Sto. Tomas branch.</p>
                     </div>
                 </div>
             </div>
@@ -183,12 +214,14 @@
             var i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tab-content");
             for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
                 tabcontent[i].classList.remove("active");
             }
             tablinks = document.getElementsByClassName("tab-btn");
             for (i = 0; i < tablinks.length; i++) {
                 tablinks[i].classList.remove("active");
             }
+            document.getElementById(tabName).style.display = "block";
             document.getElementById(tabName).classList.add("active");
             evt.currentTarget.classList.add("active");
         }
