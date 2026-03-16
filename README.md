@@ -13,7 +13,7 @@
 ---
 
 ### ✧ Archive (About Me) ✧
-> *"I am passionate about learning how technology works and how to build useful applications. Every line of code is a step further into the Teyvat of software development."*
+> *"I am passionate about learning how technology works and how to build useful applications."*
 
 ---
 
@@ -26,6 +26,5 @@
 ### ✧ Education ✧
 **PUP Sto. Tomas Campus**
 *Diploma in Information Technology (DIT 2-1)*
-*Currently pursuing my Diploma in Information Technology.*
 
 </div>
