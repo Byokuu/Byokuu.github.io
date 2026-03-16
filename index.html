@@ -6,15 +6,16 @@
     <title>Traveler Profile | Byorne Myco Coyunes</title>
     <style>
         :root {
-            --genshin-gold: #dbb361;
-            --genshin-cream: #ece5d8;
-            --genshin-slate: #3b4255;
-            --genshin-deep-dark: #1a1c24;
+            --genshin-bg: #ece5d8; /* The light paper/book color */
+            --genshin-text: #4a4a4a;
+            --genshin-accent: #dbb361;
+            --genshin-green: #90ad7a; /* AR Bar color */
+            --genshin-brown: #cfbc9b; /* Secondary bar color */
         }
 
         body {
-            background-color: var(--genshin-deep-dark);
-            color: var(--genshin-cream);
+            background-color: #2c2e33; /* Dark background to make the "book" pop */
+            color: var(--genshin-text);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
@@ -23,210 +24,212 @@
             margin: 0;
         }
 
-        .teyvat-window {
-            display: flex;
-            gap: 20px;
+        /* The Main "Book" Container */
+        .showcase-container {
+            background-color: var(--genshin-bg);
             width: 90%;
-            max-width: 1100px;
-            padding: 20px;
+            max-width: 950px;
+            height: 550px;
+            display: flex;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 4px solid #fffefb;
         }
 
-        /* Left Pane - Profile Card */
-        .profile-pane {
-            flex: 0 0 300px;
-            background: var(--genshin-slate);
-            border: 2px solid var(--genshin-gold);
-            border-radius: 12px;
+        /* Left Side - Character Info */
+        .left-side {
+            flex: 1;
             padding: 30px;
+            background-image: linear-gradient(to bottom, #d9ebf0, var(--genshin-bg));
+            border-right: 2px solid #d3cdc1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
-            position: relative;
         }
 
-        .profile-pane::after {
-            content: "✦";
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            color: var(--genshin-gold);
-            font-size: 1.5rem;
-        }
-
-        .profile-img {
-            width: 160px;
-            height: 160px;
+        .avatar-circle {
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
-            border: 4px solid var(--genshin-gold);
+            border: 4px solid var(--genshin-accent);
+            background-color: #fff;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            box-shadow: 0 0 20px rgba(219, 179, 97, 0.4);
+        }
+
+        .name-header {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3b4255;
             margin-bottom: 20px;
         }
 
-        .name-text {
-            font-size: 1.4rem;
-            letter-spacing: 1px;
-            text-align: center;
+        .stat-bar {
+            width: 100%;
+            background: var(--genshin-green);
+            color: white;
+            padding: 8px 15px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
             font-weight: bold;
-            color: var(--genshin-gold);
-            text-transform: uppercase;
+            box-shadow: inset 0 -2px rgba(0,0,0,0.1);
         }
 
-        .rank-badge {
-            background-color: var(--genshin-cream);
-            color: var(--genshin-slate);
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-weight: bold;
+        .stat-bar.secondary { background: var(--genshin-brown); }
+
+        .signature-box {
+            width: 100%;
+            background: #f3f0e7;
+            border: 1px solid #d3cdc1;
+            padding: 15px;
+            margin-top: 20px;
+            height: 100px;
+            font-style: italic;
             font-size: 0.9rem;
-            margin-top: 10px;
         }
 
-        /* Right Pane - Content Area */
-        .content-pane {
-            flex: 1;
-            background: var(--genshin-slate);
-            border: 2px solid var(--genshin-gold);
-            border-radius: 12px;
+        /* Right Side - Character Showcase */
+        .right-side {
+            flex: 1.5;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
         }
 
-        .tabs-header {
+        .tabs-row {
             display: flex;
-            background: rgba(236, 229, 216, 0.05);
-            border-bottom: 2px solid var(--genshin-gold);
-            padding: 12px 20px;
+            gap: 20px;
+            border-bottom: 2px solid #d3cdc1;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        .tab-btn {
-            background-color: var(--genshin-cream);
-            color: var(--genshin-slate);
-            border: none;
-            border-radius: 4px;
-            padding: 6px 15px;
-            margin-right: 10px;
+        .tab-item {
             font-weight: bold;
+            opacity: 0.6;
             cursor: pointer;
-            font-size: 0.85rem;
         }
 
-        .content-body {
-            padding: 30px;
-            overflow-y: auto;
+        .tab-item.active {
+            opacity: 1;
+            border-bottom: 3px solid var(--genshin-accent);
         }
 
-        h2 {
-            color: var(--genshin-gold);
-            border-bottom: 1px solid rgba(219, 179, 97, 0.3);
-            padding-bottom: 5px;
-            margin-top: 0;
-            font-size: 1.5rem;
-        }
-
-        .attribute-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .achievement-row {
+            display: flex;
             gap: 15px;
             margin-bottom: 25px;
         }
 
-        .attr-item {
-            background: rgba(255, 255, 255, 0.05);
+        .achieve-card {
+            background: #f3f0e7;
             padding: 10px;
-            border-left: 3px solid var(--genshin-gold);
-        }
-
-        .attr-label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--genshin-gold);
-            text-transform: uppercase;
-        }
-
-        .attr-val {
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
-        .archive-quote {
-            font-style: italic;
-            color: #bdc3c7;
-            border-left: 3px solid var(--genshin-cream);
-            padding-left: 15px;
-            margin: 20px 0;
-        }
-
-        .tech-stack img {
-            margin-right: 5px;
-            height: 25px;
-        }
-
-        .quest-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .quest-item {
-            background: rgba(219, 179, 97, 0.1);
-            margin-bottom: 8px;
-            padding: 8px 15px;
-            border-radius: 4px;
+            border-radius: 5px;
+            flex: 1;
             display: flex;
             align-items: center;
+            gap: 10px;
+            border: 1px solid #e1dbcf;
         }
 
-        .quest-icon {
-            margin-right: 10px;
+        /* Character Grid */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .char-icon {
+            background: #e2d7c5;
+            aspect-ratio: 1/1.2;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #bcaf98;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .char-label {
+            background: rgba(255,255,255,0.8);
+            width: 90%;
+            text-align: center;
+            border-radius: 2px;
         }
 
     </style>
 </head>
 <body>
 
-    <div class="teyvat-window">
-        <div class="profile-pane">
-            <img src="pfp.jpg" alt="Byorne" class="profile-img">
-            <div class="name-text">Byorne Myco Coyunes</div>
-            <div class="rank-badge">AR Level 60</div>
-        </div>
-
-        <div class="content-pane">
-            <div class="tabs-header">
-                <button class="tab-btn">ATTRIBUTES</button>
-                <button class="tab-btn">TALENTS</button>
-                <button class="tab-btn">QUESTS</button>
+    <div class="showcase-container">
+        <div class="left-side">
+            <div class="avatar-circle">
+                <img src="YOUR_IMAGE_NAME.png" alt="Traveler">
+            </div>
+            <div class="name-header">Byorne</div>
+            
+            <div class="stat-bar">
+                <span>Adventure Rank</span>
+                <span>60</span>
+            </div>
+            <div class="stat-bar secondary">
+                <span>World Level</span>
+                <span>8</span>
             </div>
 
-            <div class="content-body">
-                <h2>✧ Character Profile</h2>
-                <div class="attribute-grid">
-                    <div class="attr-item"><span class="attr-label">Title</span><span class="attr-val">DIT 2-1 Student</span></div>
-                    <div class="attr-item"><span class="attr-label">Vision</span><span class="attr-val">Web Development</span></div>
-                    <div class="attr-item"><span class="attr-label">Affiliation</span><span class="attr-val">IT University</span></div>
-                    <div class="attr-item"><span class="attr-label">Weapon</span><span class="attr-val">The Code-Breaker</span></div>
-                </div>
+            <div class="signature-box">
+                "I am passionate about learning how technology works and how to build useful applications. Every line of code is a step further into Teyvat."
+            </div>
+        </div>
 
-                <h2>✧ Elemental Skills</h2>
-                <div class="tech-stack">
-                    <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" />
-                    <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
-                    <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
-                </div>
+        <div class="right-side">
+            <div class="tabs-row">
+                <span class="tab-item active">Main Page</span>
+                <span class="tab-item">Tech Stack</span>
+            </div>
 
-                <div class="archive-quote">
-                    "I am passionate about learning how technology works and how to build useful applications. Every line of code is a step further into the Teyvat of software development."
-                </div>
-
-                <h2>✧ Current Quests</h2>
-                <div class="quest-list">
-                    <div class="quest-item">
-                        <span class="quest-icon">📜</span>
-                        <span>Mastering Web Development</span>
+            <div class="achievement-row">
+                <div class="achieve-card">
+                    <span style="font-size: 1.5rem;">🏆</span>
+                    <div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">Total Projects</div>
+                        <div style="font-weight: bold;">15</div>
                     </div>
                 </div>
+                <div class="achieve-card">
+                    <span style="font-size: 1.5rem;">⚔️</span>
+                    <div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">Quest Status</div>
+                        <div style="font-weight: bold;">Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <p style="font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; color: #8e8e8e;">✦ Skill Showcase</p>
+            
+            <div class="character-grid">
+                <div class="char-icon"><div class="char-label">HTML5</div></div>
+                <div class="char-icon"><div class="char-label">CSS3</div></div>
+                <div class="char-icon" style="background: #f7df1e;"><div class="char-label">JavaScript</div></div>
+                <div class="char-icon" style="background: #61dafb;"><div class="char-label">React</div></div>
+                <div class="char-icon"><div class="char-label">Git</div></div>
+                <div class="char-icon"><div class="char-label">UI/UX</div></div>
+                <div class="char-icon"><div class="char-label">Python</div></div>
+                <div class="char-icon"><div class="char-label">SQL</div></div>
             </div>
         </div>
     </div>
