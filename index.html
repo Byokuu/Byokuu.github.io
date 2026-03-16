@@ -6,16 +6,15 @@
     <title>Traveler Profile | Byorne Myco Coyunes</title>
     <style>
         :root {
-            --genshin-bg: #ece5d8; /* The light paper/book color */
-            --genshin-text: #4a4a4a;
-            --genshin-accent: #dbb361;
-            --genshin-green: #90ad7a; /* AR Bar color */
-            --genshin-brown: #cfbc9b; /* Secondary bar color */
+            --genshin-gold: #dbb361;
+            --genshin-cream: #ece5d8;
+            --genshin-slate: #3b4255;
+            --genshin-deep-dark: #1a1c24;
         }
 
         body {
-            background-color: #2c2e33; /* Dark background to make the "book" pop */
-            color: var(--genshin-text);
+            background-color: var(--genshin-deep-dark);
+            color: var(--genshin-cream);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
@@ -24,215 +23,154 @@
             margin: 0;
         }
 
-        /* The Main "Book" Container */
-        .showcase-container {
-            background-color: var(--genshin-bg);
-            width: 90%;
-            max-width: 950px;
-            height: 550px;
-            display: flex;
-            border-radius: 5px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow: hidden;
-            border: 4px solid #fffefb;
-        }
-
-        /* Left Side - Character Info */
-        .left-side {
-            flex: 1;
-            padding: 30px;
-            background-image: linear-gradient(to bottom, #d9ebf0, var(--genshin-bg));
-            border-right: 2px solid #d3cdc1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .avatar-circle {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            border: 4px solid var(--genshin-accent);
-            background-color: #fff;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .avatar-circle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .name-header {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #3b4255;
-            margin-bottom: 20px;
-        }
-
-        .stat-bar {
-            width: 100%;
-            background: var(--genshin-green);
-            color: white;
-            padding: 8px 15px;
-            margin-bottom: 5px;
-            border-radius: 3px;
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            box-shadow: inset 0 -2px rgba(0,0,0,0.1);
-        }
-
-        .stat-bar.secondary { background: var(--genshin-brown); }
-
-        .signature-box {
-            width: 100%;
-            background: #f3f0e7;
-            border: 1px solid #d3cdc1;
-            padding: 15px;
-            margin-top: 20px;
-            height: 100px;
-            font-style: italic;
-            font-size: 0.9rem;
-        }
-
-        /* Right Side - Character Showcase */
-        .right-side {
-            flex: 1.5;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tabs-row {
+        .teyvat-window {
             display: flex;
             gap: 20px;
-            border-bottom: 2px solid #d3cdc1;
-            padding-bottom: 10px;
+            width: 90%;
+            max-width: 1100px;
+            height: 550px;
+        }
+
+        .profile-pane {
+            flex: 0 0 300px;
+            background: var(--genshin-slate);
+            border: 2px solid var(--genshin-gold);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
+        }
+
+        .profile-img {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 4px solid var(--genshin-gold);
+            object-fit: cover;
             margin-bottom: 20px;
         }
 
-        .tab-item {
+        .name-text {
+            font-size: 1.4rem;
+            text-align: center;
             font-weight: bold;
-            opacity: 0.6;
-            cursor: pointer;
+            color: var(--genshin-gold);
+            text-transform: uppercase;
         }
 
-        .tab-item.active {
-            opacity: 1;
-            border-bottom: 3px solid var(--genshin-accent);
-        }
-
-        .achievement-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .achieve-card {
-            background: #f3f0e7;
-            padding: 10px;
-            border-radius: 5px;
+        .content-pane {
             flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px solid #e1dbcf;
-        }
-
-        /* Character Grid */
-        .character-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .char-icon {
-            background: #e2d7c5;
-            aspect-ratio: 1/1.2;
-            border-radius: 5px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #bcaf98;
+            background: var(--genshin-slate);
+            border: 2px solid var(--genshin-gold);
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            padding-bottom: 5px;
+        }
+
+        .tabs-header {
+            display: flex;
+            background: rgba(236, 229, 216, 0.05);
+            border-bottom: 2px solid var(--genshin-gold);
+            padding: 12px 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background-color: var(--genshin-cream);
+            color: var(--genshin-slate);
+            border: none;
+            border-radius: 4px;
+            padding: 8px 20px;
             font-weight: bold;
-            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        .char-label {
-            background: rgba(255,255,255,0.8);
-            width: 90%;
-            text-align: center;
-            border-radius: 2px;
+        .tab-btn.active {
+            background-color: var(--genshin-gold);
+            color: var(--genshin-deep-dark);
         }
 
+        .content-body {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none; /* Hide all by default */
+        }
+
+        .tab-content.active {
+            display: block; /* Show only active */
+        }
+
+        h2 { color: var(--genshin-gold); }
+        .attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .attr-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-left: 3px solid var(--genshin-gold); }
     </style>
 </head>
 <body>
 
-    <div class="showcase-container">
-        <div class="left-side">
-            <div class="avatar-circle">
-                <img src="YOUR_IMAGE_NAME.png" alt="Traveler">
-            </div>
-            <div class="name-header">Byorne</div>
-            
-            <div class="stat-bar">
-                <span>Adventure Rank</span>
-                <span>60</span>
-            </div>
-            <div class="stat-bar secondary">
-                <span>World Level</span>
-                <span>8</span>
-            </div>
-
-            <div class="signature-box">
-                "I am passionate about learning how technology works and how to build useful applications. Every line of code is a step further into Teyvat."
-            </div>
+    <div class="teyvat-window">
+        <div class="profile-pane">
+            <img src="YOUR_IMAGE_LINK" alt="Byorne" class="profile-img">
+            <div class="name-text">Byorne Myco Coyunes</div>
+            <div style="margin-top:10px; color:var(--genshin-gold)">AR Level 60</div>
         </div>
 
-        <div class="right-side">
-            <div class="tabs-row">
-                <span class="tab-item active">Main Page</span>
-                <span class="tab-item">Tech Stack</span>
+        <div class="content-pane">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="openTab(event, 'about')">ABOUT</button>
+                <button class="tab-btn" onclick="openTab(event, 'portfolio')">PORTFOLIO</button>
+                <button class="tab-btn" onclick="openTab(event, 'education')">EDUCATION</button>
             </div>
 
-            <div class="achievement-row">
-                <div class="achieve-card">
-                    <span style="font-size: 1.5rem;">🏆</span>
-                    <div>
-                        <div style="font-size: 0.7rem; opacity: 0.7;">Total Projects</div>
-                        <div style="font-weight: bold;">15</div>
+            <div class="content-body">
+                <div id="about" class="tab-content active">
+                    <h2>✧ Character Profile</h2>
+                    <div class="attr-grid">
+                        <div class="attr-item"><small style="color:var(--genshin-gold)">VISION</small><br>Web Development</div>
+                        <div class="attr-item"><small style="color:var(--genshin-gold)">AFFILIATION</small><br>IT University</div>
                     </div>
+                    <p style="font-style:italic; margin-top:20px; border-left: 2px solid var(--genshin-gold); padding-left:15px;">
+                        "I am passionate about learning how technology works and how to build useful applications."
+                    </p>
                 </div>
-                <div class="achieve-card">
-                    <span style="font-size: 1.5rem;">⚔️</span>
-                    <div>
-                        <div style="font-size: 0.7rem; opacity: 0.7;">Quest Status</div>
-                        <div style="font-weight: bold;">Active</div>
-                    </div>
-                </div>
-            </div>
 
-            <p style="font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; color: #8e8e8e;">✦ Skill Showcase</p>
-            
-            <div class="character-grid">
-                <div class="char-icon"><div class="char-label">HTML5</div></div>
-                <div class="char-icon"><div class="char-label">CSS3</div></div>
-                <div class="char-icon" style="background: #f7df1e;"><div class="char-label">JavaScript</div></div>
-                <div class="char-icon" style="background: #61dafb;"><div class="char-label">React</div></div>
-                <div class="char-icon"><div class="char-label">Git</div></div>
-                <div class="char-icon"><div class="char-label">UI/UX</div></div>
-                <div class="char-icon"><div class="char-label">Python</div></div>
-                <div class="char-icon"><div class="char-label">SQL</div></div>
+                <div id="portfolio" class="tab-content">
+                    <h2>✧ Quest Log (Portfolio)</h2>
+                    <p>Current Projects in progress...</p>
+                    <ul>
+                        <li>Genshin Styled Profile Page</li>
+                        <li>DIT 2-1 Coursework</li>
+                    </ul>
+                </div>
+
+                <div id="education" class="tab-content">
+                    <h2>✧ Academic Archive</h2>
+                    <p><strong>Information Technology University</strong></p>
+                    <p>DIT 2-1 Student</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
 </body>
 </html>
