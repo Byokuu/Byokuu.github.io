@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byokuu | Teyvat Traveler Profile</title>
+    <style>
+        :root {
+            /* Official Genshin UI Colors */
+            --genshin-gold: #dbb361; /* Primogem Gold */
+            --genshin-cream: #ece5d8; /* Menu Cream */
+            --genshin-slate: #3b4255; /* Menu Background Dark Slate */
+            --genshin-deep-dark: #1a1c24; /* Outer Background */
+        }
+
+        /* ------------------ Basic Reset & Layout ------------------ */
+        body {
+            background-color: var(--genshin-deep-dark);
+            color: var(--genshin-cream);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* A clean, clear font */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* We'll create our own scrolling */
+        }
+
+        /* The main "Window" container (like image_2.png) */
+        .teyvat-window {
+            display: flex;
+            gap: 20px;
+            width: 85%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        /* ------------------ Left Panel (Profile Box) ------------------ */
+        .profile-pane {
+            flex: 0 0 280px; /* Fixed width, like the left box in image_2 */
+            background: var(--genshin-slate);
+            border: 2px solid var(--genshin-gold);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15); /* Soft Primogem glow */
+            position: relative;
+        }
+
+        /* Genshin UI decoration corner (like in the Paimon menu) */
+        .profile-pane::after {
+            content: "✦";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--genshin-gold);
+            font-size: 1.2rem;
+        }
+
+        /* Circular profile image with glowing border */
+        .profile-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 4px solid var(--genshin-gold);
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(219, 179, 97, 0.4);
+            margin-bottom: 20px;
+        }
+
+        /* Name text, like "Neil Gregory" in the image */
+        .name-text {
+            font-size: 1.6rem;
+            letter-spacing: 1.5px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--genshin-gold);
+            margin-bottom: 5px;
+        }
+
+        /* The subtitle box, like "DIT 2-1" in the image */
+        .dit-rank-box {
+            background-color: var(--genshin-cream);
+            color: var(--genshin-slate);
+            padding: 5px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        /* ------------------ Right Panel (Content Box) ------------------ */
+        .content-pane {
+            flex: 1; /* Fills remaining space */
+            background: var(--genshin-slate);
+            border: 2px solid var(--genshin-gold);
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* The Tabs container (top bar, like image_2) */
+        .tabs-header {
+            display: flex;
+            background: rgba(236, 229, 216, 0.1); /* Subtle cream transparent bg */
+            border-bottom: 2px solid var(--genshin-gold);
+            padding: 10px 15px;
+        }
+
+        /* The Tabs themselves (like the lime-green buttons in image_2) */
+        .tab-btn {
+            background-color: var(--genshin-cream);
+            color: var(--genshin-slate);
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active,
+        .tab-btn:hover {
+            background-color: var(--genshin-gold);
+            color: var(--genshin-deep-dark);
+            transform: translateY(-2px);
+        }
+
+        /* The Main content area (scrollable) */
+        .content-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1; /* Important for scrolling */
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        /* Custom Scrollbar for the Genshin menu effect */
+        .content-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .content-body::-webkit-scrollbar-thumb {
+            background: var(--genshin-gold);
+            border-radius: 10px;
+        }
+        .content-body::-webkit-scrollbar-track {
+            background: rgba(236, 229, 216, 0.05);
+        }
+
+        /* Large Header text, like "About Me" in the image */
+        h1.content-title {
+            font-size: 2.2rem;
+            color: var(--genshin-gold);
+            margin-top: 0;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        /* The text paragraph */
+        .about-text {
+            color: var(--genshin-cream);
+            margin-bottom: 20px;
+        }
+
+        /* Adding a thematic "Character Card" border ornament below the content */
+        .card-ornament {
+            color: var(--genshin-gold);
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="teyvat-window">
+
+        <div class="profile-pane">
+            <img src="YOUR_UPLOADED_IMAGE_LINK_HERE" alt="Traveler Profile" class="profile-img">
+            <div class="name-text">BYOKUU</div>
+            <div class="dit-rank-box">DIT 2-1</div>
+        </div>
+
+        <div class="content-pane">
+            <div class="tabs-header">
+                <button class="tab-btn active">ABOUT</button>
+                <button class="tab-btn">PORTFOLIO</button>
+                <button class="tab-btn">EDUCATION</button>
+            </div>
+
+            <div class="content-body">
+                <h1 class="content-title">✧ Traveler Archive</h1>
+                <p class="about-text">
+                    Hello! My name is <strong>Byokuu</strong>. I am currently a <strong>DIT 2-1</strong> student, a traveler across the vast landscapes of Information Technology. I am passionate about learning how technology works at its core and building useful applications, aiming to master the elements of <strong>Programming and Web Development</strong> for the good of all Teyvat.
+                </p>
+                <p class="about-text">
+                    I believe that every line of code is an offering to the Statues of the Seven, and deployment is my ultimate Elemental Burst. My goal is to become an expert developer who can create useful tools for the community.
+                </p>
+                
+                <h1 class="content-title" style="font-size: 1.8rem; margin-top: 30px;">✧ Stats</h1>
+                <ul style="list-style: '✧ '; padding-left: 20px; color: #bdbdbd;">
+                    <li><strong style="color:var(--genshin-gold)">Element:</strong> Information Tech</li>
+                    <li><strong style="color:var(--genshin-gold)">Level:</strong> 20 / 90 (Adventure Rank 20)</li>
+                    <li><strong style="color:var(--genshin-gold)">Constellation:</strong> Web Weaver</li>
+                    <li><strong style="color:var(--genshin-gold)">Ascension Material:</strong> Coffee, StackOverflow, VS Code</li>
+                </ul>
+            </div>
+            
+            <div class="card-ornament">✦ ✧ ✦</div>
+        </div>
+
+    </div>
+
+</body>
+</html>
