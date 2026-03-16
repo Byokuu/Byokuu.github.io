@@ -42,6 +42,4 @@
 
 [![Byokuu's GitHub stats](https://github-readme-stats.vercel.app/api?username=Byokuu&show_icons=true&title_color=dbb361&icon_color=dbb361&text_color=ece5d8&bg_color=3b4255&hide_border=false)](https://github.com/anuraghazra/github-readme-stats)
 
-[![Byokuu's Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=Byokuu&layout=compact&title_color=dbb361&icon_color=dbb361&text_color=ece5d8&bg_color=3b4255&hide_border=false)](https://github.com/anuraghazra/github-readme-stats)
-
 </div>
