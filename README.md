@@ -7,7 +7,7 @@
 | Attribute | Details |
 | :--- | :--- |
 | **Title** | DIT 2-1 Student |
-| **Affiliation** | IT University |
+| **Affiliation** | PUP Sto. Tomas Campus |
 | **Vision** | Web Development |
 
 ---
@@ -20,5 +20,12 @@
 ### ✧ Current Quests ✧
 - [ ] 📜 Mastering Web Development
 - [ ] 🎓 Graduate College (Main Story Quest)
+
+---
+
+### ✧ Education ✧
+**PUP Sto. Tomas Campus**
+*Diploma in Information Technology (DIT 2-1)*
+*Currently pursuing my Diploma in Information Technology.*
 
 </div>
