@@ -28,7 +28,7 @@
             gap: 20px;
             width: 90%;
             max-width: 1100px;
-            height: 550px;
+            height: 580px;
         }
 
         .profile-pane {
@@ -99,23 +99,33 @@
         }
 
         .tab-content {
-            display: none; /* Hide all by default */
+            display: none;
         }
 
         .tab-content.active {
-            display: block; /* Show only active */
+            display: block;
         }
 
-        h2 { color: var(--genshin-gold); }
+        h2 { color: var(--genshin-gold); margin-top: 0; }
         .attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .attr-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-left: 3px solid var(--genshin-gold); }
+        
+        .quest-item {
+            background: rgba(219, 179, 97, 0.1);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
     </style>
 </head>
 <body>
 
     <div class="teyvat-window">
         <div class="profile-pane">
-            <img src="YOUR_IMAGE_LINK" alt="Byorne" class="profile-img">
+            <img src="YOUR_IMAGE_LINK_HERE" alt="Byorne" class="profile-img">
             <div class="name-text">Byorne Myco Coyunes</div>
             <div style="margin-top:10px; color:var(--genshin-gold)">AR Level 60</div>
         </div>
@@ -134,24 +144,35 @@
                         <div class="attr-item"><small style="color:var(--genshin-gold)">VISION</small><br>Web Development</div>
                         <div class="attr-item"><small style="color:var(--genshin-gold)">AFFILIATION</small><br>IT University</div>
                     </div>
-                    <p style="font-style:italic; margin-top:20px; border-left: 2px solid var(--genshin-gold); padding-left:15px;">
-                        "I am passionate about learning how technology works and how to build useful applications."
+                    <p style="font-style:italic; margin-top:20px; border-left: 2px solid var(--genshin-gold); padding-left:15px; color: #bdc3c7;">
+                        "I am passionate about learning how technology works and how to build useful applications. Every line of code is a step further into the Teyvat of software development."
                     </p>
+                    
+                    <h2 style="margin-top: 25px;">✧ Current Quests</h2>
+                    <div class="quest-item"><span>📜</span> <strong>Mastering Web Development</strong></div>
+                    <div class="quest-item"><span>🎓</span> <strong>Graduate College (Main Story Quest)</strong></div>
                 </div>
 
                 <div id="portfolio" class="tab-content">
-                    <h2>✧ Quest Log (Portfolio)</h2>
-                    <p>Current Projects in progress...</p>
+                    <h2>✧ Elemental Skills (Tech Stack)</h2>
+                    <div style="margin-bottom: 25px;">
+                        <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" />
+                        <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
+                        <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
+                    </div>
+                    <h2>✧ Archive</h2>
                     <ul>
-                        <li>Genshin Styled Profile Page</li>
-                        <li>DIT 2-1 Coursework</li>
+                        <li>Genshin UI Profile Development</li>
+                        <li>Responsive Web Design Mastery</li>
                     </ul>
                 </div>
 
                 <div id="education" class="tab-content">
                     <h2>✧ Academic Archive</h2>
-                    <p><strong>Information Technology University</strong></p>
-                    <p>DIT 2-1 Student</p>
+                    <div class="attr-item">
+                        <strong>Information Technology University</strong><br>
+                        DIT 2-1 Student | Incoming Professional
+                    </div>
                 </div>
             </div>
         </div>
