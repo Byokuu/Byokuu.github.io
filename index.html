@@ -3,41 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Byokuu | Teyvat Traveler Profile</title>
+    <title>Traveler Profile | Byorne Myco Coyunes</title>
     <style>
         :root {
-            /* Official Genshin UI Colors */
-            --genshin-gold: #dbb361; /* Primogem Gold */
-            --genshin-cream: #ece5d8; /* Menu Cream */
-            --genshin-slate: #3b4255; /* Menu Background Dark Slate */
-            --genshin-deep-dark: #1a1c24; /* Outer Background */
+            --genshin-gold: #dbb361;
+            --genshin-cream: #ece5d8;
+            --genshin-slate: #3b4255;
+            --genshin-deep-dark: #1a1c24;
         }
 
-        /* ------------------ Basic Reset & Layout ------------------ */
         body {
             background-color: var(--genshin-deep-dark);
             color: var(--genshin-cream);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* A clean, clear font */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden; /* We'll create our own scrolling */
         }
 
-        /* The main "Window" container (like image_2.png) */
         .teyvat-window {
             display: flex;
             gap: 20px;
-            width: 85%;
-            max-width: 1200px;
+            width: 90%;
+            max-width: 1100px;
             padding: 20px;
         }
 
-        /* ------------------ Left Panel (Profile Box) ------------------ */
+        /* Left Pane - Profile Card */
         .profile-pane {
-            flex: 0 0 280px; /* Fixed width, like the left box in image_2 */
+            flex: 0 0 300px;
             background: var(--genshin-slate);
             border: 2px solid var(--genshin-gold);
             border-radius: 12px;
@@ -45,24 +41,22 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15); /* Soft Primogem glow */
+            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
             position: relative;
         }
 
-        /* Genshin UI decoration corner (like in the Paimon menu) */
         .profile-pane::after {
             content: "✦";
             position: absolute;
             top: 10px;
-            right: 10px;
+            right: 15px;
             color: var(--genshin-gold);
-            font-size: 1.2rem;
+            font-size: 1.5rem;
         }
 
-        /* Circular profile image with glowing border */
         .profile-img {
-            width: 140px;
-            height: 140px;
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
             border: 4px solid var(--genshin-gold);
             object-fit: cover;
@@ -70,114 +64,122 @@
             margin-bottom: 20px;
         }
 
-        /* Name text, like "Neil Gregory" in the image */
         .name-text {
-            font-size: 1.6rem;
-            letter-spacing: 1.5px;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
             text-align: center;
             font-weight: bold;
             color: var(--genshin-gold);
-            margin-bottom: 5px;
+            text-transform: uppercase;
         }
 
-        /* The subtitle box, like "DIT 2-1" in the image */
-        .dit-rank-box {
+        .rank-badge {
             background-color: var(--genshin-cream);
             color: var(--genshin-slate);
-            padding: 5px 15px;
-            border-radius: 6px;
+            padding: 4px 12px;
+            border-radius: 4px;
             font-weight: bold;
-            font-size: 1rem;
-            letter-spacing: 1px;
+            font-size: 0.9rem;
             margin-top: 10px;
-            display: inline-block;
         }
 
-        /* ------------------ Right Panel (Content Box) ------------------ */
+        /* Right Pane - Content Area */
         .content-pane {
-            flex: 1; /* Fills remaining space */
+            flex: 1;
             background: var(--genshin-slate);
             border: 2px solid var(--genshin-gold);
             border-radius: 12px;
-            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
             display: flex;
             flex-direction: column;
+            box-shadow: 0 0 25px rgba(219, 179, 97, 0.15);
         }
 
-        /* The Tabs container (top bar, like image_2) */
         .tabs-header {
             display: flex;
-            background: rgba(236, 229, 216, 0.1); /* Subtle cream transparent bg */
+            background: rgba(236, 229, 216, 0.05);
             border-bottom: 2px solid var(--genshin-gold);
-            padding: 10px 15px;
+            padding: 12px 20px;
         }
 
-        /* The Tabs themselves (like the lime-green buttons in image_2) */
         .tab-btn {
             background-color: var(--genshin-cream);
             color: var(--genshin-slate);
             border: none;
-            border-radius: 6px;
-            padding: 8px 18px;
-            margin-right: 12px;
+            border-radius: 4px;
+            padding: 6px 15px;
+            margin-right: 10px;
             font-weight: bold;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
             cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.2s ease;
+            font-size: 0.85rem;
         }
 
-        .tab-btn.active,
-        .tab-btn:hover {
-            background-color: var(--genshin-gold);
-            color: var(--genshin-deep-dark);
-            transform: translateY(-2px);
-        }
-
-        /* The Main content area (scrollable) */
         .content-body {
             padding: 30px;
             overflow-y: auto;
-            flex: 1; /* Important for scrolling */
-            line-height: 1.8;
+        }
+
+        h2 {
+            color: var(--genshin-gold);
+            border-bottom: 1px solid rgba(219, 179, 97, 0.3);
+            padding-bottom: 5px;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        .attribute-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .attr-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-left: 3px solid var(--genshin-gold);
+        }
+
+        .attr-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--genshin-gold);
+            text-transform: uppercase;
+        }
+
+        .attr-val {
+            font-weight: bold;
             font-size: 1rem;
         }
 
-        /* Custom Scrollbar for the Genshin menu effect */
-        .content-body::-webkit-scrollbar {
-            width: 8px;
-        }
-        .content-body::-webkit-scrollbar-thumb {
-            background: var(--genshin-gold);
-            border-radius: 10px;
-        }
-        .content-body::-webkit-scrollbar-track {
-            background: rgba(236, 229, 216, 0.05);
+        .archive-quote {
+            font-style: italic;
+            color: #bdc3c7;
+            border-left: 3px solid var(--genshin-cream);
+            padding-left: 15px;
+            margin: 20px 0;
         }
 
-        /* Large Header text, like "About Me" in the image */
-        h1.content-title {
-            font-size: 2.2rem;
-            color: var(--genshin-gold);
-            margin-top: 0;
-            margin-bottom: 15px;
-            letter-spacing: 2px;
-            position: relative;
+        .tech-stack img {
+            margin-right: 5px;
+            height: 25px;
         }
 
-        /* The text paragraph */
-        .about-text {
-            color: var(--genshin-cream);
-            margin-bottom: 20px;
+        .quest-list {
+            list-style: none;
+            padding: 0;
         }
 
-        /* Adding a thematic "Character Card" border ornament below the content */
-        .card-ornament {
-            color: var(--genshin-gold);
-            font-size: 1.5rem;
-            text-align: center;
-            padding: 10px;
+        .quest-item {
+            background: rgba(219, 179, 97, 0.1);
+            margin-bottom: 8px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .quest-icon {
+            margin-right: 10px;
         }
 
     </style>
@@ -185,41 +187,48 @@
 <body>
 
     <div class="teyvat-window">
-
         <div class="profile-pane">
-            <img src="YOUR_UPLOADED_IMAGE_LINK_HERE" alt="Traveler Profile" class="profile-img">
-            <div class="name-text">BYOKUU</div>
-            <div class="dit-rank-box">DIT 2-1</div>
+            <img src="YOUR_UPLOADED_IMAGE_HERE" alt="Byorne" class="profile-img">
+            <div class="name-text">Byorne Myco Coyunes</div>
+            <div class="rank-badge">AR Level 60</div>
         </div>
 
         <div class="content-pane">
             <div class="tabs-header">
-                <button class="tab-btn active">ABOUT</button>
-                <button class="tab-btn">PORTFOLIO</button>
-                <button class="tab-btn">EDUCATION</button>
+                <button class="tab-btn">ATTRIBUTES</button>
+                <button class="tab-btn">TALENTS</button>
+                <button class="tab-btn">QUESTS</button>
             </div>
 
             <div class="content-body">
-                <h1 class="content-title">✧ Traveler Archive</h1>
-                <p class="about-text">
-                    Hello! My name is <strong>Byokuu</strong>. I am currently a <strong>DIT 2-1</strong> student, a traveler across the vast landscapes of Information Technology. I am passionate about learning how technology works at its core and building useful applications, aiming to master the elements of <strong>Programming and Web Development</strong> for the good of all Teyvat.
-                </p>
-                <p class="about-text">
-                    I believe that every line of code is an offering to the Statues of the Seven, and deployment is my ultimate Elemental Burst. My goal is to become an expert developer who can create useful tools for the community.
-                </p>
-                
-                <h1 class="content-title" style="font-size: 1.8rem; margin-top: 30px;">✧ Stats</h1>
-                <ul style="list-style: '✧ '; padding-left: 20px; color: #bdbdbd;">
-                    <li><strong style="color:var(--genshin-gold)">Element:</strong> Information Tech</li>
-                    <li><strong style="color:var(--genshin-gold)">Level:</strong> 20 / 90 (Adventure Rank 20)</li>
-                    <li><strong style="color:var(--genshin-gold)">Constellation:</strong> Web Weaver</li>
-                    <li><strong style="color:var(--genshin-gold)">Ascension Material:</strong> Coffee, StackOverflow, VS Code</li>
-                </ul>
-            </div>
-            
-            <div class="card-ornament">✦ ✧ ✦</div>
-        </div>
+                <h2>✧ Character Profile</h2>
+                <div class="attribute-grid">
+                    <div class="attr-item"><span class="attr-label">Title</span><span class="attr-val">DIT 2-1 Student</span></div>
+                    <div class="attr-item"><span class="attr-label">Vision</span><span class="attr-val">Web Development</span></div>
+                    <div class="attr-item"><span class="attr-label">Affiliation</span><span class="attr-val">IT University</span></div>
+                    <div class="attr-item"><span class="attr-label">Weapon</span><span class="attr-val">The Code-Breaker</span></div>
+                </div>
 
+                <h2>✧ Elemental Skills</h2>
+                <div class="tech-stack">
+                    <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" />
+                    <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
+                    <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
+                </div>
+
+                <div class="archive-quote">
+                    "I am passionate about learning how technology works and how to build useful applications. Every line of code is a step further into the Teyvat of software development."
+                </div>
+
+                <h2>✧ Current Quests</h2>
+                <div class="quest-list">
+                    <div class="quest-item">
+                        <span class="quest-icon">📜</span>
+                        <span>Mastering Web Development</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </body>
