@@ -27,9 +27,4 @@
 **PUP Sto. Tomas Campus**
 *Diploma in Information Technology (DIT 2-1)*
 
-**Relevant Skills Gained:**
-* **Web Systems:** HTML5, CSS3, JavaScript
-* **Core Tech:** Database Management, Networking, Programming Logic
-* **Soft Skills:** Collaborative Development, Technical Documentation
-
 </div>
