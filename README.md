@@ -40,6 +40,6 @@
 <div align="center">
   
 ### ✧ Stat Overview ✧
-[![Byokuu's GitHub stats](https://github-readme-stats.vercel.app/api?username=gregoryy-web&show_icons=true&theme=tokyonight)](https://github.com/anuraghazra/github-readme-stats)
+[![Byokuu's GitHub stats](https://github-readme-stats.vercel.app/api?username=Byokuu-web&show_icons=true&theme=tokyonight)](https://github.com/anuraghazra/github-readme-stats)
 
 </div>
