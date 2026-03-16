@@ -3,10 +3,6 @@
 # ✦ Byorne Myco Coyunes ✦
 **AR Level 60 | Information Technology | Vision: Web Development**
 
-<img src="xiao.png" width="300px">
-
----
-
 ### ✧ Character Profile ✧
 | Attribute | Details |
 | :--- | :--- |
@@ -37,9 +33,3 @@
 ---
 
 <div align="center">
-
-### ✧ Stat Overview ✧
-
-[![Byokuu's GitHub stats](https://github-readme-stats.vercel.app/api?username=Byokuu&show_icons=true&title_color=dbb361&icon_color=dbb361&text_color=ece5d8&bg_color=3b4255&hide_border=false)](https://github.com/anuraghazra/github-readme-stats)
-
-</div>
