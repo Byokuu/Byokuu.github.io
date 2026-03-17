@@ -4,145 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio | Byorne Myco Coyunes</title>
-    <style>
-        :root {
-            /* Authentic Genshin UI Palette */
-            --genshin-gold: #dbb361;     /* Header/Active Text */
-            --genshin-cream: #ece5d8;    /* General Text */
-            --genshin-panel: #3b4255;    /* Inner Panel Background */
-            --genshin-dark: #1a1c24;     /* Page Background */
-            --genshin-tab-bg: #2a2d34;   /* Nav Header Background */
-            --genshin-green: #90ad7a;    /* Inactive Tab Button */
-        }
-
-        body {
-            background-color: var(--genshin-dark);
-            color: var(--genshin-cream);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            display: flex;
-            gap: 20px;
-            width: 90%;
-            max-width: 1000px;
-        }
-
-        /* Left Side Profile Box */
-        .left-panel {
-            flex: 0 0 260px;
-            background: var(--genshin-panel);
-            border: 3px solid #000;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 10px 10px 0px #000;
-        }
-
-        .profile-img {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 4px solid var(--genshin-gold);
-            object-fit: cover;
-            margin-bottom: 20px;
-        }
-
-        .name-box {
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            color: var(--genshin-gold);
-            margin-bottom: 15px;
-        }
-
-        .rank-tag {
-            background: var(--genshin-cream);
-            color: #000;
-            padding: 5px 15px;
-            font-weight: bold;
-            border: 2px solid #000;
-            display: inline-block;
-        }
-
-        /* Right Side Content Box */
-        .right-panel {
-            flex: 1;
-            background: var(--genshin-panel);
-            border: 3px solid #000;
-            box-shadow: 10px 10px 0px #000;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .nav-tabs {
-            background: var(--genshin-tab-bg);
-            padding: 15px;
-            display: flex;
-            gap: 10px;
-            border-bottom: 3px solid #000;
-        }
-
-        .tab-btn {
-            background: var(--genshin-green);
-            border: 2px solid #000;
-            padding: 5px 15px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: 0.2s;
-        }
-
-        .tab-btn.active {
-            background: var(--genshin-gold);
-            color: #1a1c24;
-        }
-
-        .content {
-            padding: 30px;
-            flex: 1;
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        h1 { 
-            color: var(--genshin-gold); 
-            margin-top: 0; 
-            font-size: 2rem;
-            letter-spacing: 1px;
-        }
-        
-        .quest-box {
-            background: rgba(0,0,0,0.25);
-            padding: 15px;
-            margin-top: 10px;
-            border-left: 5px solid var(--genshin-gold);
-            line-height: 1.6;
-            color: var(--genshin-cream);
-        }
-
-        .skill-badge {
-            border: 2px solid #000;
-            padding: 5px 15px;
-            color: white;
-            font-weight: bold;
-            border-radius: 4px;
-            display: inline-block;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
         <div class="left-panel">
-            <img src="https://github.com/Byokuu/Byokuu.github.io/blob/main/pfp.jpg?raw=true" class="profile-img">
+            <img src="assets/pfp.jpg" class="profile-img">
             <div class="name-box">Byorne Myco Coyunes</div>
             <div class="rank-tag">DIT 2-1</div>
         </div>
@@ -180,23 +48,13 @@
                     <p><strong>PUP Sto. Tomas Campus</strong></p>
                     <p>Diploma in Information Technology (DIT 2-1)</p>
                     <div class="quest-box">
-                        Currently pursuing my diploma at the Sto. Tomas branch. I am dedicated to honing my technical skills in web development and software logic through rigorous coursework and hands-on projects. I am focused on mastering programming fundamentals and web technologies to prepare for a professional role in software development.
+                        Currently pursuing my diploma at the Sto. Tomas branch.
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        function openTab(evt, tabName) {
-            var i, content, tabs;
-            content = document.getElementsByClassName("tab-content");
-            for (i = 0; i < content.length; i++) { content[i].classList.remove("active"); }
-            tabs = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tabs.length; i++) { tabs[i].classList.remove("active"); }
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
