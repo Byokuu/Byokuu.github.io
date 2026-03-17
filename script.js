@@ -1,14 +1,3 @@
-// Wait for the page to load completely
-window.addEventListener("load", function() {
-    const loader = document.getElementById("loader");
-    
-    // Slight delay so the animation can be seen
-    setTimeout(() => {
-        loader.classList.add("loader-hidden");
-    }, 2000); 
-});
-
-// Your existing Tab Function
 function openTab(evt, tabName) {
     var i, content, tabs;
     content = document.getElementsByClassName("tab-content");
