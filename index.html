@@ -10,45 +10,56 @@
 
     <div class="container">
         <div class="left-panel">
-            <img src="https://github.com/Byokuu/Byokuu.github.io/blob/main/assets/picture.jpg?raw=true" class="profile-img">
+            <img src="assets/pfp.jpg" class="profile-img" alt="Profile">
             <div class="name-box">Byorne Myco Coyunes</div>
-            <div class="rank-tag">DIT 2-1</div>
+            <div class="rank-tag" style="background:var(--genshin-cream); color:#000; padding:5px 15px; font-weight:bold; border:2px solid #000; display:inline-block;">
+                DIT 2-1
+            </div>
         </div>
 
         <div class="right-panel">
             <div class="nav-tabs">
                 <button class="tab-btn active" onclick="openTab(event, 'about')">About</button>
-                <button class="tab-btn" onclick="openTab(event, 'portfolio')">Portfolio</button>
+                <button class="tab-btn" onclick="openTab(event, 'portfolio')">Skills</button>
                 <button class="tab-btn" onclick="openTab(event, 'education')">Education</button>
             </div>
 
             <div class="content">
                 <div id="about" class="tab-content active">
                     <h1>About Me</h1>
-                    <p>Hello! My name is <strong>Byorne</strong>. I am a DIT 2-1 student. I am passionate about learning how technology works and building useful applications.</p>
+                    <p>Hello! My name is <strong>Byorne</strong>. I am a DIT 2-1 student. I am passionate about learning how technology works and building applications.</p>
                     <div class="quest-box">
-                        <strong>Current Quests:</strong><br>
+                        <strong style="color:var(--genshin-gold)">Current Quests:</strong><br>
                         📜 Mastering Web Development<br>
-                        🎓 Graduate College
+                        🎓 Graduate College (Main Story)
                     </div>
                 </div>
 
                 <div id="portfolio" class="tab-content">
-                    <h1>Skills</h1>
-                    <p>Mastered Technologies:</p>
-                    <div style="margin-top: 15px;">
-                        <div class="skill-badge" style="background: #4ea5a5;">✦ HTML</div>
-                        <div class="skill-badge" style="background: #3d70b0;">✦ CSS</div>
-                        <div class="skill-badge" style="background: var(--genshin-gold); color: #000;">✦ JavaScript</div>
+                    <h1>Character Talents</h1>
+                    
+                    <div class="skill-item">
+                        <div class="skill-info"><span>✦ HTML5</span><span>Lv. 85</span></div>
+                        <div class="exp-bar-bg"><div class="exp-fill" style="width: 85%;"></div></div>
+                    </div>
+
+                    <div class="skill-item">
+                        <div class="skill-info"><span>✦ CSS3</span><span>Lv. 75</span></div>
+                        <div class="exp-bar-bg"><div class="exp-fill" style="width: 75%;"></div></div>
+                    </div>
+
+                    <div class="skill-item">
+                        <div class="skill-info"><span>✦ JavaScript</span><span>Lv. 60</span></div>
+                        <div class="exp-bar-bg"><div class="exp-fill" style="width: 60%;"></div></div>
                     </div>
                 </div>
 
                 <div id="education" class="tab-content">
                     <h1>Education</h1>
                     <p><strong>PUP Sto. Tomas Campus</strong></p>
-                    <p>Diploma in Information Technology (DIT 2-1)</p>
+                    <p>Diploma in Information Technology</p>
                     <div class="quest-box">
-                        Currently pursuing my diploma at the Sto. Tomas branch. I am dedicated to honing my technical skills in web development and software logic through rigorous coursework and hands-on projects. I am focused on mastering programming fundamentals and web technologies to prepare for a professional role in software development.
+                        Focusing on mastering programming fundamentals and web technologies to prepare for a professional role in software development.
                     </div>
                 </div>
             </div>
