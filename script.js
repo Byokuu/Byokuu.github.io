@@ -1,165 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Quicksand:wght@400;600&display=swap');
-
-:root {
-    --genshin-gold: #dbb361;
-    --genshin-cream: #ece5d8;
-    --genshin-panel: #3b4255;
-    --genshin-dark: #1a1c24;
-    --genshin-tab-bg: #2a2d34;
-    --genshin-green: #90ad7a;
-}
-
-* { box-sizing: border-box; } /* Crucial for responsiveness */
-
-body {
-    background: radial-gradient(circle, #2a2d34 0%, #1a1c24 100%);
-    color: var(--genshin-cream);
-    font-family: 'Quicksand', sans-serif;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.container {
-    display: flex;
-    flex-wrap: wrap; 
-    gap: 25px;
-    width: 100%;
-    max-width: 1100px;
-    animation: fadeIn 0.8s ease;
-}
-
-/* Panels */
-.left-panel, .right-panel {
-    background: var(--genshin-panel);
-    border: 3px solid #000;
-    box-shadow: 8px 8px 0px #000;
-    background-image: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-}
-
-.left-panel {
-    flex: 1 1 280px;
-    padding: 40px 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.right-panel {
-    flex: 2 1 500px;
-    display: flex;
-    flex-direction: column;
-    min-height: 450px;
-}
-
-/* Profile Visuals */
-.profile-img {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 5px solid var(--genshin-gold);
-    object-fit: cover;
-    margin-bottom: 20px;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.name-box {
-    font-family: 'Cinzel', serif;
-    font-size: 1.4rem;
-    color: var(--genshin-gold);
-    margin-bottom: 10px;
-}
-
-.rank-tag {
-    background: var(--genshin-cream);
-    color: #000;
-    padding: 5px 15px;
-    font-weight: bold;
-    border: 2px solid #000;
-    display: inline-block;
-    margin-bottom: 20px;
-}
-
-/* Navigation */
-.nav-tabs {
-    background: var(--genshin-tab-bg);
-    padding: 15px;
-    display: flex;
-    gap: 10px;
-    border-bottom: 3px solid #000;
-}
-
-.tab-btn {
-    font-family: 'Cinzel', serif;
-    background: var(--genshin-green);
-    border: 2px solid #000;
-    padding: 8px 15px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-    flex: 1;
-}
-
-.tab-btn:hover {
-    background: var(--genshin-gold);
-    transform: translateY(-2px);
-}
-
-.tab-btn.active {
-    background: var(--genshin-gold);
-    color: #1a1c24;
-}
-
-/* Content Area */
-.content { padding: 30px; flex: 1; }
-.tab-content { display: none; }
-.tab-content.active { display: block; animation: slideUp 0.4s ease; }
-
-h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
-
-.quest-box {
-    background: rgba(0,0,0,0.2);
-    padding: 15px;
-    margin-top: 15px;
-    border-left: 4px solid var(--genshin-gold);
-}
-
-/* EXP Bar Talents */
-.skill-item { margin-bottom: 18px; }
-.skill-info { display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: bold; }
-.exp-bar-bg {
-    background: #1a1c24;
-    height: 12px;
-    border: 1px solid var(--genshin-gold);
-    border-radius: 10px;
-    overflow: hidden;
-}
-.exp-fill {
-    background: linear-gradient(90deg, var(--genshin-gold), #fff);
-    height: 100%;
-    width: 0%; /* Start at 0 for animation */
-    transition: width 1.2s ease-out;
-}
-
-/* RESPONSIVE UPDATES */
-@media (max-width: 768px) {
-    body { padding: 10px; align-items: flex-start; height: auto; }
+function openTab(evt, tabName) {
+    var i, content, tabs;
     
-    .container { flex-direction: column; gap: 15px; }
+    // Hide all contents
+    content = document.getElementsByClassName("tab-content");
+    for (i = 0; i < content.length; i++) {
+        content[i].classList.remove("active");
+    }
     
-    .left-panel, .right-panel { width: 100%; flex: none; }
+    // Deactivate all buttons
+    tabs = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove("active");
+    }
     
-    .nav-tabs { flex-wrap: wrap; justify-content: center; }
-    
-    .tab-btn { min-width: 100px; font-size: 0.9rem; }
-    
-    .profile-img { width: 120px; height: 120px; }
+    // Show current tab and activate button
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
 }
-
-/* Animations */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
