@@ -71,6 +71,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* ✦ UPDATE 4: Anemo Floating Animation ✦ */
+    animation: float 6s ease-in-out infinite;
 }
 
 .right-panel {
@@ -88,14 +90,18 @@ body {
     object-fit: cover;
     margin-bottom: 20px;
     box-shadow: 0 0 15px rgba(219, 179, 97, 0.4);
-    /* Transition added for smooth hover effect */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    /* ✦ RE-ADDED HOVER TRANSITION ✦ */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 10;
 }
 
 /* ✦ UPDATE 1: Constellation Glow Hover ✦ */
 .profile-img:hover {
-    box-shadow: 0 0 30px rgba(219, 179, 97, 0.8);
-    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(219, 179, 97, 0.9);
+    transform: scale(1.1);
+    filter: brightness(1.1);
 }
 
 .name-box {
@@ -173,5 +179,13 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
     html, body, * { cursor: auto !important; }
 }
 
+/* --- ANIMATIONS --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Float Animation for Left Panel */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+}
