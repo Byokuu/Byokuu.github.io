@@ -18,7 +18,7 @@
 body {
     /* Replace 'xiaowp.jpg' with your actual filename or URL if hosted online */
     background: linear-gradient(rgba(26, 28, 36, 0.3), rgba(26, 28, 36, 0.5)), 
-                url('xiaowp.jpg') no-repeat center center fixed;
+                url('https://github.com/Byokuu/Byokuu.github.io/blob/main/assets/xiaowp.jpg?raw=true') no-repeat center center fixed;
     background-size: cover;
     color: var(--genshin-cream);
     font-family: 'Quicksand', sans-serif;
