@@ -145,31 +145,53 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
 /* --- MOBILE RESPONSIVENESS FIXES --- */
 @media (max-width: 768px) {
     body { 
-        padding: 10px; 
-        align-items: flex-start; 
-        height: auto !important; 
+        padding: 15px; 
+        /* Aligns content to the top so it doesn't float in the center */
+        display: block; 
+        height: auto;
+        min-height: 100vh;
     }
 
     .container { 
-        flex-direction: column !important; 
-        display: flex !important; 
+        flex-direction: column; 
+        gap: 15px;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
     }
 
     .left-panel, .right-panel { 
-        width: 100% !important; 
-        flex: none !important; 
-        min-width: 100% !important; 
-        min-height: auto !important;
+        width: 100%; 
+        flex: none; 
+        min-width: 100%; 
+        min-height: auto;
+        box-shadow: 4px 4px 0px #000; /* Smaller shadow for smaller screens */
+    }
+
+    .left-panel {
+        padding: 30px 15px;
     }
 
     .nav-tabs {
         padding: 10px;
-        flex-wrap: wrap;
+        gap: 5px;
+        /* Ensures tabs don't overlap on very narrow phones */
+        flex-wrap: nowrap; 
+        overflow-x: auto;
     }
 
     .tab-btn {
         padding: 10px 5px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
+        min-width: 80px;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
     }
 }
 
