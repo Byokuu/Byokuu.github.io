@@ -9,15 +9,6 @@
     --genshin-green: #90ad7a;
 }
 
-/* --- REINFORCED CUSTOM CURSOR --- */
-html, body, * {
-    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Arrow.cur'), auto !important;
-}
-
-button, .tab-btn, a, .profile-img, [onclick] {
-    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Link.cur'), pointer !important;
-}
-
 /* 1. Background Image Fix */
 .main-bg-image {
     position: fixed;
@@ -71,8 +62,6 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* ✦ UPDATE 4: Anemo Floating Animation ✦ */
-    animation: float 6s ease-in-out infinite;
 }
 
 .right-panel {
@@ -91,13 +80,13 @@ body {
     margin-bottom: 20px;
     box-shadow: 0 0 15px rgba(219, 179, 97, 0.4);
     
-    /* ✦ RE-ADDED HOVER TRANSITION ✦ */
+    /* Smooth hover transition */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 10;
 }
 
-/* ✦ UPDATE 1: Constellation Glow Hover ✦ */
+/* Constellation Glow Hover */
 .profile-img:hover {
     box-shadow: 0 0 30px rgba(219, 179, 97, 0.9);
     transform: scale(1.1);
@@ -134,10 +123,14 @@ body {
     border: 2px solid #000;
     padding: 10px;
     font-weight: bold;
+    cursor: pointer;
     flex: 1;
 }
 
-.tab-btn.active { background: var(--genshin-gold); color: #1a1c24; }
+.tab-btn.active { 
+    background: var(--genshin-gold); 
+    color: #1a1c24; 
+}
 
 /* Content Area */
 .content { padding: 40px; flex: 1; }
@@ -175,17 +168,8 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
     .left-panel, .right-panel { width: 100%; max-width: 450px; flex: none; box-shadow: 4px 4px 0px #000; }
     .nav-tabs { overflow-x: auto; flex-wrap: nowrap; }
     .tab-btn { min-width: 100px; font-size: 0.8rem; }
-    
-    html, body, * { cursor: auto !important; }
 }
 
 /* --- ANIMATIONS --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Float Animation for Left Panel */
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
-    100% { transform: translateY(0px); }
-}
