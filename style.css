@@ -22,7 +22,11 @@
     pointer-events: none;
 }
 
-* { box-sizing: border-box; }
+* { 
+    box-sizing: border-box; 
+    /* Applying the default Genshin cursor to all elements */
+    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Arrow.cur'), auto;
+}
 
 body {
     background-color: var(--genshin-dark);
@@ -31,6 +35,11 @@ body {
     margin: 0;
     padding: 40px; 
     min-height: 100vh;
+}
+
+/* Ensure interactive elements use the 'Link' version of the cursor */
+button, .tab-btn, a, .profile-img {
+    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Link.cur'), pointer !important;
 }
 
 .container {
@@ -109,7 +118,6 @@ body {
     border: 2px solid #000;
     padding: 10px;
     font-weight: bold;
-    cursor: pointer;
     flex: 1;
 }
 
@@ -151,6 +159,9 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
     .left-panel, .right-panel { width: 100%; max-width: 450px; flex: none; box-shadow: 4px 4px 0px #000; }
     .nav-tabs { overflow-x: auto; flex-wrap: nowrap; }
     .tab-btn { min-width: 100px; font-size: 0.8rem; }
+    
+    /* Optional: Disable custom cursor on mobile to save performance */
+    * { cursor: auto; }
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
