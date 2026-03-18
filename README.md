@@ -26,6 +26,6 @@
 ### ✧ Education ✧
 **PUP Sto. Tomas Campus**
 *Diploma in Information Technology (DIT 2-1)*
-Currently pursuing my diploma at the Sto. Tomas branch. I am focused on mastering programming fundamentals and web technologies to prepare for a professional role in software development.
+Currently pursuing my diploma at the Sto. Tomas branch. I am focused on mastering programming fundamentals and web technologies to prepare for a professional role in software development. Currently honing technical skills in software logic and web systems. Focusing on mastering programming fundamentals and web technologies to prepare for a professional role in software development.
 
 </div>
