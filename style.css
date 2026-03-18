@@ -19,9 +19,10 @@ body {
     color: var(--genshin-cream);
     font-family: 'Quicksand', sans-serif;
     margin: 0;
-    /* FIX: Remove flex-centering from body to allow natural scrolling and width */
-    padding: 40px 20px;
+    /* Space from the top and left of the screen */
+    padding: 40px; 
     min-height: 100vh;
+    /* Removed display: flex centering to keep it at the top-left */
 }
 
 .container {
@@ -29,8 +30,10 @@ body {
     flex-wrap: wrap;
     gap: 25px;
     width: 100%;
-    max-width: 1100px;
-    margin: 0 auto; /* Keeps it centered but allows it to grow */
+    /* Max-width limits how far it stretches on huge screens */
+    max-width: 1200px; 
+    /* margin: 0; ensures it stays left-aligned */
+    margin: 0; 
     animation: fadeIn 0.8s ease;
 }
 
@@ -43,7 +46,7 @@ body {
 }
 
 .left-panel {
-    flex: 1 1 300px; /* Adjusted base size */
+    flex: 0 0 300px; /* Keeps the profile panel a fixed size */
     padding: 40px 20px;
     text-align: center;
     display: flex;
@@ -52,10 +55,10 @@ body {
 }
 
 .right-panel {
-    flex: 2 1 600px; /* Adjusted base size */
+    flex: 1 1 600px; /* Allows the content panel to fill the rest of the space */
     display: flex;
     flex-direction: column;
-    min-height: 500px;
+    min-height: 450px;
 }
 
 /* UI Elements */
@@ -88,7 +91,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* Navigation */
+/* Navigation Tabs */
 .nav-tabs {
     background: var(--genshin-tab-bg);
     padding: 15px;
@@ -145,38 +148,29 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
 @media (max-width: 768px) {
     body { 
         padding: 15px; 
-        display: block; /* Ensures top-to-bottom layout */
     }
 
     .container { 
         flex-direction: column; 
-        gap: 20px;
-        width: 100%;
-        max-width: 100%;
+        gap: 15px;
     }
 
     .left-panel, .right-panel { 
         width: 100%; 
         flex: none; 
-        min-height: auto;
         box-shadow: 4px 4px 0px #000;
     }
 
     .nav-tabs {
         padding: 10px;
-        gap: 5px;
-        flex-wrap: nowrap; /* Keeps tabs in one line */
-        overflow-x: auto; /* Allows swiping if screen is too small */
+        flex-wrap: nowrap;
+        overflow-x: auto; /* Allows swiping tabs if screen is too small */
     }
 
     .tab-btn {
-        padding: 12px 5px;
-        font-size: 0.85rem;
-        min-width: 90px;
-    }
-
-    .content {
-        padding: 20px;
+        padding: 10px 5px;
+        font-size: 0.8rem;
+        min-width: 80px;
     }
 }
 
