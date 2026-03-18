@@ -8,7 +8,7 @@
 | :--- | :--- |
 | **Title** | DIT 2-1 Student |
 | **Affiliation** | PUP Sto. Tomas Campus |
-| **Vision** | Web Development |
+| **Course** | Web Development |
 
 ---
 
