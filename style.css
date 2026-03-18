@@ -3,9 +3,10 @@
 :root {
     --genshin-gold: #dbb361;
     --genshin-cream: #ece5d8;
-    --genshin-panel: #3b4255;
+    /* Adjusted panel color to be semi-transparent for the glass effect */
+    --genshin-panel-glass: rgba(59, 66, 85, 0.85); 
     --genshin-dark: #1a1c24;
-    --genshin-tab-bg: #2a2d34;
+    --genshin-tab-bg: rgba(42, 45, 52, 0.9);
     --genshin-green: #90ad7a;
 }
 
@@ -15,19 +16,20 @@
 }
 
 body {
-    background: radial-gradient(circle, #2a2d34 0%, #1a1c24 100%);
+    /* Replace 'xiaowp.jpg' with your actual filename or URL if hosted online */
+    background: linear-gradient(rgba(26, 28, 36, 0.3), rgba(26, 28, 36, 0.5)), 
+                url('xiaowp.jpg') no-repeat center center fixed;
+    background-size: cover;
     color: var(--genshin-cream);
     font-family: 'Quicksand', sans-serif;
     margin: 0;
     padding: 40px; 
     min-height: 100vh;
-    /* Removed flex centering to allow top-left alignment on PC */
 }
 
 .container {
     display: flex;
     flex-wrap: wrap;
-    /* Forces both panels to be the same height on PC */
     align-items: stretch; 
     gap: 25px;
     width: 100%;
@@ -36,16 +38,17 @@ body {
     animation: fadeIn 0.8s ease;
 }
 
-/* Panels */
+/* Panels with Glassmorphism Effect */
 .left-panel, .right-panel {
-    background: var(--genshin-panel);
+    background: var(--genshin-panel-glass);
+    backdrop-filter: blur(10px); /* Blurs the Xiao background behind the panels */
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
     border: 3px solid #000;
     box-shadow: 8px 8px 0px #000;
     background-image: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
 }
 
 .left-panel {
-    /* Fixed width for the profile card on PC */
     flex: 0 0 320px; 
     padding: 40px 20px;
     text-align: center;
@@ -55,7 +58,6 @@ body {
 }
 
 .right-panel {
-    /* flex-grow: 1 makes this fill the rest of the PC screen */
     flex: 1 1 600px; 
     display: flex;
     flex-direction: column;
@@ -71,6 +73,7 @@ body {
     object-fit: cover;
     margin-bottom: 20px;
     transition: transform 0.3s ease;
+    box-shadow: 0 0 15px rgba(219, 179, 97, 0.4); /* Subtle glow matching lanterns */
 }
 
 .profile-img:hover { transform: scale(1.05); }
@@ -80,6 +83,7 @@ body {
     font-size: 1.5rem;
     color: var(--genshin-gold);
     margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .rank-tag {
@@ -119,10 +123,15 @@ body {
 .tab-content { display: none; }
 .tab-content.active { display: block; animation: slideUp 0.4s ease; }
 
-h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); margin-top: 0; }
+h1 { 
+    font-family: 'Cinzel', serif; 
+    color: var(--genshin-gold); 
+    margin-top: 0;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
 
 .quest-box {
-    background: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.3);
     padding: 20px;
     margin-top: 20px;
     border-left: 4px solid var(--genshin-gold);
@@ -143,29 +152,24 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); margin-top: 0; }
     height: 100%;
 }
 
-/* --- MOBILE RESPONSIVENESS (Fix for Stacking) --- */
+/* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 768px) {
     body { 
-        padding: 15px; /* Smaller padding for more screen space */
+        padding: 15px; 
+        /* Background is better scrolled on mobile to prevent lag */
+        background-attachment: scroll; 
     }
 
     .container { 
-        flex-direction: column; /* This forces the panels to stack vertically */
+        flex-direction: column; 
         align-items: center; 
         gap: 20px;
         width: 100%;
     }
 
-    .left-panel { 
-        width: 100%; /* Makes the profile card fill the screen width */
-        max-width: 400px; /* Prevents it from being TOO wide on tablets */
-        flex: none; /* Stops it from trying to 'share' space side-by-side */
-        box-shadow: 4px 4px 0px #000;
-        margin: 0 auto;
-    }
-
-    .right-panel { 
-        width: 100%; /* Makes the content panel fill the screen width */
+    .left-panel, .right-panel { 
+        width: 100%; 
+        max-width: 400px; 
         flex: none; 
         box-shadow: 4px 4px 0px #000;
         margin: 0 auto;
@@ -173,19 +177,14 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); margin-top: 0; }
 
     .nav-tabs {
         padding: 10px;
-        flex-wrap: nowrap; /* Keeps buttons in one row */
-        overflow-x: auto; /* Allows you to swipe left/right on the buttons if they don't fit */
-        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        overflow-x: auto; 
     }
 
     .tab-btn {
         padding: 12px 5px;
         font-size: 0.85rem;
-        min-width: 100px; /* Ensures buttons are easy to tap with a thumb */
-    }
-
-    .content {
-        padding: 20px; /* Slightly tighter padding for mobile screens */
+        min-width: 100px; 
     }
 }
 
