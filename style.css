@@ -9,7 +9,11 @@
     --genshin-green: #90ad7a;
 }
 
-/* Base Styles */
+/* 1. CRITICAL: Prevent elements from leaking off the screen */
+* {
+    box-sizing: border-box;
+}
+
 body {
     background: radial-gradient(circle, #2a2d34 0%, #1a1c24 100%);
     color: var(--genshin-cream);
@@ -22,10 +26,9 @@ body {
     padding: 20px;
 }
 
-/* Fluid Container (Bootstrap-like) */
 .container {
     display: flex;
-    flex-wrap: wrap; /* Allows panels to wrap on mobile */
+    flex-wrap: wrap;
     gap: 25px;
     width: 100%;
     max-width: 1100px;
@@ -41,7 +44,7 @@ body {
 }
 
 .left-panel {
-    flex: 1 1 280px; /* Fluid base width */
+    flex: 1 1 280px;
     padding: 40px 20px;
     text-align: center;
     display: flex;
@@ -50,7 +53,7 @@ body {
 }
 
 .right-panel {
-    flex: 2 1 500px; /* Takes up 2x space compared to left */
+    flex: 2 1 500px;
     display: flex;
     flex-direction: column;
     min-height: 450px;
@@ -87,14 +90,6 @@ body {
     margin-bottom: 20px;
 }
 
-.stats-mini {
-    font-size: 0.9rem;
-    text-align: left;
-    width: 80%;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 15px;
-}
-
 /* Navigation */
 .nav-tabs {
     background: var(--genshin-tab-bg);
@@ -112,12 +107,11 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
-    flex: 1; /* Tabs stretch to fill space */
+    flex: 1;
 }
 
 .tab-btn:hover {
     background: var(--genshin-gold);
-    transform: translateY(-2px);
 }
 
 .tab-btn.active {
@@ -155,20 +149,41 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
     transition: width 1.5s ease-in-out;
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsiveness (Mobile) */
+/* --- UPDATED RESPONSIVE SECTION --- */
 @media (max-width: 768px) {
-    body { padding: 10px; align-items: flex-start; }
-    .container { flex-direction: column; }
-    .left-panel, .right-panel { flex: 1 1 100%; width: 100%; }
+    body { 
+        padding: 10px; 
+        align-items: flex-start; /* Better for mobile scrolling */
+        height: auto; /* Overrides the 100vh constraint */
+    }
+
+    .container { 
+        flex-direction: column !important; 
+        width: 100%; 
+    }
+
+    .left-panel, .right-panel { 
+        flex: none !important; 
+        width: 100% !important; 
+        min-height: auto !important;
+    }
+
+    .nav-tabs {
+        flex-wrap: wrap; /* Allows tabs to drop to a second row if screen is narrow */
+        padding: 10px;
+    }
+
+    .tab-btn {
+        padding: 10px 5px;
+        font-size: 0.9rem;
+    }
+
+    .profile-img {
+        width: 120px;
+        height: 120px;
+    }
 }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
