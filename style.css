@@ -19,11 +19,9 @@ body {
     color: var(--genshin-cream);
     font-family: 'Quicksand', sans-serif;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    /* FIX: Remove flex-centering from body to allow natural scrolling and width */
+    padding: 40px 20px;
     min-height: 100vh;
-    padding: 20px;
 }
 
 .container {
@@ -32,6 +30,7 @@ body {
     gap: 25px;
     width: 100%;
     max-width: 1100px;
+    margin: 0 auto; /* Keeps it centered but allows it to grow */
     animation: fadeIn 0.8s ease;
 }
 
@@ -44,7 +43,7 @@ body {
 }
 
 .left-panel {
-    flex: 1 1 280px;
+    flex: 1 1 300px; /* Adjusted base size */
     padding: 40px 20px;
     text-align: center;
     display: flex;
@@ -53,10 +52,10 @@ body {
 }
 
 .right-panel {
-    flex: 2 1 500px;
+    flex: 2 1 600px; /* Adjusted base size */
     display: flex;
     flex-direction: column;
-    min-height: 450px;
+    min-height: 500px;
 }
 
 /* UI Elements */
@@ -142,56 +141,42 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
     transition: width 1.5s ease-in-out;
 }
 
-/* --- MOBILE RESPONSIVENESS FIXES --- */
+/* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 768px) {
     body { 
         padding: 15px; 
-        /* Aligns content to the top so it doesn't float in the center */
-        display: block; 
-        height: auto;
-        min-height: 100vh;
+        display: block; /* Ensures top-to-bottom layout */
     }
 
     .container { 
         flex-direction: column; 
-        gap: 15px;
+        gap: 20px;
         width: 100%;
         max-width: 100%;
-        margin: 0 auto;
     }
 
     .left-panel, .right-panel { 
         width: 100%; 
         flex: none; 
-        min-width: 100%; 
         min-height: auto;
-        box-shadow: 4px 4px 0px #000; /* Smaller shadow for smaller screens */
-    }
-
-    .left-panel {
-        padding: 30px 15px;
+        box-shadow: 4px 4px 0px #000;
     }
 
     .nav-tabs {
         padding: 10px;
         gap: 5px;
-        /* Ensures tabs don't overlap on very narrow phones */
-        flex-wrap: nowrap; 
-        overflow-x: auto;
+        flex-wrap: nowrap; /* Keeps tabs in one line */
+        overflow-x: auto; /* Allows swiping if screen is too small */
     }
 
     .tab-btn {
-        padding: 10px 5px;
-        font-size: 0.8rem;
-        min-width: 80px;
+        padding: 12px 5px;
+        font-size: 0.85rem;
+        min-width: 90px;
     }
 
     .content {
         padding: 20px;
-    }
-
-    h1 {
-        font-size: 1.5rem;
     }
 }
 
