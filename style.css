@@ -143,46 +143,49 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); margin-top: 0; }
     height: 100%;
 }
 
-/* --- MOBILE RESPONSIVENESS --- */
+/* --- MOBILE RESPONSIVENESS (Fix for Stacking) --- */
 @media (max-width: 768px) {
     body { 
-        padding: 20px 15px; 
+        padding: 15px; /* Smaller padding for more screen space */
     }
 
     .container { 
-        flex-direction: column; 
-        align-items: center; /* Ensures the panels align to the center of the screen */
+        flex-direction: column; /* This forces the panels to stack vertically */
+        align-items: center; 
         gap: 20px;
+        width: 100%;
     }
 
     .left-panel { 
-        width: 100%;
-        max-width: 320px; /* Limits width so it stays a 'card' shape */
-        margin: 0 auto;  /* Centers the card horizontally */
-        flex: none;
+        width: 100%; /* Makes the profile card fill the screen width */
+        max-width: 400px; /* Prevents it from being TOO wide on tablets */
+        flex: none; /* Stops it from trying to 'share' space side-by-side */
         box-shadow: 4px 4px 0px #000;
+        margin: 0 auto;
     }
 
     .right-panel { 
-        width: 100%; 
-        max-width: 500px; /* Optional: keeps the content panel from being too wide on tablets */
-        margin: 0 auto;
+        width: 100%; /* Makes the content panel fill the screen width */
         flex: none; 
         box-shadow: 4px 4px 0px #000;
+        margin: 0 auto;
     }
 
     .nav-tabs {
         padding: 10px;
-        overflow-x: auto; /* Allows swiping tabs if they overflow */
+        flex-wrap: nowrap; /* Keeps buttons in one row */
+        overflow-x: auto; /* Allows you to swipe left/right on the buttons if they don't fit */
+        -webkit-overflow-scrolling: touch;
     }
 
     .tab-btn {
+        padding: 12px 5px;
         font-size: 0.85rem;
-        min-width: 90px;
+        min-width: 100px; /* Ensures buttons are easy to tap with a thumb */
     }
 
     .content {
-        padding: 25px 20px;
+        padding: 20px; /* Slightly tighter padding for mobile screens */
     }
 }
 
