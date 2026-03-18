@@ -9,6 +9,17 @@
     --genshin-green: #90ad7a;
 }
 
+/* --- REINFORCED CUSTOM CURSOR --- */
+/* This targets everything to ensure the default arrow is replaced */
+html, body, * {
+    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Arrow.cur'), auto !important;
+}
+
+/* This targets all clickable elements for the 'Link' version */
+button, .tab-btn, a, .profile-img, [onclick] {
+    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Link.cur'), pointer !important;
+}
+
 /* 1. Background Image Fix */
 .main-bg-image {
     position: fixed;
@@ -18,14 +29,12 @@
     height: 100vh;
     object-fit: cover;
     z-index: -1;
-    filter: brightness(0.5); /* Makes the image darker so text is easy to read */
+    filter: brightness(0.5); 
     pointer-events: none;
 }
 
 * { 
     box-sizing: border-box; 
-    /* Applying the default Genshin cursor to all elements */
-    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Arrow.cur'), auto;
 }
 
 body {
@@ -35,11 +44,6 @@ body {
     margin: 0;
     padding: 40px; 
     min-height: 100vh;
-}
-
-/* Ensure interactive elements use the 'Link' version of the cursor */
-button, .tab-btn, a, .profile-img {
-    cursor: url('https://raw.githubusercontent.com/BTMorton/genshin-impact-cursor/master/Genshin%20Impact%20Cursor/Link.cur'), pointer !important;
 }
 
 .container {
@@ -160,8 +164,8 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
     .nav-tabs { overflow-x: auto; flex-wrap: nowrap; }
     .tab-btn { min-width: 100px; font-size: 0.8rem; }
     
-    /* Optional: Disable custom cursor on mobile to save performance */
-    * { cursor: auto; }
+    /* Disable custom cursor on mobile for performance */
+    html, body, * { cursor: auto !important; }
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
