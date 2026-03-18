@@ -21,12 +21,13 @@ body {
     margin: 0;
     padding: 40px; 
     min-height: 100vh;
+    /* Removed flex centering to allow top-left alignment on PC */
 }
 
 .container {
     display: flex;
     flex-wrap: wrap;
-    /* Keeps panels at equal height on PC */
+    /* Forces both panels to be the same height on PC */
     align-items: stretch; 
     gap: 25px;
     width: 100%;
@@ -40,11 +41,11 @@ body {
     background: var(--genshin-panel);
     border: 3px solid #000;
     box-shadow: 8px 8px 0px #000;
-    background-image: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
 }
 
 .left-panel {
-    /* Fixed width for the profile card */
+    /* Fixed width for the profile card on PC */
     flex: 0 0 320px; 
     padding: 40px 20px;
     text-align: center;
@@ -54,7 +55,7 @@ body {
 }
 
 .right-panel {
-    /* Fills all remaining space on the right */
+    /* flex-grow: 1 makes this fill the rest of the PC screen */
     flex: 1 1 600px; 
     display: flex;
     flex-direction: column;
@@ -69,10 +70,10 @@ body {
     border: 5px solid var(--genshin-gold);
     object-fit: cover;
     margin-bottom: 20px;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.3s ease;
 }
 
-.profile-img:hover { transform: scale(1.08) rotate(2deg); }
+.profile-img:hover { transform: scale(1.05); }
 
 .name-box {
     font-family: 'Cinzel', serif;
@@ -87,7 +88,6 @@ body {
     padding: 5px 15px;
     font-weight: bold;
     border: 2px solid #000;
-    display: inline-block;
     margin-top: 15px;
 }
 
@@ -104,11 +104,11 @@ body {
     font-family: 'Cinzel', serif;
     background: var(--genshin-green);
     border: 2px solid #000;
-    padding: 8px 15px;
+    padding: 10px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
     flex: 1;
+    transition: 0.2s;
 }
 
 .tab-btn:hover { background: var(--genshin-gold); }
@@ -119,21 +119,21 @@ body {
 .tab-content { display: none; }
 .tab-content.active { display: block; animation: slideUp 0.4s ease; }
 
-h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
+h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); margin-top: 0; }
 
 .quest-box {
     background: rgba(0,0,0,0.2);
-    padding: 15px;
-    margin-top: 15px;
+    padding: 20px;
+    margin-top: 20px;
     border-left: 4px solid var(--genshin-gold);
 }
 
 /* EXP Bars */
-.skill-item { margin-bottom: 18px; }
-.skill-info { display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: bold; }
+.skill-item { margin-bottom: 20px; }
+.skill-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; }
 .exp-bar-bg {
     background: #1a1c24;
-    height: 12px;
+    height: 14px;
     border: 1px solid var(--genshin-gold);
     border-radius: 10px;
     overflow: hidden;
@@ -141,49 +141,48 @@ h1 { font-family: 'Cinzel', serif; color: var(--genshin-gold); }
 .exp-fill {
     background: linear-gradient(90deg, var(--genshin-gold), #fff);
     height: 100%;
-    transition: width 1.5s ease-in-out;
 }
 
 /* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 768px) {
     body { 
-        padding: 20px 10px; 
+        padding: 20px 15px; 
     }
 
     .container { 
         flex-direction: column; 
-        /* Centers the profile card and content panel on mobile */
-        align-items: center; 
+        align-items: center; /* Ensures the panels align to the center of the screen */
         gap: 20px;
     }
 
     .left-panel { 
         width: 100%;
-        max-width: 320px; /* Keeps the profile card from getting too wide */
+        max-width: 320px; /* Limits width so it stays a 'card' shape */
+        margin: 0 auto;  /* Centers the card horizontally */
         flex: none;
         box-shadow: 4px 4px 0px #000;
     }
 
     .right-panel { 
         width: 100%; 
+        max-width: 500px; /* Optional: keeps the content panel from being too wide on tablets */
+        margin: 0 auto;
         flex: none; 
         box-shadow: 4px 4px 0px #000;
     }
 
     .nav-tabs {
         padding: 10px;
-        flex-wrap: nowrap;
-        overflow-x: auto; /* Allows swiping tabs on small screens */
+        overflow-x: auto; /* Allows swiping tabs if they overflow */
     }
 
     .tab-btn {
-        padding: 10px 5px;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         min-width: 90px;
     }
 
     .content {
-        padding: 20px;
+        padding: 25px 20px;
     }
 }
 
