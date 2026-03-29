@@ -4,198 +4,226 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ASUS ROG Monitors</title>
+    <title>ASUS ROG Monitors | Premium Lineup</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <style>
-        .card-custom {
-            transition: all 0.3s ease;
-        }
 
-        .btn:focus {
-            box-shadow: none;
-        }
+    <style>
+        body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; scroll-behavior: smooth; }
+        
+        /* Essential Utilities */
+        .remove-bg { mix-blend-mode: screen; }
+        .hover-lift { transition: all 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-5px); border-color: #ff0000 !important; }
+        
+        /* Navigation Enhancement */
+        .nav-link { font-size: 0.85rem; letter-spacing: 1.5px; font-weight: 700; transition: color 0.3s; }
+        .nav-link:hover { color: #ff0000 !important; }
+        
+        /* Custom Spec List Styling */
+        .spec-list { list-style: none; padding: 0; font-size: 0.75rem; color: #adb5bd; }
+        .spec-list li { margin-bottom: 4px; }
+        .spec-list li::before { content: "•"; color: #ff0000; margin-right: 8px; font-weight: bold; }
+        
+        /* Enhanced Modal Styling */
+        .modal-content { background-color: #0f1113; border: 1px solid #333; color: white; border-radius: 15px; }
+        .modal-header { border-bottom: 1px solid #ff0000; }
+        .category-header { font-size: 0.7rem; letter-spacing: 2px; color: #ff0000; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        .spec-row { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; font-size: 0.85rem; }
     </style>
 </head>
 
-<body class="bg-black text-white">
+<body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-black sticky-top border-bottom border-secondary py-3">
+    <nav class="navbar navbar-expand navbar-dark py-3 border-bottom border-secondary sticky-top bg-black">
         <div class="container">
-            <a class="navbar-brand fw-bolder fs-4 text-uppercase mb-0" href="#" style="letter-spacing: 2px;">
-                <span class="text-white">ASUS</span> <span class="text-danger">ROG</span>
-            </a>
+            <a class="navbar-brand fw-bold text-uppercase" href="#">ASUS <span class="text-danger">ROG</span></a>
+            
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto text-uppercase">
+                    <li class="nav-item px-3"><a class="nav-link text-white" href="#more-monitors">Products</a></li>
+                    <li class="nav-item px-3"><a class="nav-link text-white" href="#site-footer">Support</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <div class="container py-5 text-center">
-        <h1 class="fw-bold mb-0 text-white">ROG Swift OLED <span class="text-danger">PG49WCD</span></h1>
-        <p class="text-secondary mb-5 small">Experience the 49-inch Super Ultra-Wide Vision</p>
-
-        <div class="row justify-content-center mb-5">
-            <div class="col-lg-8">
-                <img src="https://github.com/Byokuu/Byokuu.github.io/blob/main/A01/img/ROG%20Swift%20OLED%20PG49WCD.png?raw=true" class="img-fluid" alt="PG49WCD">
-            </div>
-        </div>
-
-        <div class="row g-4 justify-content-center text-start">
-            <div class="col-md-4">
-                <div class="p-4 border border-secondary rounded bg-dark h-100">
-                    <small class="text-danger fw-bold text-uppercase">Display</small>
-                    <h5 class="mt-2 fw-bold text-white">49" QD-OLED Panel</h5>
-                    <p class="small text-secondary mb-0">5120x1440 resolution, 0.03ms (GTG) response time, and 144Hz
-                        refresh rate.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="p-4 border border-secondary rounded bg-dark h-100">
-                    <small class="text-danger fw-bold text-uppercase">Aspect Ratio</small>
-                    <h5 class="mt-2 fw-bold text-white">32:9 Super Ultra-Wide</h5>
-                    <p class="small text-secondary mb-0">32:9 aspect ratio equivalent to two 27-inch 1440p monitors
-                        side-by-side.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="p-4 border border-secondary rounded bg-dark h-100">
-                    <small class="text-danger fw-bold text-uppercase">I/O Ports</small>
-                    <h5 class="mt-2 fw-bold text-white">KVM & 90W USB-C</h5>
-                    <p class="small text-secondary mb-0">Includes DisplayPort 1.4 DSC, HDMI 2.1, and USB-C with 90W
-                        Power Delivery.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <hr class="border-secondary my-5 opacity-25">
-
     <div class="container py-5">
-        <h3 class="text-center fw-bold mb-5 text-white">MORE <span class="text-danger">MONITORS</span> HERE</h3>
-
-        <div class="row g-4 align-items-start">
-
-            <div class="col-lg-3 col-md-6 text-center">
-                <div class="p-3 border border-secondary rounded bg-dark card-custom d-flex flex-column">
-                    <div class="mb-3 p-3 bg-black rounded d-flex align-items-center justify-content-center"
-                        style="height: 150px;">
-                        <img src="https://github.com/Byokuu/Byokuu.github.io/blob/main/A01/img/ROG%20Swift%20OLED%20PG34WCDN.png?raw=true" class="img-fluid" style="max-height: 100%;"
-                            alt="PG34WCDN">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 text-center">
+                <img src="ROG Swift OLED PG49WCD.png" class="img-fluid remove-bg" alt="PG49WCD">
+            </div>
+            <div class="col-lg-6">
+                <h1 class="fw-bold display-4">ROG Swift OLED <span class="text-danger">PG49WCD</span></h1>
+                <p class="text-secondary mt-2">The ultimate 49-inch super ultra-wide gaming experience.</p>
+                
+                <div class="row g-3 mt-4">
+                    <div class="col-md-4">
+                        <div class="p-3 border border-secondary rounded bg-dark bg-opacity-25 h-100">
+                            <small class="text-danger fw-bold text-uppercase d-block mb-1" style="font-size: 0.6rem;">Display</small>
+                            <p class="small mb-0 fw-bold">49" QD-OLED Panel</p>
+                        </div>
                     </div>
-                    <div class="mb-2">
-                        <span class="badge rounded-1" style="background: #3c007d; font-size: 0.6rem;">ULTRAWIDE
-                            OLED</span>
+                    <div class="col-md-4">
+                        <div class="p-3 border border-secondary rounded bg-dark bg-opacity-25 h-100">
+                            <small class="text-danger fw-bold text-uppercase d-block mb-1" style="font-size: 0.6rem;">Ratio</small>
+                            <p class="small mb-0 fw-bold">32:9 Super Wide</p>
+                        </div>
                     </div>
-                    <h6 class="fw-bold mb-1 small text-white">Swift OLED PG34WCDN</h6>
-
-                    <button class="btn btn-outline-secondary w-100 mt-3 py-1 fw-bold small text-uppercase"
-                        style="font-size: 0.65rem; letter-spacing: 1px; border-color: #444;" data-bs-toggle="collapse"
-                        data-bs-target="#spec1">
-                        SEE SPECS ▾
-                    </button>
-
-                    <div class="collapse" id="spec1">
-                        <ul class="small text-secondary border-top border-secondary pt-2 mt-2 mb-0 text-start list-unstyled"
-                            style="font-size: 0.7rem;">
-                            <li>• 34" QD-OLED (3440x1440p)</li>
-                            <li>• 360Hz Refresh / 0.03ms GTG</li>
-                            <li>• 1800R Curvature</li>
-                            <li>• 90W USB-C Power Delivery</li>
-                        </ul>
+                    <div class="col-md-4">
+                        <div class="p-3 border border-secondary rounded bg-dark bg-opacity-25 h-100">
+                            <small class="text-danger fw-bold text-uppercase d-block mb-1" style="font-size: 0.6rem;">Speed</small>
+                            <p class="small mb-0 fw-bold">144Hz / 0.03ms</p>
+                        </div>
                     </div>
                 </div>
+
+                <button class="btn btn-danger fw-bold px-5 py-2 mt-4 text-uppercase shadow" data-bs-toggle="modal" data-bs-target="#enhancedSpecs">SPECS</button>
             </div>
-
-            <div class="col-lg-3 col-md-6 text-center">
-                <div class="p-3 border border-secondary rounded bg-dark card-custom d-flex flex-column">
-                    <div class="mb-3 p-3 bg-black rounded d-flex align-items-center justify-content-center"
-                        style="height: 150px;">
-                        <img src="https://github.com/Byokuu/Byokuu.github.io/blob/main/A01/img/ROG%20Strix%20OLED%20XG27AQDMES.png?raw=true" class="img-fluid" style="max-height: 100%;"
-                            alt="XG27AQDMES">
-                    </div>
-                    <div class="mb-2">
-                        <span class="badge bg-danger rounded-1" style="font-size: 0.6rem;">GAMING OLED</span>
-                    </div>
-                    <h6 class="fw-bold mb-1 small text-white">Strix OLED XG27AQDMES</h6>
-
-                    <button class="btn btn-outline-secondary w-100 mt-3 py-1 fw-bold small text-uppercase"
-                        style="font-size: 0.65rem; letter-spacing: 1px; border-color: #444;" data-bs-toggle="collapse"
-                        data-bs-target="#spec2">
-                        SEE SPECS ▾
-                    </button>
-
-                    <div class="collapse" id="spec2">
-                        <ul class="small text-secondary border-top border-secondary pt-2 mt-2 mb-0 text-start list-unstyled"
-                            style="font-size: 0.7rem;">
-                            <li>• 26.5" QD-OLED (2560x1440)</li>
-                            <li>• 240Hz Refresh / 0.03ms GTG</li>
-                            <li>• Anti-Reflection Surface</li>
-                            <li>• G-SYNC Compatible</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6 text-center">
-                <div class="p-3 border border-secondary rounded bg-dark card-custom d-flex flex-column">
-                    <div class="mb-3 p-3 bg-black rounded d-flex align-items-center justify-content-center"
-                        style="height: 150px;">
-                        <img src="https://github.com/Byokuu/Byokuu.github.io/blob/main/A01/img/ROG%20Strix%20XG258QMG.png?raw=true" class="img-fluid" style="max-height: 100%;" alt="XG258QMG">
-                    </div>
-                    <div class="mb-2">
-                        <span class="badge bg-secondary rounded-1" style="font-size: 0.6rem;">FAST REFRESH</span>
-                    </div>
-                    <h6 class="fw-bold mb-1 small text-white">Strix XG258QMG</h6>
-
-                    <button class="btn btn-outline-secondary w-100 mt-3 py-1 fw-bold small text-uppercase"
-                        style="font-size: 0.65rem; letter-spacing: 1px; border-color: #444;" data-bs-toggle="collapse"
-                        data-bs-target="#spec3">
-                        SEE SPECS ▾
-                    </button>
-
-                    <div class="collapse" id="spec3">
-                        <ul class="small text-secondary border-top border-secondary pt-2 mt-2 mb-0 text-start list-unstyled"
-                            style="font-size: 0.7rem;">
-                            <li>• 24.5" TN Panel (1920x1080)</li>
-                            <li>• 280Hz Max Refresh Rate</li>
-                            <li>• 0.2ms (GTG) Response Time</li>
-                            <li>• ELMB Sync Technology</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6 text-center">
-                <div class="p-3 border border-secondary rounded bg-dark card-custom d-flex flex-column">
-                    <div class="mb-3 p-3 bg-black rounded d-flex align-items-center justify-content-center"
-                        style="height: 150px;">
-                        <img src="https://github.com/Byokuu/Byokuu.github.io/blob/main/A01/img/ROG%20Strix%20XG16AHPE.png?raw=true" class="img-fluid" style="max-height: 100%;" alt="XG16AHPE">
-                    </div>
-                    <div class="mb-2">
-                        <span class="badge bg-info text-dark rounded-1" style="font-size: 0.6rem;">PORTABLE</span>
-                    </div>
-                    <h6 class="fw-bold mb-1 small text-white">Strix XG16AHPE</h6>
-
-                    <button class="btn btn-outline-secondary w-100 mt-3 py-1 fw-bold small text-uppercase"
-                        style="font-size: 0.65rem; letter-spacing: 1px; border-color: #444;" data-bs-toggle="collapse"
-                        data-bs-target="#spec4">
-                        SEE SPECS ▾
-                    </button>
-
-                    <div class="collapse" id="spec4">
-                        <ul class="small text-secondary border-top border-secondary pt-2 mt-2 mb-0 text-start list-unstyled"
-                            style="font-size: 0.7rem;">
-                            <li>• 15.6" IPS (1920x1080)</li>
-                            <li>• 144Hz Refresh / 3ms (GTG)</li>
-                            <li>• Built-in 7800 mAh battery</li>
-                            <li>• USB-C & Micro HDMI</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
+
+    <div class="modal fade" id="enhancedSpecs" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">PG49WCD <span class="text-danger">TECHNICAL SPECS</span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="category-header">Display Performance</div>
+                            <div class="spec-row d-flex justify-content-between"><span>Resolution</span><span class="text-secondary">5120 x 1440</span></div>
+                            <div class="spec-row d-flex justify-content-between"><span>Brightness</span><span class="text-secondary">1000 nits (Peak)</span></div>
+                            <div class="spec-row d-flex justify-content-between"><span>Color Gamut</span><span class="text-secondary">99% DCI-P3</span></div>
+                            <div class="spec-row d-flex justify-content-between"><span>Curvature</span><span class="text-secondary">1800R</span></div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="category-header">Gaming Speed</div>
+                            <div class="spec-row d-flex justify-content-between"><span>Refresh Rate</span><span class="text-secondary">144Hz</span></div>
+                            <div class="spec-row d-flex justify-content-between"><span>Response Time</span><span class="text-secondary">0.03ms (GTG)</span></div>
+                            <div class="spec-row d-flex justify-content-between"><span>Adaptive Sync</span><span class="text-secondary">FreeSync Premium Pro</span></div>
+                            <div class="spec-row d-flex justify-content-between"><span>HDR Class</span><span class="text-secondary">True Black 400</span></div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="category-header">Connectivity</div>
+                            <div class="row g-2">
+                                <div class="col-6 spec-row">HDMI 2.1 x1</div>
+                                <div class="col-6 spec-row">DisplayPort 1.4 x1</div>
+                                <div class="col-6 spec-row">USB-C (90W Power Delivery)</div>
+                                <div class="col-6 spec-row">Smart KVM & USB 3.2 Hub</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="more-monitors" class="container text-center my-5 pt-5">
+        <h5 class="fw-bold text-uppercase border-bottom border-danger d-inline-block pb-2" style="letter-spacing: 2px;">More Monitors Here</h5>
+    </div>
+
+    <div class="container pb-5">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="p-4 rounded border border-secondary hover-lift h-100" style="background-color: #1a1d20;">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 text-center">
+                            <img src="ROG Swift OLED PG34WCDN.png" class="img-fluid remove-bg" alt="PG34WCDN">
+                        </div>
+                        <div class="col-sm-7 ps-sm-4">
+                            <span class="badge bg-primary mb-2" style="font-size: 0.6rem;">ULTRAWIDE OLED</span>
+                            <h6 class="fw-bold mb-1">Swift OLED PG34WCDN</h6>
+                            <ul class="spec-list mb-3">
+                                <li>34" UWQHD QD-OLED (3440x1440p)</li>
+                                <li>360Hz Refresh / 0.03ms GTG Response</li>
+                                <li>1800R Curved Immersive Display</li>
+                                <li>G-SYNC Compatible & 99% DCI-P3</li>
+                            </ul>
+                            <button class="btn btn-danger btn-sm fw-bold text-uppercase px-4">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="p-4 rounded border border-secondary hover-lift h-100" style="background-color: #1a1d20;">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 text-center">
+                            <img src="ROG Strix OLED XG27AQDMES.png" class="img-fluid remove-bg" alt="XG27AQDMES">
+                        </div>
+                        <div class="col-sm-7 ps-sm-4">
+                            <span class="badge bg-danger mb-2" style="font-size: 0.6rem;">GAMING OLED</span>
+                            <h6 class="fw-bold mb-1">Strix OLED XG27AQDMES</h6>
+                            <ul class="spec-list mb-3">
+                                <li>26.5" QHD OLED Panel (2560x1440)</li>
+                                <li>240Hz Refresh / 0.03ms GTG Speed</li>
+                                <li>Anti-Reflection Coating Technology</li>
+                                <li>99% DCI-P3 Professional Color</li>
+                            </ul>
+                            <button class="btn btn-danger btn-sm fw-bold text-uppercase px-4">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="p-4 rounded border border-secondary hover-lift h-100" style="background-color: #1a1d20;">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 text-center">
+                            <img src="ROG Strix XG258QMG.png" class="img-fluid remove-bg" alt="XG258QMG">
+                        </div>
+                        <div class="col-sm-7 ps-sm-4">
+                            <span class="badge bg-secondary mb-2" style="font-size: 0.6rem;">FAST REFRESH</span>
+                            <h6 class="fw-bold mb-1">Strix XG258QMG</h6>
+                            <ul class="spec-list mb-3">
+                                <li>24.5" FHD Fast TN Panel (1080p)</li>
+                                <li>280Hz Overclocked Refresh Rate</li>
+                                <li>ELMB Sync & NVIDIA G-SYNC Ready</li>
+                                <li>Certified DisplayHDR 400 Support</li>
+                            </ul>
+                            <button class="btn btn-danger btn-sm fw-bold text-uppercase px-4">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="p-4 rounded border border-secondary hover-lift h-100" style="background-color: #1a1d20;">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 text-center">
+                            <img src="ROG Strix XG16AHPE.png" class="img-fluid remove-bg" alt="XG16AHPE">
+                        </div>
+                        <div class="col-sm-7 ps-sm-4">
+                            <span class="badge bg-info text-dark mb-2" style="font-size: 0.6rem;">PORTABLE</span>
+                            <h6 class="fw-bold mb-1">Strix XG16AHPE</h6>
+                            <ul class="spec-list mb-3">
+                                <li>15.6" FHD Portable IPS Gaming Panel</li>
+                                <li>Built-in 7800mAh High-Capacity Battery</li>
+                                <li>144Hz Refresh Rate / G-SYNC Ready</li>
+                                <li>Foldable Kickstand & Tripod Mount</li>
+                            </ul>
+                            <button class="btn btn-danger btn-sm fw-bold text-uppercase px-4">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="site-footer" class="py-5 text-center border-top border-secondary bg-dark bg-opacity-25 mt-5">
+        <div class="container">
+            <h6 class="text-danger fw-bold text-uppercase mb-4">ROG Support</h6>
+            <div class="row g-4 mb-4 small">
+                <div class="col-md-4"><a href="#" class="text-secondary text-decoration-none">Drivers & Tools</a></div>
+                <div class="col-md-4"><a href="#" class="text-secondary text-decoration-none">Product Registration</a></div>
+                <div class="col-md-4"><a href="#" class="text-secondary text-decoration-none">Warranty Information</a></div>
+            </div>
+            <p class="text-secondary small mb-0">© 2026 ASUSTeK Computer Inc. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
