@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Genshin Impact API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1b26;
+            color: #cfcfff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            margin-top: 2rem;
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(187, 154, 247, 0.3);
+        }
+
+        .character-card {
+            background: #16161e;
+            border: 1px solid #3b4261;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 550px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-body-scroll {
+            height: 100%;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+        }
+
+        .img-column {
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            overflow: hidden;
+            flex: 0 0 auto;
+            width: 320px;
+        }
+
+        #charImg {
+            height: 100%;
+            width: auto;
+            object-fit: cover;
+            display: block;
+        }
+
+        .name-white { color: #ffffff !important; text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+        
+        .nation-mondstadt { color: #74c2a8 !important; }
+        .nation-liyue { color: #e2b032 !important; }
+        .nation-inazuma { color: #b08fc2 !important; }
+        .nation-sumeru { color: #a5c83b !important; }
+        .nation-fontaine { color: #4cc2f1 !important; }
+        .nation-natlan { color: #ef797d !important; }
+        .nation-snezhnaya { color: #98d8ed !important; }
+        .nation-nodkrai { color: #ffffff !important; }
+
+        .badge-vision { padding: 0.5rem 1rem; }
+        .badge-weapon { background-color: #444b6a; padding: 0.5rem 1rem; }
+
+        .bg-pyro { background-color: #ef797d !important; }
+        .bg-hydro { background-color: #4cc2f1 !important; }
+        .bg-anemo { background-color: #74c2a8 !important; }
+        .bg-electro { background-color: #b08fc2 !important; }
+        .bg-dendro { background-color: #a5c83b !important; }
+        .bg-cryo { background-color: #98d8ed !important; }
+        .bg-geo { background-color: #e2b032 !important; }
+
+        .nav-tabs { border-bottom: 1px solid #3b4261; }
+        .nav-link { color: #9aa5ce; border: none !important; }
+        .nav-link:hover { color: #ffffff; }
+        .nav-link.active { background: transparent !important; color: #7aa2f7 !important; border-bottom: 2px solid #7aa2f7 !important; }
+
+        .talent-item, .const-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 3px solid #3b4261;
+        }
+
+        .section-header { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #565f89; margin-bottom: 1rem; }
+
+        @media (min-width: 992px) {
+            .character-card { flex-direction: row; }
+            .img-column { flex: 0 0 auto; width: 400px; }
+            .text-column { flex: 1; overflow: hidden; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1 class="main-title">Genshin Impact Characters</h1>
+            <button id="loadBtn" class="btn btn-primary btn-lg px-5 py-2 rounded-pill">Load Random Character</button>
+        </div>
+
+        <div class="row justify-content-center pb-5">
+            <div id="characterDisplay" class="col-12">
+                <div id="placeholderText" class="text-center text-muted">Click the button to fetch data...</div>
+
+                <div id="contentCard" class="character-card d-none">
+                    <div class="img-column">
+                        <img id="charImg" src="" alt="Character Art">
+                    </div>
+
+                    <div class="text-column d-flex flex-column">
+                        <ul class="nav nav-tabs px-4 pt-3" id="charTabs" role="tablist">
+                            <li class="nav-item"><button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
+                            <li class="nav-item"><button class="nav-link" id="skills-tab" data-bs-toggle="tab" data-bs-target="#skills">Skills</button></li>
+                            <li class="nav-item"><button class="nav-link" id="passives-tab" data-bs-toggle="tab" data-bs-target="#passives">Passives</button></li>
+                            <li class="nav-item"><button class="nav-link" id="consts-tab" data-bs-toggle="tab" data-bs-target="#consts">Constellations</button></li>
+                        </ul>
+
+                        <div class="card-body-scroll">
+                            <div class="tab-content" id="charTabsContent">
+                                <div class="tab-pane fade show active" id="profile">
+                                    <h2 id="charName" class="display-6 fw-bold name-white"></h2>
+                                    <p id="charTitle" class="text-secondary fst-italic mb-3"></p>
+                                    <div class="mb-4">
+                                        <span id="charVision" class="badge rounded-pill badge-vision me-2"></span>
+                                        <span id="charWeapon" class="badge rounded-pill badge-weapon"></span>
+                                    </div>
+                                    <p id="charDesc" class="card-text text-light mb-4" style="line-height: 1.8; opacity: 0.9;"></p>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <p class="mb-1 section-header">Nation</p>
+                                            <p id="charNation" class="fw-bold"></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="mb-1 section-header">Affiliation</p>
+                                            <p id="charAffiliation" class="text-light"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="skills">
+                                    <div id="skillsContainer"></div>
+                                </div>
+                                <div class="tab-pane fade" id="passives">
+                                    <div id="passivesContainer"></div>
+                                </div>
+                                <div class="tab-pane fade" id="consts">
+                                    <div id="constsContainer"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loadBtn = document.getElementById('loadBtn');
+        const placeholder = document.getElementById('placeholderText');
+        const contentCard = document.getElementById('contentCard');
+
+        async function fetchCharacter() {
+            placeholder.innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
+            contentCard.classList.add('d-none');
+
+            try {
+                const listRes = await fetch('https://genshin.jmp.blue/characters');
+                const characters = await listRes.json();
+                const randomId = characters[Math.floor(Math.random() * characters.length)];
+
+                const detailRes = await fetch(`https://genshin.jmp.blue/characters/${randomId}`);
+                const data = await detailRes.json();
+
+                const visionType = data.vision.toLowerCase();
+                const nationType = (data.nation || 'outlander').toLowerCase();
+
+                document.getElementById('charName').innerText = data.name;
+                document.getElementById('charTitle').innerText = data.title || "Teyvat Adventurer";
+                document.getElementById('charVision').innerText = data.vision;
+                document.getElementById('charVision').className = `badge rounded-pill badge-vision me-2 bg-${visionType}`;
+                document.getElementById('charWeapon').innerText = data.weapon;
+                document.getElementById('charDesc').innerText = data.description;
+                document.getElementById('charNation').innerText = data.nation;
+                document.getElementById('charNation').className = `fw-bold nation-${nationType}`;
+                document.getElementById('charAffiliation').innerText = data.affiliation || "Unknown";
+                document.getElementById('charImg').src = `https://genshin.jmp.blue/characters/${randomId}/card`;
+
+                renderList('skillsContainer', data.skillTalents, 'unlock');
+                renderList('passivesContainer', data.passiveTalents, 'unlock');
+                renderList('constsContainer', data.constellations, 'unlock');
+
+                placeholder.classList.add('d-none');
+                contentCard.classList.remove('d-none');
+                contentCard.classList.add('animate-fade-in');
+
+            } catch (error) {
+                placeholder.innerHTML = `<div class="alert alert-danger">Error loading data.</div>`;
+            }
+        }
+
+        function renderList(containerId, items, subLabelKey) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p class="text-muted">Data not available for this character.</p>';
+                return;
+            }
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'talent-item';
+                div.innerHTML = `
+                    <p class="mb-1 fw-bold text-white">${item.name}</p>
+                    <p class="mb-2" style="font-size: 0.8rem; color: #7aa2f7;">${item[subLabelKey] || ''}</p>
+                    <p class="mb-0 text-secondary" style="font-size: 0.9rem;">${item.description.replace(/\n/g, '<br>')}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        loadBtn.addEventListener('click', fetchCharacter);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
