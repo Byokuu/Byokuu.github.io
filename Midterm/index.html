@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Genshin Impact API</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
+<style>
         body {
             background-color: #1a1b26;
             color: #cfcfff;
@@ -29,17 +29,34 @@
             text-shadow: 0 0 20px rgba(187, 154, 247, 0.3);
         }
 
+        /* Responsive Card */
         .character-card {
             background: #16161e;
             border: 1px solid #3b4261;
             border-radius: 12px;
             overflow: hidden;
-            height: 550px;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Stacks image top, text bottom by default */
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             transition: box-shadow 0.5s ease;
-            /* Transition for the element glow */
+            min-height: 550px; 
+        }
+
+        /* Desktop View: Side-by-Side */
+        @media (min-width: 992px) {
+            .character-card {
+                flex-direction: row;
+                height: 550px; /* Fixed height only on Desktop */
+            }
+            .img-column {
+                flex: 0 0 400px;
+                height: 100%;
+            }
+            .text-column {
+                flex: 1;
+                height: 100%;
+                overflow: hidden;
+            }
         }
 
         .animate-fade-in {
@@ -47,19 +64,13 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Content Area scrollable only when height is fixed */
         .card-body-scroll {
-            height: 100%;
+            flex: 1;
             overflow-y: auto;
             padding: 1.5rem 2rem;
         }
@@ -69,24 +80,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
             overflow: hidden;
-            flex: 0 0 auto;
-            width: 320px;
         }
 
         #charImg {
-            height: 100%;
-            width: auto;
+            width: 100%;
+            height: auto;
             object-fit: cover;
             display: block;
         }
 
-        .name-white {
-            color: #ffffff !important;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-
+        /* Vision & Nation Colors */
+        .name-white { color: #ffffff !important; text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
         .nation-mondstadt { color: #74c2a8 !important; }
         .nation-liyue { color: #e2b032 !important; }
         .nation-inazuma { color: #b08fc2 !important; }
@@ -94,7 +99,6 @@
         .nation-fontaine { color: #4cc2f1 !important; }
         .nation-natlan { color: #ef797d !important; }
         .nation-snezhnaya { color: #98d8ed !important; }
-        .nation-nodkrai { color: #ffffff !important; }
 
         .badge-vision, .badge-weapon { 
             padding: 0.5rem 1rem; 
@@ -103,9 +107,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .badge-weapon {
-            background-color: #444b6a;
-        }
+        .badge-weapon { background-color: #444b6a; }
 
         .badge-vision:hover, .badge-weapon:hover {
             transform: scale(1.1) translateY(-2px);
@@ -122,7 +124,7 @@
         .bg-cryo { background-color: #98d8ed !important; }
         .bg-geo { background-color: #e2b032 !important; }
 
-        /* Dynamic Glow Shadows */
+        /* Element Glows */
         .glow-pyro { box-shadow: 0 10px 40px rgba(239, 121, 125, 0.3); }
         .glow-hydro { box-shadow: 0 10px 40px rgba(76, 194, 241, 0.3); }
         .glow-anemo { box-shadow: 0 10px 40px rgba(116, 194, 168, 0.3); }
@@ -131,27 +133,12 @@
         .glow-cryo { box-shadow: 0 10px 40px rgba(152, 216, 237, 0.3); }
         .glow-geo { box-shadow: 0 10px 40px rgba(226, 176, 50, 0.3); }
 
-        .nav-tabs {
-            border-bottom: 1px solid #3b4261;
-        }
+        .nav-tabs { border-bottom: 1px solid #3b4261; }
+        .nav-link { color: #9aa5ce; border: none !important; }
+        .nav-link:hover { color: #ffffff; }
+        .nav-link.active { background: transparent !important; color: #7aa2f7 !important; border-bottom: 2px solid #7aa2f7 !important; }
 
-        .nav-link {
-            color: #9aa5ce;
-            border: none !important;
-        }
-
-        .nav-link:hover {
-            color: #ffffff;
-        }
-
-        .nav-link.active {
-            background: transparent !important;
-            color: #7aa2f7 !important;
-            border-bottom: 2px solid #7aa2f7 !important;
-        }
-
-        .talent-item,
-        .const-item {
+        .talent-item {
             background: rgba(255, 255, 255, 0.03);
             padding: 1rem;
             border-radius: 8px;
@@ -173,22 +160,6 @@
             letter-spacing: 2px;
             text-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
             margin-top: -10px;
-        }
-
-        @media (min-width: 992px) {
-            .character-card {
-                flex-direction: row;
-            }
-
-            .img-column {
-                flex: 0 0 auto;
-                width: 400px;
-            }
-
-            .text-column {
-                flex: 1;
-                overflow: hidden;
-            }
         }
     </style>
 </head>
