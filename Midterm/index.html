@@ -38,6 +38,8 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: box-shadow 0.5s ease;
+            /* Transition for the element glow */
         }
 
         .animate-fade-in {
@@ -45,8 +47,15 @@
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .card-body-scroll {
@@ -73,8 +82,11 @@
             display: block;
         }
 
-        .name-white { color: #ffffff !important; text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
-        
+        .name-white {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
         .nation-mondstadt { color: #74c2a8 !important; }
         .nation-liyue { color: #e2b032 !important; }
         .nation-inazuma { color: #b08fc2 !important; }
@@ -84,8 +96,23 @@
         .nation-snezhnaya { color: #98d8ed !important; }
         .nation-nodkrai { color: #ffffff !important; }
 
-        .badge-vision { padding: 0.5rem 1rem; }
-        .badge-weapon { background-color: #444b6a; padding: 0.5rem 1rem; }
+        .badge-vision, .badge-weapon { 
+            padding: 0.5rem 1rem; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: default;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .badge-weapon {
+            background-color: #444b6a;
+        }
+
+        .badge-vision:hover, .badge-weapon:hover {
+            transform: scale(1.1) translateY(-2px);
+            filter: brightness(1.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
 
         .bg-pyro { background-color: #ef797d !important; }
         .bg-hydro { background-color: #4cc2f1 !important; }
@@ -95,12 +122,36 @@
         .bg-cryo { background-color: #98d8ed !important; }
         .bg-geo { background-color: #e2b032 !important; }
 
-        .nav-tabs { border-bottom: 1px solid #3b4261; }
-        .nav-link { color: #9aa5ce; border: none !important; }
-        .nav-link:hover { color: #ffffff; }
-        .nav-link.active { background: transparent !important; color: #7aa2f7 !important; border-bottom: 2px solid #7aa2f7 !important; }
+        /* Dynamic Glow Shadows */
+        .glow-pyro { box-shadow: 0 10px 40px rgba(239, 121, 125, 0.3); }
+        .glow-hydro { box-shadow: 0 10px 40px rgba(76, 194, 241, 0.3); }
+        .glow-anemo { box-shadow: 0 10px 40px rgba(116, 194, 168, 0.3); }
+        .glow-electro { box-shadow: 0 10px 40px rgba(176, 143, 194, 0.3); }
+        .glow-dendro { box-shadow: 0 10px 40px rgba(165, 200, 59, 0.3); }
+        .glow-cryo { box-shadow: 0 10px 40px rgba(152, 216, 237, 0.3); }
+        .glow-geo { box-shadow: 0 10px 40px rgba(226, 176, 50, 0.3); }
 
-        .talent-item, .const-item {
+        .nav-tabs {
+            border-bottom: 1px solid #3b4261;
+        }
+
+        .nav-link {
+            color: #9aa5ce;
+            border: none !important;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+        }
+
+        .nav-link.active {
+            background: transparent !important;
+            color: #7aa2f7 !important;
+            border-bottom: 2px solid #7aa2f7 !important;
+        }
+
+        .talent-item,
+        .const-item {
             background: rgba(255, 255, 255, 0.03);
             padding: 1rem;
             border-radius: 8px;
@@ -108,12 +159,36 @@
             border-left: 3px solid #3b4261;
         }
 
-        .section-header { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #565f89; margin-bottom: 1rem; }
+        .section-header {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #565f89;
+            margin-bottom: 1rem;
+        }
+
+        #charRarity {
+            color: #ffc107;
+            font-size: 1.45rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+            margin-top: -10px;
+        }
 
         @media (min-width: 992px) {
-            .character-card { flex-direction: row; }
-            .img-column { flex: 0 0 auto; width: 400px; }
-            .text-column { flex: 1; overflow: hidden; }
+            .character-card {
+                flex-direction: row;
+            }
+
+            .img-column {
+                flex: 0 0 auto;
+                width: 400px;
+            }
+
+            .text-column {
+                flex: 1;
+                overflow: hidden;
+            }
         }
     </style>
 </head>
@@ -136,22 +211,29 @@
 
                     <div class="text-column d-flex flex-column">
                         <ul class="nav nav-tabs px-4 pt-3" id="charTabs" role="tablist">
-                            <li class="nav-item"><button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
-                            <li class="nav-item"><button class="nav-link" id="skills-tab" data-bs-toggle="tab" data-bs-target="#skills">Skills</button></li>
-                            <li class="nav-item"><button class="nav-link" id="passives-tab" data-bs-toggle="tab" data-bs-target="#passives">Passives</button></li>
-                            <li class="nav-item"><button class="nav-link" id="consts-tab" data-bs-toggle="tab" data-bs-target="#consts">Constellations</button></li>
+                            <li class="nav-item"><button class="nav-link active" id="profile-tab" data-bs-toggle="tab"
+                                    data-bs-target="#profile">Profile</button></li>
+                            <li class="nav-item"><button class="nav-link" id="skills-tab" data-bs-toggle="tab"
+                                    data-bs-target="#skills">Skills</button></li>
+                            <li class="nav-item"><button class="nav-link" id="passives-tab" data-bs-toggle="tab"
+                                    data-bs-target="#passives">Passives</button></li>
+                            <li class="nav-item"><button class="nav-link" id="consts-tab" data-bs-toggle="tab"
+                                    data-bs-target="#consts">Constellations</button></li>
                         </ul>
 
                         <div class="card-body-scroll">
                             <div class="tab-content" id="charTabsContent">
                                 <div class="tab-pane fade show active" id="profile">
-                                    <h2 id="charName" class="display-6 fw-bold name-white"></h2>
+                                    <h2 id="charName" class="display-6 fw-bold name-white mb-1"></h2>
+                                    <div id="charRarity" class="mb-2"></div>
                                     <p id="charTitle" class="text-secondary fst-italic mb-3"></p>
+
                                     <div class="mb-4">
                                         <span id="charVision" class="badge rounded-pill badge-vision me-2"></span>
                                         <span id="charWeapon" class="badge rounded-pill badge-weapon"></span>
                                     </div>
-                                    <p id="charDesc" class="card-text text-light mb-4" style="line-height: 1.8; opacity: 0.9;"></p>
+                                    <p id="charDesc" class="card-text text-light mb-4"
+                                        style="line-height: 1.8; opacity: 0.9;"></p>
                                     <div class="row g-3">
                                         <div class="col-6">
                                             <p class="mb-1 section-header">Nation</p>
@@ -200,10 +282,23 @@
                 const visionType = data.vision.toLowerCase();
                 const nationType = (data.nation || 'outlander').toLowerCase();
 
+                // Set content
                 document.getElementById('charName').innerText = data.name;
                 document.getElementById('charTitle').innerText = data.title || "Teyvat Adventurer";
+
+                // Render Stars based on Rarity
+                const rarityContainer = document.getElementById('charRarity');
+                rarityContainer.innerHTML = '';
+                for (let i = 0; i < (data.rarity || 4); i++) {
+                    rarityContainer.innerHTML += '★';
+                }
+
                 document.getElementById('charVision').innerText = data.vision;
                 document.getElementById('charVision').className = `badge rounded-pill badge-vision me-2 bg-${visionType}`;
+
+                // Update Card Glow based on Element
+                contentCard.className = `character-card glow-${visionType}`;
+
                 document.getElementById('charWeapon').innerText = data.weapon;
                 document.getElementById('charDesc').innerText = data.description;
                 document.getElementById('charNation').innerText = data.nation;
@@ -237,7 +332,7 @@
                 div.innerHTML = `
                     <p class="mb-1 fw-bold text-white">${item.name}</p>
                     <p class="mb-2" style="font-size: 0.8rem; color: #7aa2f7;">${item[subLabelKey] || ''}</p>
-                    <p class="mb-0 text-secondary" style="font-size: 0.9rem;">${item.description.replace(/\n/g, '<br>')}</p>
+                    <p class="mb-0 text-secondary" style="font-size: 0.9rem;">${(item.description || '').replace(/\n/g, '<br>')}</p>
                 `;
                 container.appendChild(div);
             });
