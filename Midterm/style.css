@@ -1,0 +1,380 @@
+body {
+    background-color: #1a1b26;
+    color: #cfcfff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-nav {
+    background: rgba(26, 27, 38, 0.9) !important;
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(122, 162, 247, 0.2);
+    padding: 0.8rem 0;
+}
+
+.nav-link {
+    color: #a9b1d6 !important;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #7aa2f7 !important;
+    text-shadow: 0 0 10px rgba(122, 162, 247, 0.5);
+}
+
+/* --- UPDATED PLAYER HEADER STYLES --- */
+#playerHeader {
+    background: rgba(16, 17, 24, 0.9) !important;
+    backdrop-filter: blur(15px) saturate(140%);
+    border: 1px solid rgba(122, 162, 247, 0.3);
+    border-left: 4px solid #7aa2f7;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    padding: 1.25rem !important;
+    margin-bottom: 2.5rem;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+#playerHeader:hover {
+    border-color: rgba(122, 162, 247, 0.6);
+    transform: translateY(-2px);
+}
+
+.player-icon-container {
+    width: 100px;
+    height: 100px;
+    background: transparent; 
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 4px 20px rgba(0, 0, 0, 0.6);
+    position: relative;
+    transition: all 0.3s ease;
+    overflow: visible;
+}
+
+.player-icon-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(1.1); 
+}
+
+.player-icon-container:hover {
+    transform: scale(1.03);
+    filter: saturate(1.1);
+}
+
+#headerStats .text-center {
+    padding: 0 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+#headerStats .text-center:hover {
+    transform: translateY(-3px);
+}
+
+#headerStats .fw-bold {
+    font-size: 1.1rem !important;
+    text-shadow: none;
+}
+
+
+/* Akasha Premium Stat Badges */
+.akasha-stat-badge {
+    padding: 0.2rem 0.8rem;
+    border-radius: 4px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 65px;
+    height: 28px;
+}
+
+.akasha-main-row {
+    width: 100%;
+}
+
+.badge-region, .badge-rank { 
+    background-color: #ffd700;
+    color: #000; 
+}
+
+.badge-achievements { 
+    background-color: #8a2be2;
+    color: #fff; 
+}
+
+.badge-spiral { 
+    background-color: #1e90ff;
+    color: #fff; 
+}
+
+.badge-time {
+    background-color: #4fd1c5; 
+    color: #000;
+}
+
+.badge-stygian {
+    background-color: #38b2ac;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+.header-section {
+    text-align: center;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+
+.main-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(187, 154, 247, 0.3);
+}
+
+.character-card {
+    background: #16161e;
+    border: 1px solid #3b4261;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.5s ease;
+    min-height: 550px;
+}
+
+@media (min-width: 992px) {
+    .character-card {
+        flex-direction: row;
+        height: 550px;
+    }
+
+    .img-column {
+        flex: 0 0 400px;
+        height: 100%;
+    }
+
+    .text-column {
+        flex: 1;
+        height: 100%;
+        overflow: hidden;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-body-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 2rem;
+}
+
+.img-column {
+    background-color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#charImg {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+
+.name-white {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.nation-mondstadt { color: #74c2a8 !important; }
+.nation-liyue { color: #e2b032 !important; }
+.nation-inazuma { color: #b08fc2 !important; }
+.nation-sumeru { color: #a5c83b !important; }
+.nation-fontaine { color: #4cc2f1 !important; }
+.nation-natlan { color: #ef797d !important; }
+.nation-snezhnaya { color: #98d8ed !important; }
+
+.badge-vision, .badge-weapon {
+    padding: 0.5rem 1rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: default;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.badge-weapon { background-color: #444b6a; }
+
+.badge-vision:hover, .badge-weapon:hover {
+    transform: scale(1.1) translateY(-2px);
+    filter: brightness(1.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.bg-pyro { background-color: #ef797d !important; }
+.bg-hydro { background-color: #4cc2f1 !important; }
+.bg-anemo { background-color: #74c2a8 !important; }
+.bg-electro { background-color: #b08fc2 !important; }
+.bg-dendro { background-color: #a5c83b !important; }
+.bg-cryo { background-color: #98d8ed !important; }
+.bg-geo { background-color: #e2b032 !important; }
+
+.glow-pyro { box-shadow: 0 10px 40px rgba(239, 121, 125, 0.3); }
+.glow-hydro { box-shadow: 0 10px 40px rgba(76, 194, 241, 0.3); }
+.glow-anemo { box-shadow: 0 10px 40px rgba(116, 194, 168, 0.3); }
+.glow-electro { box-shadow: 0 10px 40px rgba(176, 143, 194, 0.3); }
+.glow-dendro { box-shadow: 0 10px 40px rgba(165, 200, 59, 0.3); }
+.glow-cryo { box-shadow: 0 10px 40px rgba(152, 216, 237, 0.3); }
+.glow-geo { box-shadow: 0 10px 40px rgba(226, 176, 50, 0.3); }
+
+.nav-tabs { border-bottom: 1px solid #3b4261; }
+
+.nav-link.active {
+    background: transparent !important;
+    color: #7aa2f7 !important;
+    border-bottom: 2px solid #7aa2f7 !important;
+}
+
+.talent-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 3px solid #3b4261;
+}
+
+.section-header {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #565f89;
+    margin-bottom: 1rem;
+}
+
+#charRarity {
+    color: #ffc107;
+    font-size: 1.45rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+    margin-top: -10px;
+}
+
+/* Success status area */
+#searchStatus {
+    margin-top: 10px;
+    height: 25px;
+}
+
+/* --- AKASHA MODAL RESTYLE --- */
+#alertModal .modal-content {
+    background: rgba(16, 17, 24, 0.95) !important;
+    backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid rgba(122, 162, 247, 0.3) !important;
+    border-radius: 4px;
+    box-shadow: 0 0 30px rgba(122, 162, 247, 0.15), 
+                inset 0 0 10px rgba(122, 162, 247, 0.05);
+    overflow: hidden;
+    color: #cfcfff;
+}
+
+/* Header: Dark background with bright blue title */
+#alertModal .modal-header {
+    background: #1a1b26;
+    border-bottom: 1px solid rgba(122, 162, 247, 0.2);
+    padding: 1.25rem 1.5rem;
+}
+
+/* Title: Electric Blue */
+#alertModal .modal-title {
+    color: #7aa2f7 !important;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(122, 162, 247, 0.6);
+}
+
+/* Modal Body */
+#alertModal .modal-body {
+    padding: 2.5rem 1.5rem;
+}
+
+#alertModal #modalMessage {
+    color: #a9b1d6;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Footer: Keep it clean */
+#alertModal .modal-footer {
+    border-top: none;
+    padding: 1rem 1.5rem 1.5rem;
+    justify-content: center;
+}
+
+/* Confirm Button: Brightest element */
+#alertModal .btn-primary {
+    background-color: #7aa2f7 !important;
+    border-color: #7aa2f7 !important;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.7rem 2.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    box-shadow: 0 0 15px rgba(122, 162, 247, 0.4);
+}
+
+#alertModal .btn-primary:hover {
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+    color: #1a1b26;
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(122, 162, 247, 0.6);
+}
+
+.char-gallery-img {
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+    transition: transform 0.3s ease;
+}
+
+.character-item:hover .char-gallery-img {
+    transform: translateY(-5px) scale(1.1);
+}
