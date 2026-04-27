@@ -265,7 +265,7 @@ body {
     border-radius: 10px;
 }
 
-#enemyTabs, #charTabs, #weaponTabs, #artifactTabs {
+#enemyTabs, #charTabs, #weaponTabs, #artifactTabs, #consumableTabs, #materialTabs, #domainTabs, #bossTabs {
     border-bottom: 1px solid rgba(122, 162, 247, 0.1) !important;
     background: rgba(0, 0, 0, 0.2) !important;
     border-radius: 8px 8px 0 0;
@@ -274,7 +274,9 @@ body {
 #enemyTabs .nav-link, 
 #charTabs .nav-link,
 #weaponTabs .nav-link,
-#artifactTabs .nav-link {
+#artifactTabs .nav-link,
+#consumableTabs .nav-link,
+#materialTabs .nav-link {
     border: none !important;
     background: transparent !important;
     color: #a9b1d6 !important;
@@ -287,7 +289,9 @@ body {
 #enemyTabs .nav-link.active, 
 #charTabs .nav-link.active,
 #weaponTabs .nav-link.active,
-#artifactTabs .nav-link.active {
+#artifactTabs .nav-link.active,
+#consumableTabs .nav-link.active,
+#materialTabs .nav-link.active {
     color: #7aa2f7 !important;
     border-bottom: 2px solid #7aa2f7 !important;
     opacity: 1;
@@ -296,7 +300,9 @@ body {
 #enemyTabs .nav-link:hover, 
 #charTabs .nav-link:hover,
 #weaponTabs .nav-link:hover,
-#artifactTabs .nav-link:hover {
+#artifactTabs .nav-link:hover,
+#consumableTabs .nav-link:hover,
+#materialTabs .nav-link:hover {
     color: #ffffff !important;
     opacity: 1;
 }
@@ -337,6 +343,35 @@ body {
 .talent-card:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: #7aa2f7;
+}
+
+#requirementsContainer::-webkit-scrollbar,
+#dropsContainer::-webkit-scrollbar {
+    width: 8px;
+}
+
+#requirementsContainer::-webkit-scrollbar-track,
+#dropsContainer::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3); 
+    border-radius: 10px;
+}
+
+#requirementsContainer::-webkit-scrollbar-thumb,
+#dropsContainer::-webkit-scrollbar-thumb {
+    background: #0dcaf0;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(13, 202, 240, 0.5);
+}
+
+#requirementsContainer::-webkit-scrollbar-thumb:hover,
+#dropsContainer::-webkit-scrollbar-thumb:hover {
+    background: #0aa2c0; 
+}
+
+#requirementsContainer,
+#dropsContainer {
+    scrollbar-width: thin;
+    scrollbar-color: #0dcaf0 rgba(0, 0, 0, 0.3);
 }
 
 .element-detail-card {
