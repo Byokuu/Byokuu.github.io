@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GenshinDex | Characters</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../CSS/style.css" rel="stylesheet">
+</head>
+
+<body class="dashboard-bg">
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12 col-lg-3 mb-4 mb-lg-0">
+                <div class="search-panel p-4">
+                    <h2 class="dex-logo text-center mb-4">GenshinDex</h2>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Weapon Name</label>
+                        <input type="text" id="nameSearch" class="form-control custom-input"
+                            placeholder="Search weapon...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Weapon Type</label>
+                        <select id="typeFilter" class="form-select custom-input">
+                            <option value="">All Types</option>
+                            <option value="Sword">Sword</option>
+                            <option value="Claymore">Claymore</option>
+                            <option value="Polearm">Polearm</option>
+                            <option value="Catalyst">Catalyst</option>
+                            <option value="Bow">Bow</option>
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="clearBtn" class="btn btn-clear flex-grow-1">Clear</button>
+                        <button id="searchBtn" class="btn btn-search flex-grow-1">Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-9">
+                <nav class="sticky-top-nav d-flex justify-content-between align-items-center p-4 mb-4">
+                    <h2 class="panel-title m-0">Genshin Weapons</h2>
+                    <a href="../index.html" class="btn btn-home text-decoration-none">Home</a>
+                </nav>
+                <div class="content-panel px-4 pb-4">
+                    <div id="weaponList" class="dex-list d-flex flex-column gap-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="weaponDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div id="modalContent" class="modal-content character-dashboard border-0">
+                <div class="row g-0">
+                    <div class="col-md-4 bg-black d-flex align-items-center justify-content-center overflow-hidden p-4">
+                        <img id="weaponImg" src="" class="img-fluid" style="object-fit: contain; max-height: 80%;"
+                            alt="Weapon Art">
+                    </div>
+
+                    <div class="col-md-8 d-flex flex-column dashboard-bg">
+                        <div class="p-4 pb-0 d-flex justify-content-between align-items-start">
+                            <div>
+                                <h2 id="weaponName" class="fw-bold m-0 text-white display-5"></h2>
+                                <p id="weaponRarity" class="text-warning mb-0 fs-4"></p>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="row g-0 flex-grow-1">
+                            <div class="col-md-4 p-4 border-end border-secondary border-opacity-25">
+                                <div class="info-item mb-4">
+                                    <label class="stats-label">Type</label>
+                                    <p id="weaponType" class="stats-value"></p>
+                                </div>
+                                <div class="info-item mb-4">
+                                    <label class="stats-label">Base ATK</label>
+                                    <p id="baseAttack" class="stats-value text-info"></p>
+                                </div>
+                                <div class="info-item">
+                                    <label class="stats-label">Sub Stat</label>
+                                    <p id="subStat" class="stats-value"></p>
+                                </div>
+                                <div class="info-item">
+                                    <label class="stats-label">Obtained Via</label>
+                                    <p id="weaponLocation" class="stats-value small"></p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-8 d-flex flex-column">
+                                <ul class="nav mb-3 px-3 bg-black bg-opacity-25" id="weaponTabs" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="nav-link active" data-bs-toggle="tab"
+                                            data-bs-target="#passive">Passive</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link" data-bs-toggle="tab"
+                                            data-bs-target="#ascension">Materials</button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content p-4 flex-grow-1 overflow-auto" style="max-height: 450px;">
+                                    <div class="tab-pane fade show active" id="passive">
+                                        <h6 id="passiveName" class="text-info text-uppercase letter-spacing-2 mb-2"
+                                            style="font-size: 0.7rem;"></h6>
+                                        <p id="passiveDesc" class="text-white-50 lh-lg"></p>
+                                    </div>
+                                    <div class="tab-pane fade" id="ascension">
+                                        <div id="materialContainer"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../SCRIPT/weapons.js"></script>
+</body>
+
+</html>
