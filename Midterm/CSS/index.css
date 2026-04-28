@@ -9,21 +9,56 @@ body {
     width: 300px;
 }
 
-@media (max-width: 576px) {
-    .uid-field {
-        width: 180px;
-    }
-    
-    .dex-logo {
-        font-size: 1.2rem !important;
-    }
-}
-
 @media (min-width: 992px) {
     .navbar-collapse {
         display: flex !important;
-        justify-content: space-between;
+        justify-content: space-between; 
+        align-items: center;
     }
+
+    .search-container-wrapper {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+    }
+}
+
+@media (max-width: 991px) {
+    .search-container-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+}
+
+.navbar .container-fluid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar a.text-secondary {
+    transition: color 0.2s ease-in-out;
+    letter-spacing: 1px;
+}
+
+.navbar a.text-secondary:hover {
+    color: #7aa2f7 !important;
+}
+
+.search-container-wrapper {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.uid-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: fit-content;
 }
 
 .navbar-toggler:focus {
@@ -40,6 +75,7 @@ body {
     background-color: #111418;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
+    min-height: 80px;
 }
 
 .akasha-card {

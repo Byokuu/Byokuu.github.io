@@ -16,14 +16,17 @@
         <div class="container-fluid px-lg-5">
             <a class="navbar-brand fw-bold dex-logo fs-2 m-0" href="#">GENSHIN IMPACT</a>
 
-            <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSearchContent">
-                <i class="fa-solid fa-bars text-white"></i>
-            </button>
+            <div class="d-flex align-items-center gap-2 d-lg-none">
+                <a href="https://github.com/Byokuu" class="text-secondary text-decoration-none small fw-bold">GITHUB</a>
+                <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSearchContent">
+                    <i class="fa-solid fa-bars text-white"></i>
+                </button>
+            </div>
 
             <div class="collapse navbar-collapse" id="navbarSearchContent">
-                <div class="mx-auto my-3 my-lg-0">
-                    <div class="d-flex flex-column align-items-center">
+                <div class="search-container-wrapper my-3 my-lg-0">
+                    <div class="uid-group">
                         <div class="d-flex align-items-center gap-2">
                             <input type="text" id="uidInput"
                                 class="form-control bg-dark border-secondary text-white uid-field"
@@ -40,8 +43,10 @@
                     </div>
                 </div>
 
-                <a href="https://github.com/Byokuu"
-                    class="text-secondary text-decoration-none small fw-bold ms-lg-3">GITHUB</a>
+                <div class="d-none d-lg-flex align-items-center ms-auto">
+                    <a href="https://github.com/Byokuu"
+                        class="text-secondary text-decoration-none small fw-bold">GITHUB</a>
+                </div>
             </div>
         </div>
     </nav>
@@ -51,7 +56,6 @@
         <div id="playerHeader" class="mb-5 d-none">
             <div class="akasha-card p-4 rounded-4">
                 <div class="row align-items-center">
-
                     <div class="col d-flex align-items-center gap-3">
                         <div class="player-icon-container"></div>
                         <div>
@@ -59,21 +63,18 @@
                             <p id="headerSubtitle" class="text-secondary small m-0"></p>
                         </div>
                     </div>
-
                     <div class="col-auto">
                         <div id="headerStats" class="d-flex flex-wrap gap-2 justify-content-end"></div>
                     </div>
-
                 </div>
             </div>
         </div>
 
         <hr class="border-secondary border-opacity-25 mb-5">
 
-        <div id="selectionHub">
+        <div id="selectionHub" class="mb-5">
             <h1 class="text-center mb-5 display-4 fw-bold text-uppercase" style="letter-spacing: 4px;">Database Index
             </h1>
-
             <div class="row g-4 justify-content-center">
                 <div class="col-md-3">
                     <a href="HTML/character.html" class="card h-100 text-decoration-none category-card p-5 text-center">
@@ -81,28 +82,24 @@
                         <span class="card-label">Characters</span>
                     </a>
                 </div>
-
                 <div class="col-md-3">
                     <a href="HTML/weapons.html" class="card h-100 text-decoration-none category-card p-5 text-center">
                         <i class="fa-solid fa-khanda display-1 mb-3"></i>
                         <span class="card-label">Weapons</span>
                     </a>
                 </div>
-
                 <div class="col-md-3">
                     <a href="HTML/artifacts.html" class="card h-100 text-decoration-none category-card p-5 text-center">
                         <i class="fa-solid fa-clover display-1 mb-3"></i>
                         <span class="card-label">Artifacts</span>
                     </a>
                 </div>
-
                 <div class="col-md-3">
                     <a href="HTML/enemies.html" class="card h-100 text-decoration-none category-card p-5 text-center">
                         <i class="fa-solid fa-skull display-1 mb-3"></i>
                         <span class="card-label">Enemies</span>
                     </a>
                 </div>
-
                 <div class="col-md-3">
                     <a href="HTML/consumables.html"
                         class="card h-100 text-decoration-none category-card p-5 text-center">
@@ -110,21 +107,18 @@
                         <span class="card-label">Consumables</span>
                     </a>
                 </div>
-
                 <div class="col-md-3">
                     <a href="HTML/materials.html" class="card h-100 text-decoration-none category-card p-5 text-center">
                         <i class="fa-solid fa-toolbox display-1 mb-3"></i>
                         <span class="card-label">Materials</span>
                     </a>
                 </div>
-
                 <div class="col-md-3">
                     <a href="HTML/domains.html" class="card h-100 text-decoration-none category-card p-5 text-center">
                         <i class="fa-solid fa-archway display-1 mb-3"></i>
                         <span class="card-label">Domains</span>
                     </a>
                 </div>
-
                 <div class="col-md-3">
                     <a href="HTML/bosses.html" class="card h-100 text-decoration-none category-card p-5 text-center">
                         <i class="fa-solid fa-dragon display-1 mb-3"></i>
@@ -133,6 +127,45 @@
                 </div>
             </div>
         </div>
+
+        <hr class="border-secondary border-opacity-25 my-5">
+
+        <div id="gachaHub" class="container py-5">
+            <h1 class="text-center mb-5 display-4 fw-bold text-uppercase">Gacha Simulation</h1>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4">
+                    <a href="HTML/charactergacha.html"
+                        class="card category-card h-100 text-decoration-none p-4 text-center event-banner">
+                        <div class="banner-tag">Event Wish</div>
+                        <i class="fa-solid fa-person-rays display-3 mb-3 text-warning"></i>
+                        <span class="card-label">Character Event</span>
+                        <p class="text-secondary small mt-2">Stellar Reunion</p>
+                    </a>
+                </div>
+
+                <div class="col-md-4">
+                    <a href="HTML/weapongacha.html"
+                        class="card category-card h-100 text-decoration-none p-4 text-center weapon-banner">
+                        <div class="banner-tag">Event Wish</div>
+                        <i class="fa-solid fa-wand-magic-sparkles display-3 mb-3 text-info"></i>
+                        <span class="card-label">Epitome Invocation</span>
+                        <p class="text-secondary small mt-2">Weapon Event Wish</p>
+                    </a>
+                </div>
+
+                <div class="col-md-4">
+                    <a href="HTML/standardgacha.html"
+                        class="card category-card h-100 text-decoration-none p-4 text-center standard-banner">
+                        <div class="banner-tag bg-secondary">Permanent</div>
+                        <i class="fa-solid fa-star display-3 mb-3 text-light"></i>
+                        <span class="card-label">Wanderlust Invocation</span>
+                        <p class="text-secondary small mt-2">Standard Wish</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="modal fade" id="alertModal" tabindex="-1">
