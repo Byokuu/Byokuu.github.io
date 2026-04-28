@@ -188,3 +188,105 @@ body {
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.2) !important;
     border-color: #ffffff !important;
 }
+
+/* Wishing animation overlay */
+.wish-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, #2c313f 0%, #11151c 100%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* The falling star streak */
+.star-streak {
+    width: 4px;
+    height: 300px;
+    background: linear-gradient(to bottom, transparent, #fff);
+    position: absolute;
+    transform: rotate(45deg);
+    animation: fall 0.8s ease-in forwards;
+}
+
+/* Gold glow for 5-star pulls */
+.glow-5 { box-shadow: 0 0 30px #ffcc33; border: 2px solid #ffcc33; }
+.glow-4 { box-shadow: 0 0 20px #af89ff; border: 2px solid #af89ff; }
+
+/* Screen Shake Animation */
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    40% { transform: translate(3px, 2px) rotate(-1deg); }
+    100% { transform: translate(0px, 0px) rotate(0deg); }
+}
+
+@keyframes fall {
+    0% { top: -400px; left: 80%; opacity: 1; }
+    100% { top: 120%; left: 20%; opacity: 0; }
+}
+
+.shake { animation: shake 0.5s; }
+
+.nav-tabs-vertical {
+    border-right: 1px solid rgba(255,255,255,0.1);
+    gap: 15px;
+}
+
+.nav-tab {
+    width: 60px;
+    height: 60px;
+    background: #1a1f29;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px; /* Or 50% for circles */
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.nav-tab img {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+}
+
+.nav-tab.active {
+    border-color: #ffcc33;
+    box-shadow: 0 0 20px rgba(255, 204, 51, 0.4);
+    transform: scale(1.1);
+}
+
+.nav-tab:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tab-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.3s ease;
+}
+
+.nav-tab.active .tab-icon {
+    color: #ffcc33;
+    text-shadow: 0 0 10px rgba(255, 204, 51, 0.5);
+}
+
+.character-icon-1 {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.character-icon-2 {
+    background: rgba(255, 255, 255, 0.03);
+}

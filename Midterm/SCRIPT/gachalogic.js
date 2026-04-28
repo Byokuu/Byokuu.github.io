@@ -110,6 +110,7 @@ function performWish(type, isTenPull = false) {
         pity4++;
         let rolledRarity = 3;
 
+        // Determine Rarity
         if (Math.random() < 0.006 || pity5 >= maxPity) {
             rolledRarity = 5;
             pity5 = 0;
@@ -126,18 +127,24 @@ function performWish(type, isTenPull = false) {
             else item = getRandomItem(pools.standard, 5);
         }
         else if (rolledRarity === 4) {
-            // Character banners use the 3 rotating 4-stars
+            // Character Banner 50/50 Logic
             if (type === 'character' || type === 'character2') {
-                const banner = type === 'character' ? featured.banner1 : featured.banner2;
-                const lucky4 = banner.fourStars[Math.floor(Math.random() * banner.fourStars.length)];
-                item = { name: lucky4, rarity: 4 };
+                if (Math.random() < 0.5) {
+                    // Pull from the 3 featured 4-stars
+                    const lucky4 = featured.banner1.fourStars[Math.floor(Math.random() * 3)];
+                    item = { name: lucky4, rarity: 4 };
+                } else {
+                    // Pull from the general 4-star character pool
+                    item = getRandomItem(pools.character, 4);
+                }
             } else {
-                // Weapon and Standard pull from their general 4-star pools
+                // Standard/Weapon Banner 4-stars
                 const poolRef = (type === 'standard') ? pools.standard : pools.weapon;
                 item = getRandomItem(poolRef, 4);
             }
         }
         else {
+            // 3-star trash
             const poolRef = (type === 'standard') ? pools.standard : (type === 'weapon' ? pools.weapon : pools.character);
             item = getRandomItem(poolRef, 3);
         }
@@ -154,9 +161,31 @@ function getRandomItem(pool, rarity) {
 
 // UI HANDLING
 function handleGachaPull(type, isTenPull) {
+    const overlay = document.getElementById('wishOverlay');
+    const star = document.getElementById('starStreak');
+
+    // Perform logic and determine highest rarity for the star color
     const results = performWish(type, isTenPull);
-    renderResults(results);
-    updatePityDisplay(type);
+    const highestRarity = Math.max(...results.map(item => item.rarity));
+
+    // Show overlay and set star color (Gold for 5, Purple for 4)
+    if (overlay && star) {
+        overlay.classList.remove('d-none');
+        star.style.background = highestRarity === 5
+            ? 'linear-gradient(to bottom, transparent, #ffcc33)'
+            : (highestRarity === 4 ? 'linear-gradient(to bottom, transparent, #af89ff)' : 'linear-gradient(to bottom, transparent, #fff)');
+    }
+
+    // Wait for animation, then show results and shake screen
+    setTimeout(() => {
+        if (overlay) overlay.classList.add('d-none');
+        document.body.classList.add('shake');
+
+        renderResults(results);
+        updatePityDisplay(type);
+
+        setTimeout(() => document.body.classList.remove('shake'), 800);
+    }, 800);
 }
 
 function renderResults(results) {
@@ -164,16 +193,27 @@ function renderResults(results) {
     if (!container) return;
 
     container.innerHTML = '';
-    results.forEach(item => {
+    
+    results.forEach((item, index) => {
+        // 1. Determine Glow and Star Colors
         const rarityClass = `rarity-${item.rarity}`;
-        const starColor = item.rarity === 5 ? '#ffcc33' : item.rarity === 4 ? '#af89ff' : '#7aa2f7';
+        const glowClass = item.rarity === 5 ? 'glow-5' : (item.rarity === 4 ? 'glow-4' : '');
+        const starColor = item.rarity === 5 ? '#ffcc33' : item.rarity === 4 ? '#af89ff' : '#9ca3af';
 
         const card = document.createElement('div');
         card.className = 'col-6 col-md-2 animate-fade-in';
+        
+        // 2. Add Staggered Animation Delay (100ms apart)
+        card.style.animationDelay = `${index * 0.1}s`;
+
         card.innerHTML = `
-            <div class="category-card p-3 text-center ${rarityClass}">
-                <div class="small fw-bold text-truncate" title="${item.name}">${item.name}</div>
-                <div style="color: ${starColor}">${'★'.repeat(item.rarity)}</div>
+            <div class="akasha-card p-3 text-center ${rarityClass} ${glowClass}" style="height: 100%">
+                <div class="small fw-bold text-truncate text-white" title="${item.name}">
+                    ${item.name}
+                </div>
+                <div style="color: ${starColor}">
+                    ${'★'.repeat(item.rarity)}
+                </div>
             </div>
         `;
         container.appendChild(card);
@@ -181,40 +221,60 @@ function renderResults(results) {
 }
 
 function updatePityDisplay(type) {
-    const p5 = document.getElementById('pity5Count');
-    const p4 = document.getElementById('pity4Count');
-    const maxPityLabel = document.getElementById('maxPity');
-    
-    // Labels for the 5-star names
-    const featuredNameLabel = document.getElementById('featuredName');
-    const featuredNameLabel2 = document.getElementById('featuredName2');
-    
-    // Label for the 4-star rate-ups
-    const featured4Label = document.getElementById('featured4Stars');
+    const p5_1 = document.getElementById('pity5Count_1');
+    const p4_1 = document.getElementById('pity4Count_1');
+    const p5_2 = document.getElementById('pity5Count_2');
+    const p4_2 = document.getElementById('pity4Count_2');
+    const p5_main = document.getElementById('pity5Count');
+    const p4_main = document.getElementById('pity4Count');
 
-    // Update Numerical Pity
-    if (p5) p5.innerText = pity5;
-    if (p4) p4.innerText = pity4;
-    if (maxPityLabel) maxPityLabel.innerText = type === 'weapon' ? '80' : '90';
+    // Sync all pity IDs found on the page
+    [p5_1, p5_2, p5_main].forEach(el => { if (el) el.innerText = pity5; });
+    [p4_1, p4_2, p4_main].forEach(el => { if (el) el.innerText = pity4; });
 
     const featured = getFeaturedItems();
+    const f4Label1 = document.getElementById('featured4Stars_1');
+    const f4Label2 = document.getElementById('featured4Stars_2');
+    const name1 = document.getElementById('featuredName');
+    const name2 = document.getElementById('featuredName2');
 
-    // 1. Update 5-Star Name Labels
+    // Only show "4 STARS: ..." text on character banners
+    const isChar = (type === 'character' || type === 'character2');
+    const rateUpText = isChar ? "4 STARS: " + featured.banner1.fourStars.join(", ") : "";
+    
+    if (f4Label1) f4Label1.innerText = rateUpText;
+    if (f4Label2) f4Label2.innerText = rateUpText;
+
+    // Update Banner Titles
     if (type === 'weapon') {
-        if (featuredNameLabel) featuredNameLabel.innerText = featured.weapon;
+        if (name1) name1.innerText = featured.weapon;
+        if (name2) name2.innerText = "";
+    } else if (type === 'standard') {
+        if (name1) name1.innerText = "Wanderlust Invocation";
+        if (name2) name2.innerText = "";
     } else {
-        if (featuredNameLabel) featuredNameLabel.innerText = featured.banner1.fiveStar;
-        if (featuredNameLabel2) featuredNameLabel2.innerText = featured.banner2.fiveStar;
+        if (name1) name1.innerText = featured.banner1.fiveStar;
+        if (name2) name2.innerText = featured.banner2.fiveStar;
+    }
+}
+
+function switchBanner(bannerId, element) {
+    // 1. Hide all banner views
+    document.querySelectorAll('.banner-view').forEach(view => {
+        view.classList.add('d-none');
+    });
+
+    // 2. Show the selected banner
+    const selectedBanner = document.getElementById(bannerId);
+    if (selectedBanner) {
+        selectedBanner.classList.remove('d-none');
     }
 
-    // 2. Update 4-Star Rate-Up Labels
-    if (featured4Label) {
-        if (type === 'character' || type === 'character2') {
-            featured4Label.innerText = "Rate Up: " + featured.banner1.fourStars.join(", ");
-        } else {
-            featured4Label.innerText = "";
-        }
-    }
+    // 3. Update tab visual state
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    element.classList.add('active');
 }
 
 window.onload = () => {

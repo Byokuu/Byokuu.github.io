@@ -10,6 +10,13 @@
 </head>
 
 <body>
+
+    <div id="wishOverlay" class="wish-overlay d-none">
+        <div class="wish-star-container">
+            <div id="starStreak" class="star-streak"></div>
+        </div>
+    </div>
+
     <nav class="navbar navbar-expand-lg py-3">
         <div class="container-fluid px-lg-5">
             <a class="navbar-brand fw-bold dex-logo fs-2 m-0" href="../index.html">GENSHIN IMPACT</a>
@@ -17,46 +24,63 @@
         </div>
     </nav>
 
-    <div class="container py-5">
-        <div class="text-center mb-4">
-            <h5 id="featured4Stars" class="text-warning fw-bold uppercase tracking-widest">Rate Up: Loading...</h5>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="akasha-card p-5 text-center h-100"
-                    style="background: linear-gradient(rgba(17, 21, 28, 0.85), rgba(17, 21, 28, 0.85)), url('../assets/char-bg.jpg'); background-size: cover;">
-                    <h2 id="featuredName" class="display-6 fw-bold mb-3 text-white">CHARACTER 1</h2>
-                    <p class="text-secondary tracking-widest mb-4 uppercase">Phase 1 Event Wish</p>
-
-                    <div class="d-flex justify-content-center gap-3 mb-5">
-                        <div class="akasha-stat-badge">5★ PITY: <span id="pity5Count">0</span>/90</div>
-                    </div>
-
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-primary fw-bold" onclick="handleGachaPull('character', false)">WISH
-                            x1</button>
-                        <button class="btn btn-primary fw-bold" onclick="handleGachaPull('character', true)"
-                            style="background-color: #7aa2f7;">WISH x10</button>
-                    </div>
+    <div class="container-fluid py-5 px-lg-5">
+        <div class="row">
+            <div class="col-auto d-flex flex-column gap-3 pe-4">
+                <div class="sidebar-nav d-flex flex-column gap-3">
+                    <button class="nav-tab active" onclick="switchBanner('banner1', this)">
+                        <div class="tab-icon character-icon-1">1</div>
+                    </button>
+                    <button class="nav-tab" onclick="switchBanner('banner2', this)">
+                        <div class="tab-icon character-icon-2">2</div>
+                    </button>
                 </div>
             </div>
 
-            <div class="col-lg-6">
-                <div class="akasha-card p-5 text-center h-100"
-                    style="background: linear-gradient(rgba(17, 21, 28, 0.85), rgba(17, 21, 28, 0.85)), url('../assets/char-bg.jpg'); background-size: cover;">
-                    <h2 id="featuredName2" class="display-6 fw-bold mb-3 text-white">CHARACTER 2</h2>
-                    <p class="text-secondary tracking-widest mb-4 uppercase">Phase 2 Event Wish</p>
+            <div class="col">
+                <div id="banner1" class="banner-view">
+                    <div class="akasha-card p-5 text-center d-flex flex-column justify-content-center"
+                        style="background: linear-gradient(rgba(17, 21, 28, 0.9), rgba(17, 21, 28, 0.7)), url('../assets/char-bg.jpg'); background-size: cover; min-height: 450px;">
 
-                    <div class="d-flex justify-content-center gap-3 mb-5">
-                        <div class="akasha-stat-badge">4★ PITY: <span id="pity4Count">0</span>/10</div>
+                        <p class="text-secondary tracking-widest text-uppercase mb-2 small">Character Event Wish</p>
+                        <h2 id="featuredName" class="display-4 fw-bold mb-1 text-white">Loading...</h2>
+                        <p id="featured4Stars_1" class="text-warning fw-bold mb-4"></p>
+
+                        <div class="d-flex justify-content-center gap-3 mb-5">
+                            <div class="akasha-stat-badge">5★ PITY: <span id="pity5Count_1">0</span>/90</div>
+                            <div class="akasha-stat-badge">4★ PITY: <span id="pity4Count_1">0</span>/10</div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3">
+                            <button class="btn btn-primary px-4 py-2 fw-bold"
+                                onclick="handleGachaPull('character', false)">WISH x1</button>
+                            <button class="btn btn-primary px-4 py-2 fw-bold"
+                                onclick="handleGachaPull('character', true)"
+                                style="background-color: #7aa2f7; border-color: #7aa2f7;">WISH x10</button>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-primary fw-bold" onclick="handleGachaPull('character2', false)">WISH
-                            x1</button>
-                        <button class="btn btn-primary fw-bold" onclick="handleGachaPull('character2', true)"
-                            style="background-color: #7aa2f7;">WISH x10</button>
+                <div id="banner2" class="banner-view d-none">
+                    <div class="akasha-card p-5 text-center d-flex flex-column justify-content-center"
+                        style="background: linear-gradient(rgba(17, 21, 28, 0.9), rgba(17, 21, 28, 0.7)), url('../assets/char-bg.jpg'); background-size: cover; min-height: 450px;">
+
+                        <p class="text-secondary tracking-widest text-uppercase mb-2 small">Character Event Wish</p>
+                        <h2 id="featuredName2" class="display-4 fw-bold mb-1 text-white">Loading...</h2>
+                        <p id="featured4Stars_2" class="text-warning fw-bold mb-4"></p>
+
+                        <div class="d-flex justify-content-center gap-3 mb-5">
+                            <div class="akasha-stat-badge">5★ PITY: <span id="pity5Count_2">0</span>/90</div>
+                            <div class="akasha-stat-badge">4★ PITY: <span id="pity4Count_2">0</span>/10</div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3">
+                            <button class="btn btn-primary px-4 py-2 fw-bold"
+                                onclick="handleGachaPull('character2', false)">WISH x1</button>
+                            <button class="btn btn-primary px-4 py-2 fw-bold"
+                                onclick="handleGachaPull('character2', true)"
+                                style="background-color: #7aa2f7; border-color: #7aa2f7;">WISH x10</button>
+                        </div>
                     </div>
                 </div>
             </div>
