@@ -12,29 +12,37 @@
 
 <body class="dashboard-bg bg-black text-white">
 
-    <nav class="navbar py-4">
-        <div class="container-fluid px-5 d-flex justify-content-between align-items-center">
+    <nav class="navbar navbar-expand-lg py-3">
+        <div class="container-fluid px-lg-5">
+            <a class="navbar-brand fw-bold dex-logo fs-2 m-0" href="#">GENSHIN IMPACT</a>
 
-            <a class="navbar-brand fw-bold dex-logo fs-2 m-0">GENSHIN IMPACT</a>
+            <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSearchContent">
+                <i class="fa-solid fa-bars text-white"></i>
+            </button>
 
-            <div class="d-flex flex-column align-items-center position-absolute start-50 translate-middle-x">
-                <div class="d-flex align-items-center gap-2">
-                    <input type="text" id="uidInput" class="form-control bg-dark border-secondary text-white"
-                        placeholder="Enter UID..." style="width: 300px;">
-
-                    <button id="searchBtn" class="btn btn-primary fw-bold px-4" onclick="fetchByUid()">
-                        Search UID
-                    </button>
-
-                    <button id="clearSearch" class="btn btn-danger px-3" onclick="performFullReset()">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+            <div class="collapse navbar-collapse" id="navbarSearchContent">
+                <div class="mx-auto my-3 my-lg-0">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" id="uidInput"
+                                class="form-control bg-dark border-secondary text-white uid-field"
+                                placeholder="Enter UID...">
+                            <button id="searchBtn" class="btn btn-primary fw-bold px-3" onclick="fetchByUid()">
+                                <span class="d-none d-sm-inline">Search UID</span>
+                                <i class="fa-solid fa-magnifying-glass d-inline d-sm-none"></i>
+                            </button>
+                            <button id="clearSearch" class="btn btn-danger px-3" onclick="performFullReset()">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div id="searchStatus" class="mt-2" style="height: 20px;"></div>
+                    </div>
                 </div>
-                <div id="searchStatus" class="mt-2" style="height: 20px;"></div>
+
+                <a href="https://github.com/Byokuu"
+                    class="text-secondary text-decoration-none small fw-bold ms-lg-3">GITHUB</a>
             </div>
-
-            <a href="https://github.com/Byokuu" class="text-secondary text-decoration-none small fw-bold">GITHUB</a>
-
         </div>
     </nav>
 
