@@ -9,7 +9,11 @@ window.onload = async () => {
         const ids = await res.json();
         const promises = ids.map(id => fetch(`https://genshin.jmp.blue/enemies/${id}`).then(r => r.json()));
         const results = await Promise.all(promises);
-        allEnemies = results.map((enemy, index) => ({ ...enemy, id: ids[index] }));
+        allEnemies = results.map((enemy, index) => ({
+            ...enemy,
+            id: ids[index],
+            originalIndex: index + 1
+        }));
         displayEnemies(allEnemies);
     } catch (err) {
         enemyList.innerHTML = `<p class="text-danger text-center">System Error: ${err.message}</p>`;
@@ -23,7 +27,7 @@ function displayEnemies(list) {
         row.className = 'dex-row d-flex align-items-center justify-content-between p-3 animate-fade-in mb-2';
         row.innerHTML = `
             <div class="d-flex align-items-center gap-4">
-                <span class="text-muted small fw-bold">#${(index + 1).toString().padStart(4, '0')}</span>
+                <span class="text-muted small fw-bold">#${enemy.originalIndex.toString().padStart(4, '0')}</span>
                 <h5 class="m-0 fw-bold">${enemy.name}</h5>
             </div>
             <div class="dex-icon-wrapper">
@@ -116,26 +120,25 @@ async function showEnemyDetails(enemy) {
 
 // Search Logic
 const performSearch = () => {
-    const query = document.getElementById('nameSearch').value.toLowerCase();
-    const filtered = allEnemies.filter(e => e.name.toLowerCase().includes(query));
+    const nameQuery = document.getElementById('nameSearch').value.toLowerCase();
+    const typeQuery = document.getElementById('typeFilter').value; // Matches COMMON/ELITE
+    const familyQuery = document.getElementById('familyFilter').value;
+
+    const filtered = allEnemies.filter(enemy => {
+        const matchesName = enemy.name.toLowerCase().includes(nameQuery);
+        
+        // Use optional chaining or defaults to prevent errors if type/family is missing
+        const enemyType = enemy.type || "";
+        const enemyFamily = enemy.family || "";
+
+        const matchesType = !typeQuery || enemyType === typeQuery;
+        const matchesFamily = !familyQuery || enemyFamily === familyQuery;
+
+        return matchesName && matchesType && matchesFamily;
+    });
+
     displayEnemies(filtered);
 };
-
-// 1. Click Search Button
-document.getElementById('searchBtn').onclick = performSearch;
-
-// 2. Clear Button
-document.getElementById('clearBtn').onclick = () => {
-    document.getElementById('nameSearch').value = '';
-    displayEnemies(allEnemies);
-};
-
-// 3. ADDED: Enter Key Support 
-document.getElementById('nameSearch').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        performSearch();
-    }
-});
 
 // Universal Renderer
 function renderModalList(containerId, items, subLabelKey) {
@@ -158,3 +161,19 @@ function renderModalList(containerId, items, subLabelKey) {
         `;
     }).join('');
 }
+
+document.getElementById('searchBtn').onclick = performSearch;
+
+document.getElementById('clearBtn').onclick = () => {
+    document.getElementById('nameSearch').value = '';
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('familyFilter').value = '';
+    displayEnemies(allEnemies);
+};
+
+document.getElementById('nameSearch').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+    }
+});

@@ -9,7 +9,11 @@ window.onload = async () => {
         const ids = await res.json();
         const promises = ids.map(id => fetch(`https://genshin.jmp.blue/artifacts/${id}`).then(r => r.json()));
         const results = await Promise.all(promises);
-        allArtifacts = results.map((art, index) => ({ ...art, id: ids[index] }));
+        allArtifacts = results.map((art, index) => ({
+            ...art,
+            id: ids[index],
+            originalIndex: index + 1
+        }));
         displayArtifacts(allArtifacts);
     } catch (err) {
         artifactList.innerHTML = `<p class="text-danger text-center">System Error: ${err.message}</p>`;
@@ -23,7 +27,7 @@ function displayArtifacts(list) {
         row.className = 'dex-row d-flex align-items-center justify-content-between p-3 animate-fade-in mb-2';
         row.innerHTML = `
             <div class="d-flex align-items-center gap-4">
-                <span class="text-muted small fw-bold">#${(index + 1).toString().padStart(4, '0')}</span>
+                <span class="text-muted small fw-bold">#${art.originalIndex.toString().padStart(4, '0')}</span>
                 <h5 class="m-0 fw-bold">${art.name}</h5>
             </div>
             <div class="dex-icon-wrapper">
@@ -68,7 +72,7 @@ const performSearch = () => {
     const filtered = allArtifacts.filter(art => {
         const matchesName = art.name.toLowerCase().includes(nameQuery);
         const matchesRarity = rarityQuery === "" || art.max_rarity == rarityQuery;
-        
+
         return matchesName && matchesRarity;
     });
 
@@ -80,7 +84,7 @@ document.getElementById('searchBtn').onclick = performSearch;
 // UPDATED CLEAR LOGIC
 document.getElementById('clearBtn').onclick = () => {
     document.getElementById('nameSearch').value = '';
-    document.getElementById('rarityFilter').selectedIndex = 0; 
+    document.getElementById('rarityFilter').selectedIndex = 0;
     displayArtifacts(allArtifacts);
 };
 

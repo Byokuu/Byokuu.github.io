@@ -3,8 +3,8 @@ const materialList = document.getElementById('materialList');
 const detailsModal = new bootstrap.Modal(document.getElementById('materialDetailsModal'));
 
 const categories = [
-    "boss-material", "character-ascension", "character-experience", 
-    "common-ascension", "cooking-ingredients", "local-specialties", 
+    "boss-material", "character-ascension", "character-experience",
+    "common-ascension", "cooking-ingredients", "local-specialties",
     "talent-book", "talent-boss", "weapon-ascension", "weapon-experience"
 ];
 
@@ -28,7 +28,7 @@ window.onload = async () => {
                     category: categoryLabel,
                     rawCategory: rawCat
                 }));
-            } 
+            }
             else if (data.items && Array.isArray(data.items)) {
                 items = data.items.map(itemObj => ({
                     ...itemObj,
@@ -36,7 +36,7 @@ window.onload = async () => {
                     category: categoryLabel,
                     rawCategory: rawCat
                 }));
-            } 
+            }
             else {
                 items = Object.keys(data).filter(key => key !== 'id').map(id => {
                     const baseData = typeof data[id] === 'object' ? data[id] : { name: data[id] };
@@ -53,6 +53,10 @@ window.onload = async () => {
         });
 
         allMaterials = allMaterials.filter(m => m.id !== 'items' && m.id !== 'id');
+        allMaterials = allMaterials.map((item, index) => ({
+            ...item,
+            originalIndex: index + 1
+        }));
         displayMaterials(allMaterials);
     } catch (err) {
         console.error("Material Fetch Error:", err);
@@ -62,28 +66,27 @@ window.onload = async () => {
 
 function displayMaterials(list) {
     materialList.innerHTML = list.length ? '' : '<p class="text-center text-muted py-5">No materials found.</p>';
-    
+
     list.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'dex-row d-flex align-items-center justify-content-between p-3 animate-fade-in mb-2';
-        
-        const displayName = item.name || item.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
+        const displayName = item.name || item.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         row.innerHTML = `
             <div class="d-flex align-items-center gap-4">
-                <span class="text-muted small fw-bold">#${(index + 1).toString().padStart(4, '0')}</span>
+                <span class="text-muted small fw-bold">#${item.originalIndex.toString().padStart(4, '0')}</span>
                 <h5 class="m-0 fw-bold text-white">${displayName}</h5>
             </div>
             <div class="dex-icon-wrapper">
                 <img src="https://genshin.jmp.blue/materials/${item.rawCategory}/${item.id}" 
-                     class="dex-img" 
-                     alt="${displayName}">
+                    class="dex-img" 
+                    alt="${displayName}">
             </div>
         `;
 
         // THE SECRET SAUCE: Waterfall loading
         const img = row.querySelector('.dex-img');
-        img.onerror = function() {
+        img.onerror = function () {
             // If the first URL (base) fails, try the /icon URL
             if (!this.src.includes('/icon')) {
                 this.src = `https://genshin.jmp.blue/materials/${item.rawCategory}/${item.id}/icon`;
@@ -127,7 +130,7 @@ function showMaterialDetails(item) {
 
     const itemImg = document.getElementById('itemImg');
     itemImg.src = `https://genshin.jmp.blue/materials/${item.rawCategory}/${item.id}`;
-    itemImg.onerror = function() {
+    itemImg.onerror = function () {
         if (!this.src.includes('/icon')) {
             this.src = `https://genshin.jmp.blue/materials/${item.rawCategory}/${item.id}/icon`;
         } else {

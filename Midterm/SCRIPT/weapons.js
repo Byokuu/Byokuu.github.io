@@ -9,7 +9,11 @@ window.onload = async () => {
         const ids = await res.json();
         const promises = ids.map(id => fetch(`https://genshin.jmp.blue/weapons/${id}`).then(r => r.json()));
         const results = await Promise.all(promises);
-        allWeapons = results.map((w, index) => ({ ...w, id: ids[index] }));
+        allWeapons = results.map((w, index) => ({
+            ...w,
+            id: ids[index],
+            originalIndex: index + 1
+        }));
         displayWeapons(allWeapons);
     } catch (err) {
         weaponList.innerHTML = `<p class="text-danger text-center">System Error: ${err.message}</p>`;
@@ -23,7 +27,7 @@ function displayWeapons(list) {
         row.className = 'dex-row d-flex align-items-center justify-content-between p-3 animate-fade-in mb-2';
         row.innerHTML = `
             <div class="d-flex align-items-center gap-4">
-                <span class="text-muted small fw-bold">#${(index + 1).toString().padStart(4, '0')}</span>
+                <span class="text-muted small fw-bold">#${weapon.originalIndex.toString().padStart(4, '0')}</span>
                 <h5 class="m-0 fw-bold">${weapon.name}</h5>
             </div>
             <div class="dex-icon-wrapper">

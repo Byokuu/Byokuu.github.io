@@ -22,7 +22,10 @@ window.onload = async () => {
             .filter(id => potionData[id].name) // Skip items with no name
             .map(id => ({ ...potionData[id], id, category: 'Potion' }));
 
-        allConsumables = [...foodItems, ...potionItems];
+        allConsumables = [...foodItems, ...potionItems].map((item, index) => ({
+            ...item,
+            originalIndex: index + 1
+        }));
         displayConsumables(allConsumables);
     } catch (err) {
         console.error("Fetch error:", err);
@@ -37,7 +40,7 @@ function displayConsumables(list) {
         row.className = 'dex-row d-flex align-items-center justify-content-between p-3 animate-fade-in mb-2';
         row.innerHTML = `
             <div class="d-flex align-items-center gap-4">
-                <span class="text-muted small fw-bold">#${(index + 1).toString().padStart(4, '0')}</span>
+                <span class="text-muted small fw-bold">#${item.originalIndex.toString().padStart(4, '0')}</span>
                 <h5 class="m-0 fw-bold">${item.name}</h5>
             </div>
             <div class="dex-icon-wrapper">
@@ -55,19 +58,19 @@ function showItemDetails(item) {
     // 1. Header & Rarity - Added fallback for name
     document.getElementById('itemName').innerText = item.name || "Unknown Item";
     document.getElementById('itemRarity').innerText = '★'.repeat(item.rarity || 0);
-    
+
     // 2. Sidebar Mini Stats
     document.getElementById('itemType').innerText = item.type || item.category || "Consumable";
-    
+
     // Defensive check: ensure gameplayBuff isn't empty or undefined
     const gameplayBuff = item.effect || item.description || "No specific effect listed.";
     document.getElementById('itemEffect').innerText = gameplayBuff;
 
     // 3. Details Tab (Flavor Text & Proficiency)
-    const flavorText = (item.description && item.description !== item.effect) 
-        ? item.description 
+    const flavorText = (item.description && item.description !== item.effect)
+        ? item.description
         : "Standard consumable used for various buffs and recovery.";
-    
+
     document.getElementById('itemDesc').innerText = flavorText;
 
     // Proficiency (Specialty Dishes) - Added check for item.proficiency AND item.proficiency.cookedBy
@@ -108,11 +111,11 @@ function showItemDetails(item) {
     const itemImg = document.getElementById('itemImg');
     const category = (item.category || 'food').toLowerCase();
     const itemId = item.id || item.name?.toLowerCase().replace(/\s+/g, '-');
-    
+
     itemImg.src = `https://genshin.jmp.blue/consumables/${category}/${itemId}`;
-    
-    itemImg.onerror = () => { 
-        itemImg.src = 'https://via.placeholder.com/400x400/0b0f1a/3d4451?text=NO+IMAGE'; 
+
+    itemImg.onerror = () => {
+        itemImg.src = 'https://via.placeholder.com/400x400/0b0f1a/3d4451?text=NO+IMAGE';
     };
 
     // 6. Final Execution
@@ -125,11 +128,11 @@ const performSearch = () => {
 
     const filtered = allConsumables.filter(item => {
         const matchesName = item.name?.toLowerCase().includes(query);
-        
+
         // Match category ignoring case (Food vs food)
-        const matchesCat = catQuery === "" || 
+        const matchesCat = catQuery === "" ||
             item.category.toLowerCase() === catQuery.toLowerCase();
-        
+
         return matchesName && matchesCat;
     });
 

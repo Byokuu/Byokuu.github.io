@@ -12,7 +12,11 @@ window.onload = async () => {
         const promises = ids.map(id => fetch(`https://genshin.jmp.blue/characters/${id}`).then(r => r.json()));
         const results = await Promise.all(promises);
 
-        allCharacters = results.map((char, index) => ({ ...char, id: ids[index] }));
+        allCharacters = results.map((char, index) => ({
+            ...char,
+            id: ids[index],
+            originalIndex: index + 1
+        }));
         displayCharacters(allCharacters);
     } catch (err) {
         characterList.innerHTML = `<p class="text-danger text-center">System Error: ${err.message}</p>`;
@@ -34,7 +38,7 @@ function displayCharacters(list) {
         row.className = 'dex-row d-flex align-items-center justify-content-between p-3';
         row.innerHTML = `
             <div class="d-flex align-items-center gap-4">
-                <span class="text-muted small fw-bold">No ${(index + 1).toString().padStart(4, '0')}</span>
+                <span class="text-muted small fw-bold">No ${char.originalIndex.toString().padStart(4, '0')}</span>
                 <h5 class="m-0 fw-bold">${finalName}</h5>
             </div>
             <div class="dex-icon-wrapper">
@@ -77,19 +81,19 @@ function showDetails(char, displayName) {
     // 2. Update the Header and Side Image 🖼️
     document.getElementById('charName').innerText = titleName;
     document.getElementById('charRarity').innerText = '★'.repeat(char.rarity || 4);
-    
+
     const charImg = document.getElementById('charImg');
     charImg.src = `https://genshin.jmp.blue/characters/${char.id}/card`;
     charImg.alt = titleName;
 
     // 3. Populate the Stats Panel 🏛️
     document.getElementById('charNation').innerText = char.nation || "Unknown Nation";
-    document.getElementById('charAffiliation').innerText = char.affiliation || "No Affiliation"; 
+    document.getElementById('charAffiliation').innerText = char.affiliation || "No Affiliation";
 
     // 4. Set the Badges with the Dynamic Theme 
     document.getElementById('charVision').innerHTML = `
         <span class="badge-vision ${visionType} w-100">${char.vision}</span>`;
-    
+
     document.getElementById('charWeapon').innerHTML = `
         <span class="badge-weapon w-100">${char.weapon}</span>`;
 

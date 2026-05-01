@@ -10,10 +10,15 @@ window.onload = async () => {
 
         const requests = domainIds.map(id => fetch(`https://genshin.jmp.blue/domains/${id}`));
         const responses = await Promise.all(requests);
-        
+
         // Filter out any failed requests to prevent "undefined" errors
         const data = await Promise.all(responses.map(res => res.ok ? res.json() : null));
-        allDomains = data.filter(d => d !== null);
+        allDomains = data
+            .filter(d => d !== null && d.name)
+            .map((domain, index) => ({
+                ...domain,
+                originalIndex: index + 1
+            }));
 
         displayDomains(allDomains);
     } catch (err) {
@@ -24,17 +29,16 @@ window.onload = async () => {
 
 function displayDomains(list) {
     domainList.innerHTML = list.length ? '' : '<p class="text-center text-muted py-5">No domains found.</p>';
-    
+
     list.forEach((domain, index) => {
         // Skip entries that might be malformed (like the "id" or "anemo" ones seen in your screenshots)
         if (!domain.name) return;
 
         const row = document.createElement('div');
         row.className = 'dex-row d-flex align-items-center justify-content-between p-3 animate-fade-in mb-2 cursor-pointer';
-        
         row.innerHTML = `
             <div class="d-flex align-items-center gap-4">
-                <span class="text-muted small fw-bold">#${(index + 1).toString().padStart(4, '0')}</span>
+                <span class="text-muted small fw-bold">#${domain.originalIndex.toString().padStart(4, '0')}</span>
                 <div>
                     <h5 class="m-0 fw-bold text-white">${domain.name}</h5>
                     <small class="text-info text-uppercase" style="letter-spacing: 1px;">${domain.type || 'Domain'}</small>
@@ -59,7 +63,7 @@ function showDomainDetails(domain) {
 
     // Elements
     const elementContainer = document.getElementById('elementContainer');
-    elementContainer.innerHTML = (domain.recommendedElements || []).map(el => 
+    elementContainer.innerHTML = (domain.recommendedElements || []).map(el =>
         `<span class="badge bg-info text-dark me-1">${el}</span>`
     ).join('');
 
@@ -79,14 +83,14 @@ function showDomainDetails(domain) {
     // Rewards logic
     const rewardContainer = document.getElementById('rewardContainer');
     const today = new Date().toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
-    
+
     // Find today's rewards or default to the first one available
     const todayRewards = domain.rewards?.find(r => r.day === today) || (domain.rewards ? domain.rewards[0] : null);
 
     if (todayRewards && todayRewards.details) {
         const lastLevel = todayRewards.details[todayRewards.details.length - 1];
         const drops = lastLevel.drops || lastLevel.items || [];
-        
+
         rewardContainer.innerHTML = `
             <h6 class="text-info small fw-bold mb-3 text-uppercase">Drops Today (${today.toUpperCase()})</h6>
             <div class="d-flex flex-wrap gap-2">
