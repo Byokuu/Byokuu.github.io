@@ -244,7 +244,7 @@ body {
 .talent-item:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: #7aa2f7;
-}
+}   
 
 .tab-content::-webkit-scrollbar {
     width: 4px;

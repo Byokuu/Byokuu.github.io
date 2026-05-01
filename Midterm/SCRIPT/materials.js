@@ -73,7 +73,6 @@ function displayMaterials(list) {
             <div class="d-flex align-items-center gap-4">
                 <span class="text-muted small fw-bold">#${(index + 1).toString().padStart(4, '0')}</span>
                 <h5 class="m-0 fw-bold text-white">${displayName}</h5>
-                <span class="badge bg-dark text-info border border-info border-opacity-25 small text-capitalize">${item.category}</span>
             </div>
             <div class="dex-icon-wrapper">
                 <img src="https://genshin.jmp.blue/materials/${item.rawCategory}/${item.id}" 
