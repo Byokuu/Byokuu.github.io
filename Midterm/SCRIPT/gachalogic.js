@@ -60,6 +60,7 @@ const pools = {
         ],
         3: ["Slingshot", "Raven Bow", "Skyrider Sword", "Magic Guide", "Thrilling Tales of Dragon Slayers"]
     },
+
     standard: {
         5: ["Jean", "Diluc", "Mona", "Keqing", "Qiqi", "Tighnari", "Dehya", "Skyward Harp", "Skyward Atlas", "Skyward Spine", "Skyward Pride", "Skyward Blade", "Amos' Bow", "Lost Prayer", "Primordial Jade Winged-Spear", "Wolf's Gravestone", "Aquila Favonia"],
         4: ["Amber", "Barbara", "Beidou", "Bennett", "The Widsith", "Favonius Sword", "Sacrificial Fragments"],
@@ -104,6 +105,12 @@ function performWish(type, isTenPull = false) {
     const pullCount = isTenPull ? 10 : 1;
     const maxPity = type === 'weapon' ? 80 : 90;
     const featured = getFeaturedItems();
+    const loss5StarCharacters = ["Jean", "Diluc", "Mona", "Keqing", "Qiqi", "Tighnari", "Dehya"];
+    const loss5StarWeapons = [
+        "Skyward Harp", "Skyward Atlas", "Skyward Spine", "Skyward Pride", 
+        "Skyward Blade", "Amos' Bow", "Lost Prayer", 
+        "Primordial Jade Winged-Spear", "Wolf's Gravestone", "Aquila Favonia"
+    ];
 
     for (let i = 0; i < pullCount; i++) {
         pity5++;
@@ -121,30 +128,49 @@ function performWish(type, isTenPull = false) {
 
         let item;
         if (rolledRarity === 5) {
-            if (type === 'character') item = { name: featured.banner1.fiveStar, rarity: 5 };
-            else if (type === 'character2') item = { name: featured.banner2.fiveStar, rarity: 5 };
-            else if (type === 'weapon') item = { name: featured.weapon, rarity: 5 };
-            else item = getRandomItem(pools.standard, 5);
+            // Implement 50/50 Chance[cite: 1]
+            const isWin5050 = Math.random() < 0.5;
+
+            if (type === 'character' || type === 'character2') {
+                if (isWin5050) {
+                    // Won: Get Featured Character[cite: 1]
+                    const featuredName = type === 'character' ? featured.banner1.fiveStar : featured.banner2.fiveStar;
+                    item = { name: featuredName, rarity: 5 };
+                } else {
+                    // Lost: Get Random Standard Character[cite: 1, 2]
+                    const lostChar = loss5StarCharacters[Math.floor(Math.random() * loss5StarCharacters.length)];
+                    item = { name: lostChar, rarity: 5 };
+                }
+            } 
+            else if (type === 'weapon') {
+                if (isWin5050) {
+                    // Won: Get Featured Weapon[cite: 1]
+                    item = { name: featured.weapon, rarity: 5 };
+                } else {
+                    // Lost: Get Random Standard Weapon[cite: 1, 2]
+                    const lostWeapon = loss5StarWeapons[Math.floor(Math.random() * loss5StarWeapons.length)];
+                    item = { name: lostWeapon, rarity: 5 };
+                }
+            } 
+            else {
+                // Standard Banner pull[cite: 1]
+                item = getRandomItem(pools.standard, 5);
+            }
         }
         else if (rolledRarity === 4) {
-            // Character Banner 50/50 Logic
             if (type === 'character' || type === 'character2') {
                 if (Math.random() < 0.5) {
-                    // Pull from the 3 featured 4-stars
                     const lucky4 = featured.banner1.fourStars[Math.floor(Math.random() * 3)];
                     item = { name: lucky4, rarity: 4 };
                 } else {
-                    // Pull from the general 4-star character pool
                     item = getRandomItem(pools.character, 4);
                 }
             } else {
-                // Standard/Weapon Banner 4-stars
                 const poolRef = (type === 'standard') ? pools.standard : pools.weapon;
                 item = getRandomItem(poolRef, 4);
             }
         }
         else {
-            // 3-star trash
             const poolRef = (type === 'standard') ? pools.standard : (type === 'weapon' ? pools.weapon : pools.character);
             item = getRandomItem(poolRef, 3);
         }
@@ -193,7 +219,7 @@ function renderResults(results) {
     if (!container) return;
 
     container.innerHTML = '';
-    
+
     results.forEach((item, index) => {
         // 1. Determine Glow and Star Colors
         const rarityClass = `rarity-${item.rarity}`;
@@ -202,7 +228,7 @@ function renderResults(results) {
 
         const card = document.createElement('div');
         card.className = 'col-6 col-md-2 animate-fade-in';
-        
+
         // 2. Add Staggered Animation Delay (100ms apart)
         card.style.animationDelay = `${index * 0.1}s`;
 
@@ -241,7 +267,7 @@ function updatePityDisplay(type) {
     // Only show "4 STARS: ..." text on character banners
     const isChar = (type === 'character' || type === 'character2');
     const rateUpText = isChar ? "4 STARS: " + featured.banner1.fourStars.join(", ") : "";
-    
+
     if (f4Label1) f4Label1.innerText = rateUpText;
     if (f4Label2) f4Label2.innerText = rateUpText;
 
