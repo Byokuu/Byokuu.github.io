@@ -15,17 +15,18 @@
 
     <nav class="navbar navbar-expand-lg fixed-top home-nav">
         <div class="container-fluid px-lg-5">
-            <a class="navbar-brand fw-bold dex-logo fs-2 text-white" href="#">GENSHIN IMPACT</a>
+            <a class="navbar-brand fw-bold dex-logo fs-2 text-white">GENSHIN IMPACT</a>
             <button class="navbar-toggler border-white" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarNav">
                 <i class="fa-solid fa-bars text-white"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto gap-4">
+                <ul class="navbar-nav ms-auto gap-4 me-5">
                     <li class="nav-item"><a class="nav-link text-white fw-bold" href="#home">HOME</a></li>
                     <li class="nav-item"><a class="nav-link text-white fw-bold" href="#world">WORLD</a></li>
                     <li class="nav-item"><a class="nav-link text-white fw-bold" href="#news">NEWS</a></li>
                 </ul>
+                <a href="https://genshin.hoyoverse.com/en/home" target="_blank" class="btn btn-genshin text-decoration-none">Download</a>
             </div>
         </div>
     </nav>
@@ -51,22 +52,30 @@
             <div class="row g-0 world-container">
                 <div class="col-md-3">
                     <div class="nav flex-column nav-pills world-tabs" id="v-pills-tab" role="tablist">
-                        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#teyvat"
-                            type="button">TEYVAT</button>
-                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#mondstadt"
-                            type="button">MONDSTADT</button>
-                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#liyue"
-                            type="button">LIYUE</button>
-                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#inazuma"
-                            type="button">INAZUMA</button>
-                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sumeru"
-                            type="button">SUMERU</button>
-                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#fontaine"
-                            type="button">FONTAINE</button>
-                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#natlan"
-                            type="button">NATLAN</button>
-                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#nodkrai"
-                            type="button">NOD-KRAI</button>
+                        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#teyvat" type="button">
+                            <i class="fa-solid fa-star me-2 small"></i> Teyvat
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#mondstadt" type="button">
+                            <i class="fa-solid fa-wind me-2 small"></i> Mondstadt
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#liyue" type="button">
+                            <i class="fa-solid fa-mountain me-2 small"></i> Liyue
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#inazuma" type="button">
+                            <i class="fa-solid fa-bolt me-2 small"></i> Inazuma
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sumeru" type="button">
+                            <i class="fa-solid fa-leaf me-2 small"></i> Sumeru
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#fontaine" type="button">
+                            <i class="fa-solid fa-droplet me-2 small"></i> Fontaine
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#natlan" type="button">
+                            <i class="fa-solid fa-fire me-2 small"></i> Natlan
+                        </button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#nodkrai" type="button">
+                            <i class="fa-solid fa-moon me-2 small text-info"></i> Nod-Krai
+                        </button>
                     </div>
                 </div>
 
@@ -75,7 +84,7 @@
                         <div class="tab-pane fade show active" id="teyvat" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
+                                    <img id="teyvat-logo" src="img/elements.webp" width="80" class="mb-3">
                                     <h3>TEYVAT</h3>
                                     <p>You have arrived in Teyvat — a fantasy world where the seven elements flow and
                                         converge.
@@ -93,8 +102,10 @@
                         <div class="tab-pane fade" id="mondstadt" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
-                                    <h3>The Nation of Freedom</h3>
+                                    <img class="nation-logo" src="img/mondstadt.png" width="80" class="mb-3">
+                                    <h3 style="color: white; text-shadow: 0 0 10px #7af2cf; font-weight: bold;">
+                                        Mondstadt</h3>
+                                    <h2>The Nation of Freedom</h2>
                                     <p>A city of freedom that lies in the northeast of Teyvat. Amongst the mountains and
                                         wide-open plains, carefree breezes carry the scent of dandelions...</p>
                                     <button class="btn btn-outline-light">VIEW MAP</button>
@@ -105,8 +116,10 @@
                         <div class="tab-pane fade" id="liyue" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
-                                    <h3>The Nation of Contracts</h3>
+                                    <img class="nation-logo" src="img/liyue.png" width="80" class="mb-3">
+                                    <h3 style="color: white; text-shadow: 0 0 10px #ffeb65; font-weight: bold;">Liyue
+                                    </h3>
+                                    <h2>The Nation of Contracts</h2>
                                     <p>A bountiful harbor that lies in the east of Teyvat. Mountains stand high and
                                         proud alongside the stone forest, that together with the open plains and lively
                                         rivers make up Liyue's bountiful landscape...</p>
@@ -118,8 +131,10 @@
                         <div class="tab-pane fade" id="inazuma" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
-                                    <h3>The Nation of Eternity</h3>
+                                    <img class="nation-logo" src="img/inazuma.webp" width="80" class="mb-3">
+                                    <h3 style="color: white; text-shadow: 0 0 10px #e2b0ff; font-weight: bold;">Inazuma
+                                    </h3>
+                                    <h2>The Nation of Eternity</h2>
                                     <p>An Isolated Archipelago Far East of Teyvat
                                         Overcome endless thunderstorms and set foot on the islands of red maple and
                                         cherry blossoms. On winding shores and towering cliffs, and in forests and
@@ -133,8 +148,10 @@
                         <div class="tab-pane fade" id="sumeru" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
-                                    <h3>The Nation of Wisdom</h3>
+                                    <img class="nation-logo" src="img/sumeru.webp" width="80" class="mb-3">
+                                    <h3 style="color: white; text-shadow: 0 0 10px #a5c83b; font-weight: bold;">Sumeru
+                                    </h3>
+                                    <h2>The Nation of Wisdom</h2>
                                     <p>The city of scholars located in the west-central part of Teyvat.
                                         A fantastical nation of both lush rainforest and barren desert, where countless
                                         fruits of wisdom grow and are buried. Whether Travelers travel from afar through
@@ -149,8 +166,10 @@
                         <div class="tab-pane fade" id="fontaine" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
-                                    <h3>The Nation of Justice</h3>
+                                    <img class="nation-logo" src="img/fontaine.webp" width="80" class="mb-3">
+                                    <h3 style="color: white; text-shadow: 0 0 10px #00ccff; font-weight: bold;">Fontaine
+                                    </h3>
+                                    <h2>The Nation of Justice</h2>
                                     <p>A terrestrial sea in the center of Teyvat.
                                         Following the direction of pure currents, crossing wilderness, the depths of the
                                         forests and vastness of the sea of sand, arriving at the origin of all the
@@ -166,8 +185,10 @@
                         <div class="tab-pane fade" id="natlan" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
-                                    <h3>The Nation of War</h3>
+                                    <img class="nation-logo" src="img/natlan.webp" width="80" class="mb-3">
+                                    <h3 style="color: white; text-shadow: 0 0 10px #ff5a3c  ; font-weight: bold;">Natlan
+                                    </h3>
+                                    <h2>The Nation of War</h2>
                                     <p>The nation of oaths situated in the western regions of Teyvat.
                                         Guided by the flame, you pass through lengthy gorges and valleys to reach the
                                         land where the torches blaze, where all fires converge. Upon the blazing fields
@@ -181,8 +202,10 @@
                         <div class="tab-pane fade" id="nodkrai" role="tabpanel">
                             <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
                                 <div class="region-info p-5">
-                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
-                                    <h3>The Neutral Frontier</h3>
+                                    <img class="nation-logo" src="img/nodkrai.webp" width="80" class="mb-3">
+                                    <h3 style="color: white; text-shadow: 0 0 10px #b0e2ff; font-weight: bold;">Nod-Krai
+                                    </h3>
+                                    <h2>The Neutral Frontier</h2>
                                     <p>The moon-blessed land located in the northwestern regions of Teyvat.
                                         Follow the silver thread spun by the new moon, traverse biting gales and
                                         desolate tundras as the snow-kissed lakes, fractured like mirrors, reflect their
@@ -201,7 +224,7 @@
         </div>
     </section>
 
-    <section id="news" class="py-5 bg-dark-section">
+    <section id="news" class="py-2 bg-dark-section">
         <div class="container py-5">
             <h2 class="text-center mb-5 tracking-widest text-uppercase" style="letter-spacing: 5px;">Latest News</h2>
             <div class="row g-4">
@@ -212,7 +235,7 @@
                         <div class="news-card">
                             <img src="https://fastcdn.hoyoverse.com/content-v2/hk4e/163858/0ccdd688a773c6f4ffcbdd66500cc9c6_3430503193496380108.jpg"
                                 class="img-fluid" alt="News 1">
-                            <div class="p-3">
+                            <div>
                                 <h5 class="fw-bold text-white">Version "Luna VII" Preview</h5>
                                 <p class="small text-secondary">May 6, 2026</p>
                             </div>
@@ -226,7 +249,7 @@
                         <div class="news-card">
                             <img src="https://fastcdn.hoyoverse.com/content-v2/hk4e/163815/535260d00f2a05e95e10afe67b6fb52a_8605441594802704.jpg"
                                 class="img-fluid" alt="News 3">
-                            <div class="p-3">
+                            <div>
                                 <h5 class="fw-bold text-white">Cutscene Animation: "A Celebration Showcase" | Genshin
                                     Impact</h5>
                                 <p class="small text-secondary">May 3, 2026</p>
@@ -241,7 +264,7 @@
                         <div class="news-card">
                             <img src="https://fastcdn.hoyoverse.com/content-v2/hk4e/163632/659312267c9168b8115d31cd18b446b4_7630686259797153437.jpg"
                                 class="img-fluid" alt="News 2">
-                            <div class="p-3">
+                            <div>
                                 <h5 class="fw-bold text-white">Behind the Scenes: "To Snezhnaya"</h5>
                                 <p class="small text-secondary">Apr 22, 2026</p>
                             </div>

@@ -2,6 +2,9 @@
 body {
     overflow-x: hidden;
     font-family: 'Segoe UI', Roboto, sans-serif;
+    background-color: #000;
+    background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+    color: #ece5d8;
 }
 
 .hero-fullscreen {
@@ -52,11 +55,10 @@ body {
 
 .world-preview {
     min-height: 80vh;
-    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../assets/image_178674.jpg');
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('');
     background-size: cover;
     background-position: bottom;
     background-attachment: fixed;
-    /* Create parallax depth */
     display: flex;
     align-items: center;
 }
@@ -72,20 +74,50 @@ body {
     backdrop-filter: blur(15px);
 }
 
-.news-card {
+#news {
+    padding: 100px 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)),
+        url('assets/image_dd4ed7.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    width: 100%;
+}
+
+#news h2 {
+    color: #fff;
+    text-shadow: 0 0 15px rgba(255, 204, 51, 0.4);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
+
+#news {
     background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    height: 100%;
+}
+
+.news-card {
+    background: rgba(0, 0, 0);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     overflow: hidden;
-    transition: transform 0.3s ease, background 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.1);
     height: 100%;
 }
 
 .news-card:hover {
-    transform: translateY(-10px);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
 }
 
 .news-card img {
@@ -102,59 +134,172 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
 .teyvat-section {
-    background-color: #000;
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+        url('https://upload-os-bbs.hoyolab.com/upload/2024/10/06/116366622/241e5f3231064e3a9e2c3bde3dd77926_2088480802638006368.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 60px 0;
     min-height: 100vh;
 }
 
 .world-container {
-    background: #111;
-    border: 1px solid #333;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px) saturate(150%);
+    border-radius: 12px;
+    min-height: 700px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
     overflow: hidden;
 }
 
-/* Sidebar Styling */
+.world-tabs {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 0;
+}
+
 .world-tabs .nav-link {
-    color: #888;
-    background: none;
+    color: #ece5d8;
+    background: transparent;
     text-align: left;
-    font-weight: bold;
-    padding: 25px 40px;
+    font-weight: 600;
+    padding: 18px 30px;
     border-radius: 0;
-    border-left: 4px solid transparent;
-    font-size: 1.1rem;
+    border: none;
+    font-size: 1rem;
     letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    position: relative;
+    opacity: 0.6;
+}
+
+.world-tabs .nav-link:hover {
+    color: #fff;
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .world-tabs .nav-link.active {
-    color: #fff;
-    background: linear-gradient(to right, rgba(255, 204, 51, 0.2), transparent);
-    border-left: 4px solid #ffcc33;
+    color: #313131;
+    background: #ece5d8;
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(236, 229, 216, 0.3);
 }
 
-/* Region Background & Info Box */
+.world-tabs .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: #ffcc33;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ffcc33;
+    margin-left: 10px;
+}
+
 .region-bg {
-    height: 600px;
+    height: 700px;
     background-size: cover;
     background-position: center;
     position: relative;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    overflow: hidden;
+    transition: background-image 0.5s ease-in-out;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .region-info {
-    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    background: linear-gradient(90deg,
+            rgba(0, 0, 0, 0.8) 0%,
+            rgba(0, 0, 0, 0.4) 40%,
+            transparent 100%);
     width: 100%;
-    color: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 10%;
+    color: #ece5d8;
 }
 
 .region-info h3 {
+    font-size: 3.5rem;
     font-weight: 800;
-    letter-spacing: 3px;
+    letter-spacing: 5px;
     text-transform: uppercase;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    color: #fff;
 }
 
 .region-info p {
-    max-width: 600px;
+    max-width: 500px;
+    font-size: 1.1rem;
+    line-height: 1.6;
     color: #ccc;
+    margin-bottom: 30px;
+    animation: fadeInText 0.8s ease-out;
+}
+
+.region-info .btn-outline-light {
+    width: fit-content;
+    padding: 10px 40px;
+    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    letter-spacing: 2px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.region-info .btn-outline-light:hover {
+    background: #ece5d8;
+    color: #313131;
+    border-color: #ece5d8;
+    transform: scale(1.05);
+}
+
+.nation-logo {
+    width: 150px;
+    height: auto;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+    transition: transform 0.3s ease;
+}
+
+.nation-logo:hover {
+    transform: scale(1.1);
+}
+
+#teyvat-logo {
+    width: 300px;
+    height: auto;
+    margin-bottom: .1rem;
+    margin-left: -1.5rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+    transition: transform 0.3s ease;
+}
+
+#teyvat-logo:hover {
+    transform: scale(1.1);
+}
+
+@keyframes fadeInText {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
