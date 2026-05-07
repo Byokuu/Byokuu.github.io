@@ -2,182 +2,255 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GenshinDex | Portal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genshin Impact | GenshinDex</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="CSS/index.css" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/index.css">
+    <link rel="stylesheet" href="CSS/portal.css">
 </head>
 
-<body class="dashboard-bg bg-black text-white">
+<body class="bg-black text-white">
 
-    <nav class="navbar navbar-expand-lg py-3">
+    <nav class="navbar navbar-expand-lg fixed-top home-nav">
         <div class="container-fluid px-lg-5">
-            <a class="navbar-brand fw-bold dex-logo fs-2 m-0" href="#">GENSHIN IMPACT</a>
-
-            <div class="d-flex align-items-center gap-2 d-lg-none">
-                <a href="https://github.com/Byokuu" class="text-secondary text-decoration-none small fw-bold">GITHUB</a>
-                <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSearchContent">
-                    <i class="fa-solid fa-bars text-white"></i>
-                </button>
-            </div>
-
-            <div class="collapse navbar-collapse" id="navbarSearchContent">
-                <div class="search-container-wrapper my-3 my-lg-0">
-                    <div class="uid-group">
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="text" id="uidInput"
-                                class="form-control bg-dark border-secondary text-white uid-field"
-                                placeholder="Enter UID...">
-                            <button id="searchBtn" class="btn btn-primary fw-bold px-3" onclick="fetchByUid()">
-                                <span class="d-none d-sm-inline">Search UID</span>
-                                <i class="fa-solid fa-magnifying-glass d-inline d-sm-none"></i>
-                            </button>
-                            <button id="clearSearch" class="btn btn-danger px-3" onclick="performFullReset()">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div id="searchStatus" class="mt-2" style="height: 20px;"></div>
-                    </div>
-                </div>
-
-                <div class="d-none d-lg-flex align-items-center ms-auto">
-                    <a href="https://github.com/Byokuu"
-                        class="text-secondary text-decoration-none small fw-bold">GITHUB</a>
-                </div>
+            <a class="navbar-brand fw-bold dex-logo fs-2 text-white" href="#">GENSHIN IMPACT</a>
+            <button class="navbar-toggler border-white" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+                <i class="fa-solid fa-bars text-white"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto gap-4">
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#home">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#world">WORLD</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#news">NEWS</a></li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container py-5">
+    <section id="home" class="hero-fullscreen">
+        <div class="hero-content text-center">
+            <h1 class="mb-2">Available on Multiple Platforms</h1>
+            <p class="fs-5 mb-5 text-white-50">9/28/2020 10:00:00 (UTC+8)</p>
 
-        <div id="playerHeader" class="mb-5 d-none">
-            <div class="akasha-card p-4 rounded-4">
-                <div class="row align-items-center">
-                    <div class="col d-flex align-items-center gap-3">
-                        <div class="player-icon-container"></div>
-                        <div>
-                            <h2 id="headerTitle" class="text-white fw-bold m-0"></h2>
-                            <p id="headerSubtitle" class="text-secondary small m-0"></p>
+            <div class="platform-icons d-flex justify-content-center gap-3 flex-wrap mb-5">
+                <div class="p-icon"><i class="fa-brands fa-playstation me-2"></i>PS5 | PS4</div>
+                <div class="p-icon"><i class="fa-brands fa-windows me-2"></i>PC DOWNLOAD</div>
+                <div class="p-icon"><i class="fa-brands fa-apple me-2"></i>APP STORE</div>
+                <div class="p-icon"><i class="fa-brands fa-google-play me-2"></i>GOOGLE PLAY</div>
+            </div>
+
+            <a href="portal.html" class="btn btn-genshin text-decoration-none">VIEW GENSHINDEX</a>
+        </div>
+    </section>
+
+    <section id="world" class="teyvat-section py-5">
+        <div class="container-fluid py-5">
+            <div class="row g-0 world-container">
+                <div class="col-md-3">
+                    <div class="nav flex-column nav-pills world-tabs" id="v-pills-tab" role="tablist">
+                        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#teyvat"
+                            type="button">TEYVAT</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#mondstadt"
+                            type="button">MONDSTADT</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#liyue"
+                            type="button">LIYUE</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#inazuma"
+                            type="button">INAZUMA</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sumeru"
+                            type="button">SUMERU</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#fontaine"
+                            type="button">FONTAINE</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#natlan"
+                            type="button">NATLAN</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#nodkrai"
+                            type="button">NOD-KRAI</button>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <div class="tab-content world-content-wrapper" id="v-pills-tabContent">
+                        <div class="tab-pane fade show active" id="teyvat" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
+                                    <h3>TEYVAT</h3>
+                                    <p>You have arrived in Teyvat — a fantasy world where the seven elements flow and
+                                        converge.
+                                        In the distant past, the Archons granted mortals unique elemental abilities.
+                                        With the help of such powers, people formed a bountiful homeland out of the
+                                        wilderness. However, 500 years ago, the collapse of an ancient civilization
+                                        turned the universe upside down...
+                                        Though the calamity the world suffered has ceased, peace has yet to be restored.
+                                    </p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade show active" id="mondstadt" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
+                                    <h3>The Nation of Freedom</h3>
+                                    <p>A city of freedom that lies in the northeast of Teyvat. Amongst the mountains and
+                                        wide-open plains, carefree breezes carry the scent of dandelions...</p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="liyue" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
+                                    <h3>The Nation of Contracts</h3>
+                                    <p>A bountiful harbor that lies in the east of Teyvat. Mountains stand high and
+                                        proud alongside the stone forest, that together with the open plains and lively
+                                        rivers make up Liyue's bountiful landscape...</p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade show active" id="inazuma" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
+                                    <h3>The Nation of Eternity</h3>
+                                    <p>An Isolated Archipelago Far East of Teyvat
+                                        Overcome endless thunderstorms and set foot on the islands of red maple and
+                                        cherry blossoms. On winding shores and towering cliffs, and in forests and
+                                        mountains full of secrets, witness the Eternity pursued by Her Excellency, the
+                                        Almighty Narukami Ogosho.</p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="sumeru" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
+                                    <h3>The Nation of Wisdom</h3>
+                                    <p>The city of scholars located in the west-central part of Teyvat.
+                                        A fantastical nation of both lush rainforest and barren desert, where countless
+                                        fruits of wisdom grow and are buried. Whether Travelers travel from afar through
+                                        the forest to reach the academy city or delve deep into the desert to discover
+                                        the historical ruins of the red desert, a wealth of valuable knowledge awaits
+                                        them here.</p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade show active" id="fontaine" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/mondstadt-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/mondstadt-logo.png" width="80" class="mb-3">
+                                    <h3>The Nation of Justice</h3>
+                                    <p>A terrestrial sea in the center of Teyvat.
+                                        Following the direction of pure currents, crossing wilderness, the depths of the
+                                        forests and vastness of the sea of sand, arriving at the origin of all the
+                                        waters of the continent. At the top of the waterfall, in the depths of the
+                                        capital atop the terrestrial sea... a story that has never been heard, a legend
+                                        that has been forgotten, like a lost kingdom sunken beneath the waves, yearning
+                                        for a bard to sing its drowned songs.</p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="natlan" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
+                                    <h3>The Nation of War</h3>
+                                    <p>The nation of oaths situated in the western regions of Teyvat.
+                                        Guided by the flame, you pass through lengthy gorges and valleys to reach the
+                                        land where the torches blaze, where all fires converge. Upon the blazing fields
+                                        where Saurians roam, witness the end of the ancient war alongside the valiant
+                                        warriors who resist the darkness.</p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="nodkrai" role="tabpanel">
+                            <div class="region-bg" style="background-image: url('assets/liyue-bg.jpg');">
+                                <div class="region-info p-5">
+                                    <img src="assets/liyue-logo.png" width="80" class="mb-3">
+                                    <h3>The Neutral Frontier</h3>
+                                    <p>The moon-blessed land located in the northwestern regions of Teyvat.
+                                        Follow the silver thread spun by the new moon, traverse biting gales and
+                                        desolate tundras as the snow-kissed lakes, fractured like mirrors, reflect their
+                                        ageless, glacial radiance. The days are bitterly short, and the night stretches
+                                        on like a dark, yawning maw. But even then, the light and song of the Welkin
+                                        Moon will dance gently across the faces of visiting travelers. Up at ye towers,
+                                        and let your lanterns blaze into the darkness! Until the day comes... when true
+                                        moonlight bathes this land once more.</p>
+                                    <button class="btn btn-outline-light">VIEW MAP</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-auto">
-                        <div id="headerStats" class="d-flex flex-wrap gap-2 justify-content-end"></div>
-                    </div>
                 </div>
             </div>
         </div>
+    </section>
 
-        <hr class="border-secondary border-opacity-25 mb-5">
+    <section id="news" class="py-5 bg-dark-section">
+        <div class="container py-5">
+            <h2 class="text-center mb-5 tracking-widest text-uppercase" style="letter-spacing: 5px;">Latest News</h2>
+            <div class="row g-4">
 
-        <div id="selectionHub" class="mb-5">
-            <h1 class="text-center mb-5 display-4 fw-bold text-uppercase" style="letter-spacing: 4px;">Database Index
-            </h1>
-            <div class="row g-4 justify-content-center">
-                <div class="col-md-3">
-                    <a href="HTML/character.html" class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-users display-1 mb-3"></i>
-                        <span class="card-label">Characters</span>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="HTML/weapons.html" class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-khanda display-1 mb-3"></i>
-                        <span class="card-label">Weapons</span>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="HTML/artifacts.html" class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-clover display-1 mb-3"></i>
-                        <span class="card-label">Artifacts</span>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="HTML/enemies.html" class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-skull display-1 mb-3"></i>
-                        <span class="card-label">Enemies</span>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="HTML/consumables.html"
-                        class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-utensils display-1 mb-3"></i>
-                        <span class="card-label">Consumables</span>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="HTML/materials.html" class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-toolbox display-1 mb-3"></i>
-                        <span class="card-label">Materials</span>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="HTML/domains.html" class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-archway display-1 mb-3"></i>
-                        <span class="card-label">Domains</span>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="HTML/bosses.html" class="card h-100 text-decoration-none category-card p-5 text-center">
-                        <i class="fa-solid fa-dragon display-1 mb-3"></i>
-                        <span class="card-label">Weekly Bosses</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <hr class="border-secondary border-opacity-25 my-5">
-
-        <div id="gachaHub" class="container py-5">
-            <h1 class="text-center mb-5 display-4 fw-bold text-uppercase">Gacha Simulation</h1>
-
-            <div class="row g-4 justify-content-center">
                 <div class="col-md-4">
-                    <a href="HTML/charactergacha.html"
-                        class="card category-card h-100 text-decoration-none p-4 text-center event-banner">
-                        <div class="banner-tag">Event Wish</div>
-                        <i class="fa-solid fa-person-rays display-3 mb-3 text-warning"></i>
-                        <span class="card-label">Character Event</span>
-                        <p class="text-secondary small mt-2">Stellar Reunion</p>
+                    <a href="https://genshin.hoyoverse.com/en/news/detail/163858" target="_blank"
+                        class="text-decoration-none">
+                        <div class="news-card">
+                            <img src="https://fastcdn.hoyoverse.com/content-v2/hk4e/163858/0ccdd688a773c6f4ffcbdd66500cc9c6_3430503193496380108.jpg"
+                                class="img-fluid" alt="News 1">
+                            <div class="p-3">
+                                <h5 class="fw-bold text-white">Version "Luna VII" Preview</h5>
+                                <p class="small text-secondary">May 6, 2026</p>
+                            </div>
+                        </div>
                     </a>
                 </div>
 
                 <div class="col-md-4">
-                    <a href="HTML/weapongacha.html"
-                        class="card category-card h-100 text-decoration-none p-4 text-center weapon-banner">
-                        <div class="banner-tag">Event Wish</div>
-                        <i class="fa-solid fa-wand-magic-sparkles display-3 mb-3 text-info"></i>
-                        <span class="card-label">Epitome Invocation</span>
-                        <p class="text-secondary small mt-2">Weapon Event Wish</p>
+                    <a href="https://genshin.hoyoverse.com/en/news/detail/163815" target="_blank"
+                        class="text-decoration-none">
+                        <div class="news-card">
+                            <img src="https://fastcdn.hoyoverse.com/content-v2/hk4e/163815/535260d00f2a05e95e10afe67b6fb52a_8605441594802704.jpg"
+                                class="img-fluid" alt="News 3">
+                            <div class="p-3">
+                                <h5 class="fw-bold text-white">Cutscene Animation: "A Celebration Showcase" | Genshin
+                                    Impact</h5>
+                                <p class="small text-secondary">May 3, 2026</p>
+                            </div>
+                        </div>
                     </a>
                 </div>
 
                 <div class="col-md-4">
-                    <a href="HTML/standardgacha.html"
-                        class="card category-card h-100 text-decoration-none p-4 text-center standard-banner">
-                        <div class="banner-tag bg-secondary">Permanent</div>
-                        <i class="fa-solid fa-star display-3 mb-3 text-light"></i>
-                        <span class="card-label">Wanderlust Invocation</span>
-                        <p class="text-secondary small mt-2">Standard Wish</p>
+                    <a href="http://genshin.hoyoverse.com/en/news/detail/163632" target="_blank"
+                        class="text-decoration-none">
+                        <div class="news-card">
+                            <img src="https://fastcdn.hoyoverse.com/content-v2/hk4e/163632/659312267c9168b8115d31cd18b446b4_7630686259797153437.jpg"
+                                class="img-fluid" alt="News 2">
+                            <div class="p-3">
+                                <h5 class="fw-bold text-white">Behind the Scenes: "To Snezhnaya"</h5>
+                                <p class="small text-secondary">Apr 22, 2026</p>
+                            </div>
+                        </div>
                     </a>
                 </div>
             </div>
         </div>
-
-    </div>
-
-    <div class="modal fade" id="alertModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border-secondary">
-                <div class="modal-body p-4 text-center">
-                    <p id="modalMessage" class="mb-0"></p>
-                    <button type="button" class="btn btn-info mt-3" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="SCRIPT/index.js"></script>
