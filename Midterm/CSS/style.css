@@ -5,6 +5,39 @@ body {
     min-height: 100vh;
 }
 
+body.light-mode {
+    background-color: #e5e9f0 !important;
+    color: #2e3440 !important;
+}
+
+body.light-mode .search-panel, 
+body.light-mode .sticky-top-nav,
+body.light-mode .content-panel,
+body.light-mode .modal-content {
+    background-color: #ffffff !important;
+    color: #2e3440 !important;
+    border-color: #d8dee9 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+}
+
+body.light-mode .custom-input,
+body.light-mode .form-control,
+body.light-mode .form-select {
+    background-color: #f8f9fb !important;
+    color: #2e3440 !important;
+    border: 1px solid #d8dee9 !important;
+}
+
+body.light-mode .dex-logo, 
+body.light-mode .panel-title {
+    color: #3b4252 !important;
+}
+
+body.light-mode .btn-home {
+    background: #3b4252;
+    color: white;
+}
+
 /* 1. Left Sidebar */
 .search-panel {
     background-color: #131722;

@@ -6,6 +6,68 @@ body {
     overflow-x: hidden;
 }
 
+body.light-mode {
+    background-color: #e5e9f0 !important;
+    color: #2e3440 !important;
+}
+
+body.light-mode .akasha-card {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)) !important;
+    background-blend-mode: overlay;
+    background-color: #ffffff !important;
+    border: 1px solid #d8dee9 !important;
+    border-left: 4px solid #7aa2f7 !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode .navbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #d8dee9 !important;
+}
+
+body.light-mode .dex-logo,
+body.light-mode h1, 
+body.light-mode h2,
+body.light-mode .display-4 {
+    color: #2e3440 !important;
+}
+
+body.light-mode .akasha-stat-badge {
+    background: #ffffff !important;
+    border: 2px solid #7aa2f7 !important;
+    color: #3b4252 !important;
+    box-shadow: 0 4px 10px rgba(122, 162, 247, 0.1) !important;
+}
+
+body.light-mode .btn-home {
+    background: #f8f9fb !important;
+    color: #3b4252 !important;
+    border: 1px solid #d8dee9 !important;
+}
+
+body.light-mode .category-card {
+    background: #ffffff !important;
+    border-color: #d8dee9 !important;
+    color: #4c566a !important;
+}
+
+body.light-mode .nav-tab {
+    background: #ffffff !important;
+    border-color: #d8dee9 !important;
+}
+
+body.light-mode .tab-icon {
+    color: #4c566a !important;
+}
+
+body.light-mode .text-secondary {
+    color: #4c566a !important;
+}
+
+body.light-mode .text-white {
+    color: #2e3440 !important;
+}
+
 /* Gacha Banner Container */
 .akasha-card {
     background: #11151c;

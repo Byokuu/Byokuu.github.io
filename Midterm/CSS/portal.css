@@ -5,6 +5,75 @@ body {
     font-family: 'Segoe UI', sans-serif;
 }
 
+/* --- Genshin Portal Light Mode --- */
+body.light-mode {
+    background-color: #f0f0f0;
+    background-image: radial-gradient(circle at center, #ffffff 0%, #e9e9e9 100%);
+    color: #3b4252;
+}
+
+body.light-mode .navbar {
+    background-color: #ece5d8;
+    border-bottom: 1px solid #d3bc8e;
+}
+
+body.light-mode .dex-logo, 
+body.light-mode .navbar a.text-secondary {
+    color: #3b4252 !important;
+}
+
+body.light-mode h1, 
+body.light-mode h2 {
+    color: #bd9e67;
+}
+
+body.light-mode hr {
+    border-color: #d3bc8e !important;
+    opacity: 0.5;
+}
+
+body.light-mode .category-card {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid #d3bc8e !important;
+    color: #3b4252 !important;
+    box-shadow: 0 4px 15px rgba(189, 158, 103, 0.1);
+}
+
+body.light-mode .category-card i {
+    color: #bd9e67 !important;
+}
+
+body.light-mode .category-card:hover {
+    background: #ffffff !important;
+    border-color: #bd9e67 !important;
+    box-shadow: 0 8px 25px rgba(189, 158, 103, 0.3);
+}
+
+body.light-mode .akasha-card {
+    background: #fdfaf2;
+    border: 1px solid #d3bc8e;
+    border-left: 4px solid #bd9e67;
+}
+
+body.light-mode #headerTitle {
+    color: #3b4252 !important;
+}
+
+body.light-mode .uid-field {
+    background-color: #ffffff !important;
+    border-color: #d3bc8e !important;
+    color: #3b4252 !important;
+}
+
+body.light-mode .uid-field::placeholder {
+    color: #999;
+}
+
+.btn-outline-warning {
+    border-radius: 50px !important;
+    transition: all 0.3s ease;
+}
+
 .uid-field {
     width: 300px;
 }
