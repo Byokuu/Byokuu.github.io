@@ -17,12 +17,12 @@ body.light-mode .navbar {
     border-bottom: 1px solid #d3bc8e;
 }
 
-body.light-mode .dex-logo, 
+body.light-mode .dex-logo,
 body.light-mode .navbar a.text-secondary {
     color: #3b4252 !important;
 }
 
-body.light-mode h1, 
+body.light-mode h1,
 body.light-mode h2 {
     color: #bd9e67;
 }
@@ -75,22 +75,7 @@ body.light-mode .uid-field::placeholder {
 }
 
 .uid-field {
-    width: 300px;
-}
-
-@media (min-width: 992px) {
-    .navbar-collapse {
-        display: flex !important;
-        justify-content: space-between; 
-        align-items: center;
-    }
-
-    .search-container-wrapper {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 10;
-    }
+    width: 200px;
 }
 
 @media (max-width: 991px) {
@@ -99,6 +84,37 @@ body.light-mode .uid-field::placeholder {
         display: flex;
         justify-content: center;
     }
+}
+
+@media (min-width: 992px) {
+    .navbar-collapse {
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .search-container-wrapper {
+        position: relative !important;
+        left: auto !important;
+        transform: none !important;
+        margin-left: auto !important;
+        z-index: 10;
+        display: flex !important;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .uid-field {
+        width: 200px !important;
+    }
+}
+
+.search-container-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 0;
 }
 
 .navbar .container-fluid {
@@ -116,11 +132,9 @@ body.light-mode .uid-field::placeholder {
     color: #7aa2f7 !important;
 }
 
-.search-container-wrapper {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#searchStatus {
+    width: 100%;
+    transition: opacity 0.2s ease;
 }
 
 .uid-group {

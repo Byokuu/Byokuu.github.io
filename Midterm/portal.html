@@ -16,53 +16,46 @@
         <div class="container-fluid px-lg-5">
             <a class="navbar-brand fw-bold dex-logo fs-2 m-0" href="#">GENSHIN IMPACT</a>
 
-            <div class="d-flex align-items-center gap-3 d-lg-none">
-                <a href="https://github.com/Byokuu" class="text-secondary text-decoration-none small fw-bold">GITHUB</a>
-                <a href="index.html" class="text-secondary text-decoration-none small fw-bold">HOME</a>
-
-                <div class="d-flex align-items-center">
-                    <button id="theme-toggle"
-                        class="btn btn-outline-warning rounded-pill px-3 d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-moon"></i>
-                        <span class="theme-text small fw-bold">Light Mode</span>
-                    </button>
-                </div>
-
-                <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSearchContent">
-                    <i class="fa-solid fa-bars text-white"></i>
-                </button>
-            </div>
+            <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSearchContent">
+                <i class="fa-solid fa-bars text-white"></i>
+            </button>
 
             <div class="collapse navbar-collapse" id="navbarSearchContent">
-                <div class="search-container-wrapper my-3 my-lg-0">
-                    <div class="uid-group">
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="text" id="uidInput"
-                                class="form-control bg-dark border-secondary text-white uid-field"
-                                placeholder="Enter UID...">
-                            <button id="searchBtn" class="btn btn-primary fw-bold px-3" onclick="fetchByUid()">
-                                <span class="d-none d-sm-inline">Search UID</span>
-                                <i class="fa-solid fa-magnifying-glass d-inline d-sm-none"></i>
-                            </button>
-                            <button id="clearSearch" class="btn btn-danger px-3" onclick="performFullReset()">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                <div
+                    class="d-flex flex-column flex-lg-row w-100 align-items-center justify-content-center justify-content-lg-end">
+
+                    <div class="search-container-wrapper ms-lg-auto mt-2 mt-lg-0">
+                        <div class="uid-group d-flex flex-column flex-lg-row align-items-center gap-3">
+
+                            <div class="d-flex align-items-center gap-2 order-2 order-lg-1">
+                                <input type="text" id="uidInput"
+                                    class="form-control bg-dark border-secondary text-white uid-field"
+                                    placeholder="UID..." style="width: 200px;">
+                                <button id="searchBtn" class="btn btn-primary fw-bold" onclick="fetchByUid()">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                                <button id="clearSearch" class="btn btn-danger" onclick="performFullReset()">
+                                    &times;
+                                </button>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3 order-1 order-lg-2">
+                                <a href="https://github.com/Byokuu"
+                                    class="text-secondary text-decoration-none small fw-bold hover-white">GITHUB</a>
+                                <a href="index.html"
+                                    class="text-secondary text-decoration-none small fw-bold hover-white">HOME</a>
+                                <button id="theme-toggle"
+                                    class="btn btn-outline-warning rounded-pill px-3 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-moon"></i>
+                                    <span class="theme-text small fw-bold">Light Mode</span>
+                                </button>
+                            </div>
                         </div>
-                        <div id="searchStatus" class="mt-2" style="height: 20px;"></div>
+
+                        <div id="searchStatus" class="mt-2 text-center w-100"
+                            style="font-size: 0.75rem; min-height: 20px; color: #7aa2f7;"></div>
                     </div>
-                </div>
-
-                <div class="d-none d-lg-flex align-items-center ms-auto gap-4">
-                    <a href="https://github.com/Byokuu"
-                        class="text-secondary text-decoration-none small fw-bold">GITHUB</a>
-                    <a href="index.html" class="text-secondary text-decoration-none small fw-bold">HOME</a>
-
-                    <button id="theme-toggle-desktop"
-                        class="btn btn-outline-warning rounded-pill px-3 d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-moon"></i>
-                        <span class="theme-text small fw-bold">Light Mode</span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -196,8 +189,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="SCRIPT/theme.js"></script>
     <script src="SCRIPT/portal.js"></script>
+    <script src="SCRIPT/theme.js"></script>
 </body>
 
 </html>
