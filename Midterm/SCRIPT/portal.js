@@ -1,12 +1,6 @@
 const uidInput = document.getElementById('uidInput');
 const searchBtn = document.getElementById('searchBtn');
 
-const themeToggles = [
-    document.getElementById('theme-toggle'),
-    document.getElementById('theme-toggle-desktop')
-];
-const body = document.body;
-
 async function fetchByUid() {
     const uid = uidInput.value.trim();
     const searchStatus = document.getElementById('searchStatus');
@@ -89,42 +83,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-function applyTheme(theme) {
-    const isLight = theme === 'light';
-    
-    if (isLight) {
-        body.classList.add('light-mode');
-    } else {
-        body.classList.remove('light-mode');
-    }
-
-    themeToggles.forEach(btn => {
-        if (btn) {
-            const icon = btn.querySelector('i');
-            const textSpan = btn.querySelector('.theme-text');
-            
-            if (isLight) {
-                icon.classList.replace('fa-moon', 'fa-sun');
-                textSpan.textContent = "Dark Mode";
-            } else {
-                icon.classList.replace('fa-sun', 'fa-moon');
-                textSpan.textContent = "Light Mode";
-            }
-        }
-    });
-}
-
-// Event listeners and initial load remain the same
-themeToggles.forEach(btn => {
-    if (btn) {
-        btn.addEventListener('click', () => {
-            const newTheme = body.classList.contains('light-mode') ? 'dark' : 'light';
-            localStorage.setItem('genshin-theme', newTheme);
-            applyTheme(newTheme);
-        });
-    }
-});
-
-const savedTheme = localStorage.getItem('genshin-theme') || 'dark';
-applyTheme(savedTheme);
