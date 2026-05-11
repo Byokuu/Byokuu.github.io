@@ -159,6 +159,15 @@ text-decoration: none;
 color: #000;
 }
 
+.school-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--genshin-gold);
+    background-color: white;
+}
+
 @keyframes slideUp {
 from {
 opacity: 0;
