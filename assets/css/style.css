@@ -1,162 +1,206 @@
 :root {
---genshin-gold: #dbb361;
---genshin-cream: #ece5d8;
---genshin-panel-glass: rgba(59, 66, 85, 0.85);
---genshin-dark: #1a1c24;
---genshin-tab-bg: rgba(42, 45, 52, 0.9);
---genshin-green: #90ad7a;
+    --genshin-gold: #dbb361;
+    --genshin-cream: #ece5d8;
+    --genshin-panel-glass: rgba(59, 66, 85, 0.85);
+    --genshin-dark: #1a1c24;
+    --genshin-tab-bg: rgba(42, 45, 52, 0.9);
+    --genshin-green: #90ad7a;
 }
 
 body {
-background-color: var(--genshin-dark);
-color: var(--genshin-cream);
-font-family: 'Quicksand', sans-serif;
-min-height: 100vh;
-overflow-x: hidden;
+    background-color: var(--genshin-dark);
+    color: var(--genshin-cream);
+    font-family: 'Quicksand', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .main-bg-image {
-position: fixed;
-top: 0;
-left: 0;
-width: 100vw;
-height: 100vh;
-object-fit: cover;
-z-index: -1;
-filter: brightness(0.4);
-pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+    filter: brightness(0.4);
+    pointer-events: none;
 }
 
 .left-panel,
 .right-panel {
-background: var(--genshin-panel-glass);
-backdrop-filter: blur(10px);
--webkit-backdrop-filter: blur(10px);
-border: 3px solid #000;
-box-shadow: 8px 8px 0px #000;
-margin-bottom: 20px;
+    background: var(--genshin-panel-glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px solid #000;
+    box-shadow: 8px 8px 0px #000;
+    margin-bottom: 20px;
 }
 
 .left-panel {
-padding: 40px 20px;
-text-align: center;
+    padding: 40px 20px;
+    text-align: center;
 }
 
 .profile-img {
-width: 160px;
-height: 160px;
-border-radius: 50%;
-border: 5px solid var(--genshin-gold);
-object-fit: cover;
-margin-bottom: 20px;
-box-shadow: 0 0 15px rgba(219, 179, 97, 0.4);
-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 5px solid var(--genshin-gold);
+    object-fit: cover;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(219, 179, 97, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .profile-img:hover {
-box-shadow: 0 0 30px rgba(219, 179, 97, 0.9);
-transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(219, 179, 97, 0.9);
+    transform: scale(1.05);
 }
 
 .name-box {
-font-family: 'Cinzel', serif;
-font-size: 1.5rem;
-color: var(--genshin-gold);
-margin-bottom: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--genshin-gold);
+    margin-bottom: 10px;
 }
 
 .rank-tag {
-display: inline-block;
-background: var(--genshin-cream);
-color: #000;
-padding: 5px 20px;
-font-weight: bold;
-border: 2px solid #000;
+    display: inline-block;
+    background: var(--genshin-cream);
+    color: #000;
+    padding: 5px 20px;
+    font-weight: bold;
+    border: 2px solid #000;
 }
 
 .nav-tabs {
-display: flex !important;
-flex-wrap: nowrap !important;
-border-bottom: 3px solid #000;
-background: var(--genshin-tab-bg);
-padding: 10px !important;
-gap: 5px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    border-bottom: 3px solid #000;
+    background: var(--genshin-tab-bg);
+    padding: 10px !important;
+    gap: 5px !important;
 }
 
 .nav-item {
-flex: 1 1 0 !important;
-min-width: 0;
+    flex: 1 1 0 !important;
+    min-width: 0;
 }
 
 .nav-link {
-width: 100%;
-font-family: 'Cinzel', serif;
-background-color: var(--genshin-green) !important;
-color: #000 !important;
-border: 2px solid #000 !important;
-border-radius: 0 !important;
-font-weight: bold;
-text-transform: uppercase;
-font-size: 0.9rem;
-padding: 12px 5px !important;
-transition: 0.2s;
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis;
+    width: 100%;
+    font-family: 'Cinzel', serif;
+    background-color: var(--genshin-green) !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    padding: 12px 5px !important;
+    transition: 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .nav-link.active {
-background-color: var(--genshin-gold) !important;
-transform: none !important;
-border-bottom: 2px solid #000 !important;
+    background-color: var(--genshin-gold) !important;
+    transform: none !important;
+    border-bottom: 2px solid #000 !important;
 }
 
 .tab-content {
-padding: 30px;
-animation: slideUp 0.4s ease;
+    padding: 30px;
+    animation: slideUp 0.4s ease;
 }
 
 h1 {
-font-family: 'Cinzel', serif;
-color: var(--genshin-gold);
+    font-family: 'Cinzel', serif;
+    color: var(--genshin-gold);
 }
 
 .quest-box {
-background: rgba(0, 0, 0, 0.3);
-padding: 20px;
-margin-top: 20px;
-border-left: 4px solid var(--genshin-gold);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    margin-top: 20px;
+    border-left: 4px solid var(--genshin-gold);
+}
+
+.quest-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-docs {
+    background: transparent !important;
+    color: var(--genshin-green) !important;
+    border: 2px solid var(--genshin-green) !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 15px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 0.85rem;
+}
+
+.btn-docs:hover {
+    background: rgba(144, 173, 122, 0.1) !important;
+    color: #fff !important;
+    border-color: #fff !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(144, 173, 122, 0.4);
+}
+
+.btn-launch {
+    background: var(--genshin-green) !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+    padding: 5px 20px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-launch:hover {
+    background-color: var(--genshin-gold) !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--genshin-gold);
 }
 
 .skill-item {
-margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .skill-info {
-display: flex;
-justify-content: space-between;
-margin-bottom: 8px;
-font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: bold;
 }
 
 .progress {
-background-color: #1a1c24;
-height: 16px;
-border: 1px solid var(--genshin-gold);
-border-radius: 10px;
-overflow: hidden;
+    background-color: #1a1c24;
+    height: 16px;
+    border: 1px solid var(--genshin-gold);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 .progress-bar {
-background: linear-gradient(90deg, var(--genshin-gold), #fff);
+    background: linear-gradient(90deg, var(--genshin-gold), #fff);
 }
 
 .rank-tag:hover {
-background-color: var(--genshin-gold) !important;
-transform: scale(1.05);
-box-shadow: 0 0 10px var(--genshin-gold);
-text-decoration: none;
-color: #000;
+    background-color: var(--genshin-gold) !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--genshin-gold);
+    text-decoration: none;
+    color: #000;
 }
 
 .school-logo {
@@ -168,25 +212,37 @@ color: #000;
     background-color: white;
 }
 
-@keyframes slideUp {
-from {
-opacity: 0;
-transform: translateY(15px);
+#githubCard .card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
 
-to {
-opacity: 1;
-transform: translateY(0);
+#githubCard .card:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-3px) scale(1.02);
+    border-color: var(--genshin-gold) !important;
+    box-shadow: 0 5px 15px rgba(219, 179, 97, 0.3);
 }
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (max-width: 768px) {
-.container {
-padding-top: 20px;
-}
+    .container {
+        padding-top: 20px;
+    }
 
-.nav-link {
-font-size: 0.75rem;
-padding: 10px 2px !important;
-}
+    .nav-link {
+        font-size: 0.75rem;
+        padding: 10px 2px !important;
+    }
 }
