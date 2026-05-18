@@ -134,6 +134,10 @@ h1 {
     align-items: center;
 }
 
+.quest-item {
+    margin-left: -0.75rem;
+}
+
 .btn-docs {
     background: transparent !important;
     color: var(--genshin-green) !important;
@@ -256,6 +260,10 @@ h1 {
         flex-wrap: wrap;
         gap: 10px;
         width: 100%;
+    }
+
+    .quest-item {
+        margin-left: -0.75rem;
     }
 
     .btn-docs,
