@@ -228,6 +228,53 @@ h1 {
     box-shadow: 0 5px 15px rgba(219, 179, 97, 0.3);
 }
 
+/* QUEST LOG HOVER PREVIEW SYSTEM */
+.launch-preview-wrapper {
+    position: relative;
+    display: inline-block;
+    flex-grow: 1;
+    display: flex !important;
+}
+
+.hover-preview-card {
+    position: absolute;
+    bottom: 135%;
+    right: 0;
+    width: 400px;
+    height: auto;
+    border: 2px solid var(--genshin-gold);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    background-color: #1a1f29;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    pointer-events: none;
+}
+
+.hover-preview-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.launch-preview-wrapper .btn-launch {
+    width: 100%;
+    text-align: center;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.launch-preview-wrapper:hover .hover-preview-card {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
 @keyframes slideUp {
     from {
         opacity: 0;
