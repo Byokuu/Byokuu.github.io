@@ -248,6 +248,7 @@ h1 {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
     background-color: #1a1f29;
     z-index: 999;
+    display: none !important;
     opacity: 0;
     visibility: hidden;
     transform: translateY(8px);
@@ -273,6 +274,18 @@ h1 {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .hover-preview-card {
+        display: block !important;
+    }
+
+    .launch-preview-wrapper:hover .hover-preview-card {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
 }
 
 @keyframes slideUp {
