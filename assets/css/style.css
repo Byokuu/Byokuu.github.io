@@ -563,6 +563,10 @@ button:focus-visible {
     display: flex;
 }
 
+.launch-preview-wrapper .btn-launch {
+    flex: 1 1 auto;
+}
+
 .hover-preview-card {
     position: absolute;
     bottom: calc(100% + 14px);
