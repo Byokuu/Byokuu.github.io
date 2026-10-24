@@ -1,0 +1,376 @@
+:root {
+    --maroon: #7a0f1a;
+    --maroon-d: #5a0a13;
+    --gold: #d9a441;
+    --ink: #23201f;
+    --mute: #6b6566;
+    --bg: #f3f1f2;
+    --line: #e2dedf
+}
+
+body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, sans-serif
+}
+
+.topbar {
+    background: var(--maroon);
+    color: #fff;
+    border-bottom: 4px solid var(--gold)
+}
+
+.topbar .brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: .2px
+}
+
+.topbar a.nav-link {
+    color: #f3d9dc
+}
+
+.topbar a.nav-link:hover,
+.topbar a.active {
+    color: #fff
+}
+
+.panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.5rem
+}
+
+.btn-maroon {
+    background: var(--maroon);
+    border-color: var(--maroon);
+    color: #fff
+}
+
+.btn-maroon:hover,
+.btn-maroon:focus {
+    background: var(--maroon-d);
+    border-color: var(--maroon-d);
+    color: #fff
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--maroon);
+    box-shadow: 0 0 0 .2rem rgba(122, 15, 26, .15)
+}
+
+.badge-status {
+    font-weight: 600;
+    padding: .4em .7em;
+    border-radius: 20px;
+    font-size: .78rem
+}
+
+.st-Pending {
+    background: #fdecc8;
+    color: #7a5200
+}
+
+.st-In-progress {
+    background: #dbe9fb;
+    color: #154a8a
+}
+
+.st-Fixed {
+    background: #d6f0de;
+    color: #17623a
+}
+
+.urg-Low {
+    color: #17623a
+}
+
+.urg-Medium {
+    color: #9a6700
+}
+
+.urg-High {
+    color: #b3261e;
+    font-weight: 600
+}
+
+.stat {
+    border-left: 5px solid var(--gold)
+}
+
+.stat .n {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--maroon);
+    line-height: 1
+}
+
+.stat.fixed {
+    border-left-color: #2e9e5b
+}
+
+.stat.prog {
+    border-left-color: #3b82d6
+}
+
+.table thead th {
+    color: var(--mute);
+    font-weight: 600;
+    font-size: .85rem;
+    border-bottom: 2px solid var(--line)
+}
+
+.table td {
+    vertical-align: middle
+}
+
+.tid {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: .85rem;
+    color: var(--maroon)
+}
+
+.empty {
+    text-align: center;
+    color: var(--mute);
+    padding: 2.5rem 1rem
+}
+
+.toast-wrap {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 2000
+}
+
+:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px
+}
+
+.btn-gold {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #3b2a00;
+    font-weight: 600
+}
+
+.btn-gold:hover,
+.btn-gold:focus {
+    background: #e6b457;
+    border-color: #e6b457;
+    color: #3b2a00
+}
+
+/* modal: slide up + dimmed backdrop */
+.modal-backdrop {
+    --bs-backdrop-bg: #1a0509;
+    --bs-backdrop-opacity: .65
+}
+
+.modal-backdrop.fade {
+    transition: opacity .35s ease
+}
+
+.modal.slide-up.fade .modal-dialog {
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform .4s cubic-bezier(.2, .8, .2, 1), opacity .3s ease
+}
+
+.modal.slide-up.show .modal-dialog {
+    transform: none;
+    opacity: 1
+}
+
+.modal-content {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .35)
+}
+
+.modal-header {
+    border-bottom: 3px solid var(--gold)
+}
+
+@media (prefers-reduced-motion:reduce) {
+
+    .modal.slide-up.fade .modal-dialog,
+    .modal-backdrop.fade {
+        transition: none
+    }
+}
+
+.modal-admin .modal-header {
+    background: var(--maroon);
+    color: #fff;
+    border-radius: 12px 12px 0 0
+}
+
+.modal-admin .btn-close {
+    filter: invert(1) grayscale(1) brightness(2)
+}
+
+/* success modal */
+.done {
+    overflow: hidden
+}
+
+.done-top {
+    background: var(--maroon);
+    color: #fff;
+    text-align: center;
+    padding: 2rem 1.5rem 1.75rem;
+    border-bottom: 4px solid var(--gold)
+}
+
+.done-sub {
+    color: #f0d3d6;
+    font-size: .92rem
+}
+
+.done-check {
+    display: block;
+    margin: 0 auto 1rem
+}
+
+.done-check .ring {
+    fill: rgba(255, 255, 255, .08);
+    stroke: var(--gold);
+    stroke-width: 3;
+    stroke-dasharray: 202;
+    stroke-dashoffset: 202
+}
+
+.done-check .tick {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50
+}
+
+#doneModal.show .ring {
+    animation: draw .6s .25s ease-out forwards
+}
+
+#doneModal.show .tick {
+    animation: draw .4s .75s ease-out forwards
+}
+
+#doneModal.show .stub {
+    animation: stub-in .5s .45s cubic-bezier(.2, .8, .2, 1) both
+}
+
+@keyframes draw {
+    to {
+        stroke-dashoffset: 0
+    }
+}
+
+@keyframes stub-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px)
+    }
+
+    to {
+        opacity: 1;
+        transform: none
+    }
+}
+
+.stub {
+    background: #fbf6f6;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    position: relative
+}
+
+.stub-main {
+    padding: 1rem 1.1rem
+}
+
+.stub-label {
+    font-size: .8rem;
+    color: var(--mute);
+    margin-bottom: .15rem
+}
+
+.stub-id {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--maroon);
+    letter-spacing: .5px
+}
+
+.stub-cut {
+    position: relative;
+    border-top: 2px dashed #dccdcf;
+    margin: 0 14px
+}
+
+.stub-cut::before,
+.stub-cut::after {
+    content: "";
+    position: absolute;
+    top: -11px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--line)
+}
+
+.stub-cut::before {
+    left: -25px;
+    clip-path: inset(0 0 0 11px)
+}
+
+.stub-cut::after {
+    right: -25px;
+    clip-path: inset(0 11px 0 0)
+}
+
+.stub-rows {
+    padding: .75rem 1.1rem 1rem
+}
+
+.stub-rows>div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .35rem 0
+}
+
+.stub-rows dt {
+    font-weight: 400;
+    color: var(--mute);
+    font-size: .9rem
+}
+
+.stub-rows dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 600;
+    font-size: .92rem;
+    word-break: break-word
+}
+
+@media (prefers-reduced-motion:reduce) {
+
+    #doneModal.show .ring,
+    #doneModal.show .tick {
+        animation: none;
+        stroke-dashoffset: 0
+    }
+
+    #doneModal.show .stub {
+        animation: none
+    }
+}
