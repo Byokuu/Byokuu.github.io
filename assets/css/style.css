@@ -1,179 +1,512 @@
-:root {
-    --genshin-gold: #dbb361;
-    --genshin-cream: #ece5d8;
-    --genshin-panel-glass: rgba(59, 66, 85, 0.85);
-    --genshin-dark: #1a1c24;
-    --genshin-tab-bg: rgba(42, 45, 52, 0.9);
-    --genshin-green: #90ad7a;
+/* ==========================================================
+   Design tokens
+   Light: blue-tinted white   |   Dark: true black
+   ========================================================== */
+:root,
+[data-bs-theme="light"] {
+    --bg: #e9f0fc;
+    --surface: #ffffff;
+    --surface-2: #eff4fd;
+    --border: #d3dff2;
+    --text: #0e1a2e;
+    --text-muted: #55657f;
+    --accent: #1f5fe0;
+    --accent-hover: #164bb8;
+    --accent-soft: rgba(31, 95, 224, 0.1);
+    --on-accent: #ffffff;
+    --glass: rgba(255, 255, 255, 0.62);
+    --glass-border: rgba(255, 255, 255, 0.75);
+    --blob-1: #4f8cff;
+    --blob-2: #66d2ff;
+    --blob-3: #8d8bff;
+    --shape-opacity: 0.42;
+    --wash-1: rgba(79, 140, 255, 0.22);
+    --wash-2: rgba(102, 210, 255, 0.22);
+    --shadow: 0 1px 2px rgba(14, 26, 46, 0.04), 0 12px 32px rgba(31, 60, 120, 0.08);
+    --shadow-pop: 0 16px 40px rgba(14, 26, 46, 0.18);
+
+    --bs-body-bg: var(--bg);
+    --bs-body-color: var(--text);
 }
 
+[data-bs-theme="dark"] {
+    --bg: #000000;
+    --surface: #0d0d0f;
+    --surface-2: #161619;
+    --border: #26262b;
+    --text: #ececef;
+    --text-muted: #9a9aa5;
+    --accent: #5b9bff;
+    --accent-hover: #86b5ff;
+    --accent-soft: rgba(91, 155, 255, 0.13);
+    --on-accent: #000000;
+    --glass: rgba(16, 16, 20, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --blob-1: #2f6bff;
+    --blob-2: #1aa6d8;
+    --blob-3: #5a4bff;
+    --shape-opacity: 0.3;
+    --wash-1: rgba(47, 107, 255, 0.12);
+    --wash-2: rgba(26, 166, 216, 0.1);
+    --shadow: 0 0 0 1px rgba(255, 255, 255, 0.015);
+    --shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.85);
+
+    --bs-body-bg: var(--bg);
+    --bs-body-color: var(--text);
+}
+
+/* ==========================================================
+   Base
+   ========================================================== */
 body {
-    background-color: var(--genshin-dark);
-    color: var(--genshin-cream);
-    font-family: 'Quicksand', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    line-height: 1.65;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.main-bg-image {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: -1;
-    filter: brightness(0.4);
-    pointer-events: none;
+/* Breathing room on every side so the UI never touches the edges */
+.page-wrap {
+    position: relative;
+    z-index: 1;
+    padding: clamp(16px, 4vw, 56px);
 }
 
-.left-panel,
-.right-panel {
-    background: var(--genshin-panel-glass);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 3px solid #000;
-    box-shadow: 8px 8px 0px #000;
-    margin-bottom: 20px;
+h1,
+h2 {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
 }
 
-.left-panel {
-    padding: 40px 20px;
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1.25rem;
+}
+
+h2 {
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+}
+
+p {
+    max-width: 68ch;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* ==========================================================
+   Cards
+   ========================================================== */
+.profile-card,
+.content-card {
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+}
+
+.profile-card {
+    overflow: hidden;
+}
+
+/* Sticky must be on the column itself: its parent (the row) is as tall as
+   the page, so it has room to travel. On the card it had nowhere to move. */
+@media (min-width: 992px) {
+    .profile-aside {
+        position: sticky;
+        top: 24px;
+    }
+}
+
+/* ==========================================================
+   Profile card
+   ========================================================== */
+.profile-body {
+    padding: 36px 28px 32px;
     text-align: center;
 }
 
 .profile-img {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    border: 5px solid var(--genshin-gold);
+    width: 128px;
+    height: 128px;
+    margin-bottom: 18px;
+    border-radius: 32px;
     object-fit: cover;
-    margin-bottom: 20px;
-    box-shadow: 0 0 15px rgba(219, 179, 97, 0.4);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.profile-img:hover {
-    box-shadow: 0 0 30px rgba(219, 179, 97, 0.9);
-    transform: scale(1.05);
+    border: 4px solid var(--surface);
+    box-shadow: var(--shadow);
 }
 
 .name-box {
-    font-family: 'Cinzel', serif;
-    font-size: 1.5rem;
-    color: var(--genshin-gold);
-    margin-bottom: 10px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 12px;
 }
 
 .rank-tag {
     display: inline-block;
-    background: var(--genshin-cream);
-    color: #000;
-    padding: 5px 20px;
-    font-weight: bold;
-    border: 2px solid #000;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 4px 16px;
+    font-size: 0.88rem;
+    font-weight: 700;
 }
 
-.nav-tabs {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    border-bottom: 3px solid #000;
-    background: var(--genshin-tab-bg);
-    padding: 10px !important;
-    gap: 5px !important;
+.contact {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: left;
 }
 
-.nav-item {
-    flex: 1 1 0 !important;
-    min-width: 0;
+.contact-label {
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
-.nav-link {
-    width: 100%;
-    font-family: 'Cinzel', serif;
-    background-color: var(--genshin-green) !important;
-    color: #000 !important;
-    border: 2px solid #000 !important;
-    border-radius: 0 !important;
-    font-weight: bold;
-    text-transform: uppercase;
+.social-links {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.social-links a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.contact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-size: 0.9rem;
-    padding: 12px 5px !important;
-    transition: 0.2s;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: var(--text-muted);
+    margin-top: 10px;
+    overflow-wrap: anywhere;
 }
 
-.nav-link.active {
-    background-color: var(--genshin-gold) !important;
-    transform: none !important;
-    border-bottom: 2px solid #000 !important;
+.contact-row i {
+    color: var(--accent);
 }
 
-.tab-content {
-    padding: 30px;
-    animation: slideUp 0.4s ease;
+/* GitHub card (injected by script.js) */
+#githubCard {
+    margin-bottom: 14px;
 }
 
-h1 {
-    font-family: 'Cinzel', serif;
-    color: var(--genshin-gold);
+.gh-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.gh-card:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--text);
+}
+
+.gh-card img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+}
+
+.gh-name {
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin: 0;
+    color: var(--text);
+}
+
+.gh-user {
+    font-size: 0.78rem;
+    margin: 0;
+    color: var(--text-muted);
+}
+
+/* ==========================================================
+   Content card: header (tabs + theme toggle)
+   ========================================================== */
+.content-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px clamp(20px, 3vw, 40px) 0;
+}
+
+.site-nav {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    gap: 2px;
+    padding: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.site-nav .nav-link {
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 8px 20px;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.site-nav .nav-link:hover {
+    color: var(--text);
+}
+
+.site-nav .nav-link.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 1px 3px rgba(14, 26, 46, 0.12);
+}
+
+[data-bs-theme="dark"] .site-nav .nav-link.active {
+    background: var(--border);
+    box-shadow: none;
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.theme-toggle .icon-sun {
+    display: none;
+}
+
+[data-bs-theme="dark"] .theme-toggle .icon-sun {
+    display: inline;
+}
+
+[data-bs-theme="dark"] .theme-toggle .icon-moon {
+    display: none;
+}
+
+/* ==========================================================
+   Content card: body
+   ========================================================== */
+.content-body {
+    padding: clamp(24px, 4vw, 48px);
 }
 
 .quest-box {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 14px;
+    padding: 20px 24px;
     margin-top: 20px;
-    border-left: 4px solid var(--genshin-gold);
+}
+
+.quest-box ul {
+    margin: 8px 0 0;
+    padding-left: 1.25rem;
+}
+
+.quest-item {
+    margin-left: 0;
+}
+
+.quest-title {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.quest-box small {
+    color: var(--text-muted);
+}
+
+.quest-project {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
 }
 
 .quest-actions {
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-shrink: 0;
 }
 
-.quest-item {
-    margin-left: -0.75rem;
+/* Buttons */
+.btn-docs,
+.btn-launch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-docs {
-    background: transparent !important;
-    color: var(--genshin-green) !important;
-    border: 2px solid var(--genshin-green) !important;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 15px;
-    font-weight: bold;
-    text-decoration: none;
-    transition: 0.3s;
-    font-size: 0.85rem;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
 }
 
 .btn-docs:hover {
-    background: rgba(144, 173, 122, 0.1) !important;
-    color: #fff !important;
-    border-color: #fff !important;
-    transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(144, 173, 122, 0.4);
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .btn-launch {
-    background: var(--genshin-green) !important;
-    color: #000 !important;
-    border: 2px solid #000 !important;
-    padding: 5px 20px;
-    font-weight: bold;
-    text-decoration: none;
-    transition: 0.3s;
+    background: var(--accent);
+    color: var(--on-accent);
+    border: 1px solid var(--accent);
 }
 
 .btn-launch:hover {
-    background-color: var(--genshin-gold) !important;
-    transform: scale(1.05);
-    box-shadow: 0 0 10px var(--genshin-gold);
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--on-accent);
+}
+
+/* Education */
+.edu-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.edu-item p {
+    margin: 0;
+}
+
+.school-logo {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border-radius: 50%;
+    padding: 3px;
+    background: #fff;
+    border: 1px solid var(--border);
+}
+
+.edu-degree {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+}
+
+.edu-school {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.edu-year {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.section-rule {
+    border: 0;
+    border-top: 1px solid var(--border);
+    opacity: 1;
+    margin: 40px 0;
+}
+
+/* Skills */
+.skill-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+    margin-bottom: 32px;
+}
+
+.skill-list li {
+    position: relative;
+    padding: 10px 14px 10px 38px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.skill-list li::before {
+    content: "\F26A";
+    /* bi-check-circle-fill */
+    font-family: 'bootstrap-icons';
+    position: absolute;
+    left: 13px;
+    top: 10px;
+    color: var(--accent);
+    font-size: 0.9rem;
 }
 
 .skill-item {
@@ -184,75 +517,51 @@ h1 {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    font-weight: bold;
+    font-weight: 600;
+}
+
+.skill-info span:last-child {
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
 .progress {
-    background-color: #1a1c24;
-    height: 16px;
-    border: 1px solid var(--genshin-gold);
-    border-radius: 10px;
+    background-color: var(--border);
+    height: 8px;
+    border-radius: 999px;
     overflow: hidden;
 }
 
 .progress-bar {
-    background: linear-gradient(90deg, var(--genshin-gold), #fff);
+    background: var(--accent);
+    border-radius: 999px;
 }
 
-.rank-tag:hover {
-    background-color: var(--genshin-gold) !important;
-    transform: scale(1.05);
-    box-shadow: 0 0 10px var(--genshin-gold);
-    text-decoration: none;
-    color: #000;
-}
-
-.school-logo {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 2px solid var(--genshin-gold);
-    background-color: white;
-}
-
-#githubCard .card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-}
-
-#githubCard .card:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    transform: translateY(-3px) scale(1.02);
-    border-color: var(--genshin-gold) !important;
-    box-shadow: 0 5px 15px rgba(219, 179, 97, 0.3);
-}
-
-/* QUEST LOG HOVER PREVIEW SYSTEM */
+/* ==========================================================
+   Launch hover preview
+   ========================================================== */
 .launch-preview-wrapper {
     position: relative;
-    display: inline-block;
-    flex-grow: 1;
-    display: flex !important;
+    display: flex;
 }
 
 .hover-preview-card {
     position: absolute;
-    bottom: 135%;
+    bottom: calc(100% + 14px);
     right: 0;
     width: 400px;
-    height: auto;
-    border: 2px solid var(--genshin-gold);
-    border-radius: 6px;
+    max-width: 85vw;
+    border: 1px solid var(--border);
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
-    background-color: #1a1f29;
+    background: var(--surface);
+    box-shadow: var(--shadow-pop);
     z-index: 999;
-    display: none !important;
+    display: none;
     opacity: 0;
     visibility: hidden;
     transform: translateY(8px);
-    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
     pointer-events: none;
 }
 
@@ -262,23 +571,22 @@ h1 {
     display: block;
 }
 
-.launch-preview-wrapper .btn-launch {
-    width: 100%;
-    text-align: center;
-    display: inline-flex;
-    justify-content: center;
+.cv-head {
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1.25rem;
 }
 
-.launch-preview-wrapper:hover .hover-preview-card {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+.cv-head h1 {
+    margin-bottom: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
     .hover-preview-card {
-        display: block !important;
+        display: block;
     }
 
     .launch-preview-wrapper:hover .hover-preview-card {
@@ -288,50 +596,104 @@ h1 {
     }
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 @media (max-width: 991px) {
-
-    .quest-box {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 15px;
-        padding: 20px !important;
-    }
-
-    .quest-box>div:first-child {
-        width: 100%;
-        margin-bottom: 10px;
+    .quest-project {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
     .quest-actions {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 10px;
         width: 100%;
+        flex-wrap: wrap;
     }
 
-    .quest-item {
-        margin-left: -0.75rem;
+    .quest-actions>*,
+    .launch-preview-wrapper {
+        flex: 1 1 150px;
+    }
+}
+
+@media (max-width: 575px) {
+    .site-nav .nav-link {
+        padding: 8px 14px;
     }
 
-    .btn-docs,
-    .btn-launch,
-    .rank-tag {
-        flex-grow: 1;
-        text-align: center;
-        justify-content: center;
-        min-width: 150px;
+    .skill-list {
+        grid-template-columns: 1fr;
+    }
+
+    .edu-item {
+        align-items: flex-start;
+    }
+
+    .profile-body {
+        padding: 28px 20px 28px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
+
+.bg-shapes {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+        radial-gradient(60vmax 45vmax at 6% 0%, var(--wash-1), transparent 70%),
+        radial-gradient(55vmax 45vmax at 100% 100%, var(--wash-2), transparent 70%);
+}
+
+/* outer element drifts, inner element spins (so the spin never reverses) */
+.diamond {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--s);
+    height: var(--s);
+    opacity: var(--shape-opacity);
+    animation: drift var(--dur) ease-in-out var(--delay) infinite alternate;
+    will-change: transform;
+}
+
+.diamond i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--blob-1), var(--blob-2));
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    animation: spin var(--spin) linear infinite;
+    animation-direction: var(--dir);
+}
+
+.diamond:nth-child(3n) i {
+    background: linear-gradient(135deg, var(--blob-2), var(--blob-3));
+}
+
+.diamond:nth-child(3n+1) i {
+    background: linear-gradient(135deg, var(--blob-3), var(--blob-1));
+}
+
+@keyframes drift {
+    to {
+        transform: translate(var(--dx), var(--dy));
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .diamond,
+    .diamond i {
+        animation: none;
     }
 }
