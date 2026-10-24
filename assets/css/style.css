@@ -614,8 +614,42 @@ button:focus-visible {
 }
 
 @media (max-width: 575px) {
+
+    /* Keep tabs and the theme toggle on one row on phones */
+    .content-head {
+        flex-wrap: nowrap;
+        gap: 8px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .site-nav {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .site-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .site-nav .nav-item {
+        flex: 1 1 auto;
+    }
+
     .site-nav .nav-link {
-        padding: 8px 14px;
+        width: 100%;
+        padding: 8px 8px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .theme-toggle {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
     }
 
     .skill-list {
