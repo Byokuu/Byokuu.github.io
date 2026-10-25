@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FixIT Iskolar - Admin</title>
+    <title>CampusCare - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link href="style.css" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body data-page="admin">
     <header class="topbar shadow">
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-3">
-            <div class="brand">FixIT Iskolar <span class="fs-6 fw-normal opacity-75">Admin</span></div>
+            <div class="brand">CampusCare <span class="fs-6 fw-normal opacity-75">Admin</span></div>
             <nav class="nav align-items-center">
                 <button class="btn btn-gold me-2" type="button" data-bs-toggle="modal" data-bs-target="#reportModal">+
                     Log a damage</button>
@@ -24,70 +24,153 @@
     <main class="container py-4">
 
         <div id="adminApp">
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3">
-                    <div class="panel stat">
-                        <div class="n" id="cTotal">0</div>
-                        <div class="text-secondary">Total tickets</div>
+            <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabTickets"
+                        type="button" role="tab">Maintenance tracking</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBorrow"
+                        type="button" role="tab">Borrowing</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAssets"
+                        type="button" role="tab">Assets</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabReports"
+                        type="button" role="tab">Reports</button></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tabTickets">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat">
+                                <div class="n" id="cTotal">0</div>
+                                <div class="text-secondary">Total tickets</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat">
+                                <div class="n" id="cPending">0</div>
+                                <div class="text-secondary">Pending</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat prog">
+                                <div class="n" id="cProg">0</div>
+                                <div class="text-secondary">In progress</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat fixed">
+                                <div class="n" id="cFixed">0</div>
+                                <div class="text-secondary">Fixed</div>
+                            </div>
+                        </div>
                     </div>
+
+                    <section class="panel">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-5"><input id="search" class="form-control" type="search"
+                                    placeholder="Search ticket, place or reporter" aria-label="Search tickets"></div>
+                            <div class="col-6 col-md-3">
+                                <select id="fStatus" class="form-select" aria-label="Filter by status">
+                                    <option value="">All statuses</option>
+                                    <option>Pending</option>
+                                    <option>In progress</option>
+                                    <option>Fixed</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <select id="fUrg" class="form-select" aria-label="Filter by urgency">
+                                    <option value="">All urgency</option>
+                                    <option>High</option>
+                                    <option>Medium</option>
+                                    <option>Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket</th>
+                                        <th>Damage</th>
+                                        <th>Reported by</th>
+                                        <th>Urgency</th>
+                                        <th>Status</th>
+                                        <th>Assigned to</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rows"></tbody>
+                            </table>
+                        </div>
+                    </section>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="panel stat">
-                        <div class="n" id="cPending">0</div>
-                        <div class="text-secondary">Pending</div>
-                    </div>
+                <div class="tab-pane fade" id="tabBorrow">
+                    <section class="panel">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6"><input id="lSearch" class="form-control" type="search"
+                                    placeholder="Search request, equipment or borrower" aria-label="Search requests">
+                            </div>
+                            <div class="col-md-3"><select id="lStatus" class="form-select"
+                                    aria-label="Filter by status">
+                                    <option value="">All statuses</option>
+                                    <option>Pending</option>
+                                    <option>Approved</option>
+                                    <option>Borrowed</option>
+                                    <option>Overdue</option>
+                                    <option>Returned</option>
+                                    <option>Rejected</option>
+                                </select></div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Request</th>
+                                        <th>Equipment</th>
+                                        <th>Borrower</th>
+                                        <th>Period</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="loanRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="panel stat prog">
-                        <div class="n" id="cProg">0</div>
-                        <div class="text-secondary">In progress</div>
-                    </div>
+                <div class="tab-pane fade" id="tabAssets">
+                    <section class="panel">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between mb-3">
+                            <input id="sSearch" class="form-control w-auto" style="min-width:260px" type="search"
+                                placeholder="Search name, ID, location or department" aria-label="Search assets">
+                            <button class="btn btn-maroon" type="button" data-bs-toggle="modal"
+                                data-bs-target="#assetModal">+ Add asset</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID No.</th>
+                                        <th>Asset</th>
+                                        <th>Location</th>
+                                        <th>Department</th>
+                                        <th>Condition</th>
+                                        <th>Availability</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assetRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="panel stat fixed">
-                        <div class="n" id="cFixed">0</div>
-                        <div class="text-secondary">Fixed</div>
+                <div class="tab-pane fade" id="tabReports">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0">Reports &amp; analytics</h2>
+                        <button class="btn btn-outline-secondary btn-sm no-print" type="button"
+                            onclick="window.print()">Print report</button>
                     </div>
+                    <div id="reportBody"></div>
                 </div>
             </div>
-
-            <section class="panel">
-                <div class="row g-2 mb-3">
-                    <div class="col-md-5"><input id="search" class="form-control" type="search"
-                            placeholder="Search ticket, place or reporter" aria-label="Search tickets"></div>
-                    <div class="col-6 col-md-3">
-                        <select id="fStatus" class="form-select" aria-label="Filter by status">
-                            <option value="">All statuses</option>
-                            <option>Pending</option>
-                            <option>In progress</option>
-                            <option>Fixed</option>
-                        </select>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <select id="fUrg" class="form-select" aria-label="Filter by urgency">
-                            <option value="">All urgency</option>
-                            <option>High</option>
-                            <option>Medium</option>
-                            <option>Low</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Ticket</th>
-                                <th>Damage</th>
-                                <th>Reported by</th>
-                                <th>Urgency</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="rows"></tbody>
-                    </table>
-                </div>
-            </section>
         </div>
     </main>
 
@@ -159,6 +242,11 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="assetId">Related asset <span
+                                    class="text-secondary">(optional)</span></label>
+                            <select class="form-select" id="assetId" name="assetId"></select>
+                        </div>
                         <div>
                             <label class="form-label" for="description">More Details <span
                                     class="text-secondary">(optional)</span></label>
@@ -213,6 +301,132 @@
                     <p class="text-secondary small text-center mt-3 mb-3">Change its status anytime from the Actions
                         column.</p>
                     <button class="btn btn-maroon w-100 py-2" data-bs-dismiss="modal">Back to tickets</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-admin" id="assignModal" tabindex="-1" aria-labelledby="assignModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="assignModalT">Assign maintenance personnel</h2><button type="button"
+                        class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-secondary" id="aTitle"></p>
+                    <form id="assignForm"><input type="hidden" id="aId"><label class="form-label" for="aName">Assigned
+                            to</label>
+                        <input class="form-control" id="aName" list="aList" placeholder="Name of the technician or team"
+                            required><datalist id="aList"></datalist>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="assignForm"
+                        class="btn btn-maroon">Assign</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-admin" id="returnModal" tabindex="-1" aria-labelledby="returnModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="returnModalT">Mark as returned</h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-secondary" id="rTitle"></p>
+                    <form id="returnForm"><input type="hidden" id="rId">
+                        <div class="mb-3"><label class="form-label" for="rCond">Condition on return</label><select
+                                class="form-select" id="rCond">
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Damaged</option>
+                            </select>
+                            <div class="form-text">Choosing Damaged marks the item as under repair and creates a repair
+                                ticket.</div>
+                        </div>
+                        <div><label class="form-label" for="rNote">Notes <span
+                                    class="text-secondary">(optional)</span></label><textarea class="form-control"
+                                id="rNote" rows="2"></textarea></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="returnForm"
+                        class="btn btn-maroon">Confirm return</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-admin" id="assetModal" tabindex="-1" aria-labelledby="assetModalT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="assetModalT">Add asset</h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assetForm" novalidate>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-7"><label class="form-label" for="nName">Asset name</label><input
+                                    class="form-control" id="nName" name="name"
+                                    placeholder="e.g. Projector, Folding table" required>
+                                <div class="invalid-feedback">Enter the asset name.</div>
+                            </div>
+                            <div class="col-sm-5"><label class="form-label" for="nTag">ID Number</label><input
+                                    class="form-control" id="nTag" name="tag" placeholder="e.g. PROJ-014" required>
+                                <div class="invalid-feedback">Enter a unique ID number.</div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6"><label class="form-label" for="nCat">Category</label><select
+                                    class="form-select" id="nCat" name="category">
+                                    <option>Equipment</option>
+                                    <option>Furniture</option>
+                                    <option>Electronics</option>
+                                    <option>Sports</option>
+                                    <option>Laboratory</option>
+                                    <option>Other</option>
+                                </select></div>
+                            <div class="col-sm-6"><label class="form-label" for="nCond">Condition</label><select
+                                    class="form-select" id="nCond" name="condition">
+                                    <option>Good</option>
+                                    <option>Fair</option>
+                                    <option>Poor</option>
+                                    <option>Damaged</option>
+                                </select></div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-sm-6"><label class="form-label" for="nLoc">Location</label><input
+                                    class="form-control" id="nLoc" name="location" placeholder="e.g. AVR, Room 204"
+                                    required>
+                                <div class="invalid-feedback">Enter the location.</div>
+                            </div>
+                            <div class="col-sm-6"><label class="form-label" for="nDept">Assigned
+                                    Department</label><input class="form-control" id="nDept" name="dept"
+                                    placeholder="e.g. Student Affairs" required>
+                                <div class="invalid-feedback">Enter the department.</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="assetForm"
+                        class="btn btn-maroon">Save asset</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-admin" id="historyModal" tabindex="-1" aria-labelledby="historyModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="histTitle">Asset</h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="histBody"></div>
                 </div>
             </div>
         </div>
