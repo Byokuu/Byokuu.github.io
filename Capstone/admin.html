@@ -33,6 +33,8 @@
                         type="button" role="tab">Assets</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabReports"
                         type="button" role="tab">Reports</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabHistory"
+                        type="button" role="tab">History</button></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="tabTickets">
@@ -148,7 +150,7 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>ID No.</th>
+                                        <th>ID no.</th>
                                         <th>Asset</th>
                                         <th>Location</th>
                                         <th>Department</th>
@@ -169,6 +171,53 @@
                             onclick="window.print()">Print report</button>
                     </div>
                     <div id="reportBody"></div>
+                </div>
+                <div class="tab-pane fade" id="tabHistory">
+                    <section class="panel mb-3">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                            <h2 class="h5 mb-0">Activity log</h2>
+                            <div class="d-flex gap-2">
+                                <input id="gSearch" class="form-control" type="search" placeholder="Search activity"
+                                    aria-label="Search activity">
+                                <select id="gKind" class="form-select w-auto" aria-label="Filter activity">
+                                    <option value="">Everything</option>
+                                    <option value="ticket">Tickets</option>
+                                    <option value="asset">Assets</option>
+                                    <option value="loan">Borrowing</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>When</th>
+                                        <th>Type</th>
+                                        <th>What happened</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section class="panel">
+                        <h2 class="h5 mb-1">Archived items</h2>
+                        <p class="small text-secondary">Archived tickets and assets are hidden from the lists and
+                            reports. Restore them any time, or delete them forever.</p>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Item</th>
+                                        <th>Archived</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
@@ -374,7 +423,7 @@
                                     placeholder="e.g. Projector, Folding table" required>
                                 <div class="invalid-feedback">Enter the asset name.</div>
                             </div>
-                            <div class="col-sm-5"><label class="form-label" for="nTag">ID Number</label><input
+                            <div class="col-sm-5"><label class="form-label" for="nTag">ID number</label><input
                                     class="form-control" id="nTag" name="tag" placeholder="e.g. PROJ-014" required>
                                 <div class="invalid-feedback">Enter a unique ID number.</div>
                             </div>
@@ -404,7 +453,7 @@
                                 <div class="invalid-feedback">Enter the location.</div>
                             </div>
                             <div class="col-sm-6"><label class="form-label" for="nDept">Assigned
-                                    Department</label><input class="form-control" id="nDept" name="dept"
+                                    department</label><input class="form-control" id="nDept" name="dept"
                                     placeholder="e.g. Student Affairs" required>
                                 <div class="invalid-feedback">Enter the department.</div>
                             </div>
@@ -427,6 +476,21 @@
                 </div>
                 <div class="modal-body">
                     <div id="histBody"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="timelineModal" tabindex="-1" aria-labelledby="tlTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="tlTitle"></h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="tlSummary" class="small text-secondary mb-3"></div>
+                    <ol class="tl" id="tlBody"></ol>
                 </div>
             </div>
         </div>
