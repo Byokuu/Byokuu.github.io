@@ -1,7 +1,7 @@
-/* ==========================================================
-   Design tokens
-   Light: blue-tinted white   |   Dark: true black
-   ========================================================== */
+* {
+    transition: all 0.5s ease;
+}
+
 :root,
 [data-bs-theme="light"] {
     --bg: #e9f0fc;
@@ -14,12 +14,12 @@
     --accent-hover: #164bb8;
     --accent-soft: rgba(31, 95, 224, 0.1);
     --on-accent: #ffffff;
-    --glass: rgba(255, 255, 255, 0.62);
+    --glass: rgba(255, 255, 255, 0.55);
     --glass-border: rgba(255, 255, 255, 0.75);
     --blob-1: #4f8cff;
     --blob-2: #66d2ff;
     --blob-3: #8d8bff;
-    --shape-opacity: 0.42;
+    --shape-opacity: 0.45;
     --wash-1: rgba(79, 140, 255, 0.22);
     --wash-2: rgba(102, 210, 255, 0.22);
     --shadow: 0 1px 2px rgba(14, 26, 46, 0.04), 0 12px 32px rgba(31, 60, 120, 0.08);
@@ -40,12 +40,12 @@
     --accent-hover: #86b5ff;
     --accent-soft: rgba(91, 155, 255, 0.13);
     --on-accent: #000000;
-    --glass: rgba(16, 16, 20, 0.6);
+    --glass: rgba(16, 16, 20, 0.55);
     --glass-border: rgba(255, 255, 255, 0.08);
     --blob-1: #2f6bff;
     --blob-2: #1aa6d8;
     --blob-3: #5a4bff;
-    --shape-opacity: 0.3;
+    --shape-opacity: 0.35;
     --wash-1: rgba(47, 107, 255, 0.12);
     --wash-2: rgba(26, 166, 216, 0.1);
     --shadow: 0 0 0 1px rgba(255, 255, 255, 0.015);
@@ -68,7 +68,6 @@ body {
     transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Breathing room on every side so the UI never touches the edges */
 .page-wrap {
     position: relative;
     z-index: 1;
@@ -96,7 +95,6 @@ p {
     max-width: 68ch;
 }
 
-/* Let text in the content card use the full width of the card */
 .content-body p {
     max-width: none;
 }
@@ -108,13 +106,13 @@ button:focus-visible {
 }
 
 /* ==========================================================
-   Cards
+   Glassmorphic Cards
    ========================================================== */
 .profile-card,
 .content-card {
     background: var(--glass);
-    backdrop-filter: blur(22px) saturate(160%);
-    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
     border: 1px solid var(--glass-border);
     border-radius: 24px;
     box-shadow: var(--shadow);
@@ -125,8 +123,6 @@ button:focus-visible {
     overflow: hidden;
 }
 
-/* Sticky must be on the column itself: its parent (the row) is as tall as
-   the page, so it has room to travel. On the card it had nowhere to move. */
 @media (min-width: 992px) {
     .profile-aside {
         position: sticky;
@@ -135,7 +131,7 @@ button:focus-visible {
 }
 
 /* ==========================================================
-   Profile card
+   Profile Card
    ========================================================== */
 .profile-body {
     padding: 36px 28px 32px;
@@ -224,7 +220,6 @@ button:focus-visible {
     color: var(--accent);
 }
 
-/* GitHub card (injected by script.js) */
 #githubCard {
     margin-bottom: 14px;
 }
@@ -270,7 +265,7 @@ button:focus-visible {
 }
 
 /* ==========================================================
-   Content card: header (tabs + theme toggle)
+   Content Head (Tabs & Controls)
    ========================================================== */
 .content-head {
     display: flex;
@@ -349,7 +344,6 @@ button:focus-visible {
     display: none;
 }
 
-/* Theme toggle sits in the top-right corner of the profile card */
 .profile-card .theme-toggle {
     position: absolute;
     top: 12px;
@@ -362,7 +356,7 @@ button:focus-visible {
 }
 
 /* ==========================================================
-   Content card: body
+   Content Body
    ========================================================== */
 .content-body {
     padding: clamp(24px, 4vw, 48px);
@@ -409,7 +403,6 @@ button:focus-visible {
     flex-shrink: 0;
 }
 
-/* Buttons */
 .btn-docs,
 .btn-launch {
     display: inline-flex;
@@ -450,7 +443,6 @@ button:focus-visible {
     color: var(--on-accent);
 }
 
-/* Education */
 .edu-item {
     display: flex;
     align-items: center;
@@ -496,7 +488,6 @@ button:focus-visible {
     margin: 40px 0;
 }
 
-/* Skills */
 .skill-list {
     list-style: none;
     padding: 0;
@@ -518,7 +509,6 @@ button:focus-visible {
 
 .skill-list li::before {
     content: "\F26A";
-    /* bi-check-circle-fill */
     font-family: 'bootstrap-icons';
     position: absolute;
     left: 13px;
@@ -556,7 +546,7 @@ button:focus-visible {
 }
 
 /* ==========================================================
-   Launch hover preview
+   Launch Hover Preview
    ========================================================== */
 .launch-preview-wrapper {
     position: relative;
@@ -636,8 +626,6 @@ button:focus-visible {
 }
 
 @media (max-width: 575px) {
-
-    /* Keep tabs and the theme toggle on one row on phones */
     .content-head {
         flex-wrap: nowrap;
         gap: 8px;
@@ -693,6 +681,9 @@ button:focus-visible {
     }
 }
 
+/* ==========================================================
+   Blurred Glassmorphic Background Shapes
+   ========================================================== */
 .bg-shapes {
     position: fixed;
     inset: 0;
@@ -702,9 +693,11 @@ button:focus-visible {
     background:
         radial-gradient(60vmax 45vmax at 6% 0%, var(--wash-1), transparent 70%),
         radial-gradient(55vmax 45vmax at 100% 100%, var(--wash-2), transparent 70%);
+    filter: blur(8px);
+    /* Blurs the entire floating diamond canvas */
+    -webkit-filter: blur(8px);
 }
 
-/* outer element drifts, inner element spins (so the spin never reverses) */
 .diamond {
     position: absolute;
     left: var(--x);
@@ -724,6 +717,8 @@ button:focus-visible {
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
     animation: spin var(--spin) linear infinite;
     animation-direction: var(--dir);
+    filter: blur(3px);
+    /* Soft glow blur on each individual diamond */
 }
 
 .diamond:nth-child(3n) i {

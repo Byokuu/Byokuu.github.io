@@ -10,6 +10,17 @@ toggle?.addEventListener("click", () => {
     } catch (e) { /* storage unavailable */ }
 });
 
+/* ---------- Keep the top and bottom tab bars in sync ---------- */
+document.addEventListener("shown.bs.tab", (e) => {
+    const target = e.target.getAttribute("data-bs-target");
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach((btn) => {
+        const on = btn.getAttribute("data-bs-target") === target;
+        btn.classList.toggle("active", on);
+        btn.setAttribute("aria-selected", on);
+    });
+});
+
+/* ---------- GitHub card ---------- */
 async function getGithubUser(username) {
     try {
         const { Octokit } = await import("https://esm.sh/octokit");

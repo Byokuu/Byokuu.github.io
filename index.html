@@ -7,7 +7,6 @@
     <title>Portfolio | Byorne Myco Coyunes</title>
     <link rel="icon" type="image/png" href="assets/img/Logo.svg">
     <script>
-        /* Apply saved / system theme before first paint to avoid a flash */
         (function () {
             try {
                 var saved = localStorage.getItem("theme");
@@ -24,7 +23,6 @@
 </head>
 
 <body>
-    <!-- Animated background -->
     <div class="bg-shapes" aria-hidden="true">
         <span class="diamond" style="--x:21%;--y:52%;--s:69px;--dx:-7vw;--dy:-11vh;--dur:36s;--delay:-1s"><i
                 style="--spin:15s;--dir:reverse"></i></span>
@@ -120,8 +118,8 @@
 
             <!-- Main content card -->
             <main class="col-lg-8 col-xl-9">
-                <div class="content-card">
-                    <div class="content-head">
+                <div class="content-card mb-5 mb-md-0">
+                    <div class="content-head d-none d-md-flex">
                         <ul class="nav site-nav" id="portfolioTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="about-tab" data-bs-toggle="tab"
@@ -141,6 +139,8 @@
                             </li>
                         </ul>
                     </div>
+
+
 
                     <div class="tab-content content-body">
                         <div class="tab-pane fade show active" id="about" role="tabpanel">
@@ -164,11 +164,11 @@
                         </div>
 
                         <div class="tab-pane fade" id="education" role="tabpanel">
-                            <div class="cv-head">
-                                <h1>Education</h1>
+                            <div class="cv-head flex-column align-items-start gap-4">
                                 <a href="assets/CV.pdf" target="_blank" rel="noopener noreferrer" class="btn-launch">
                                     VIEW CV <i class="bi bi-file-earmark-person"></i>
                                 </a>
+                                <h1 class="mb-0">Education</h1>
                             </div>
 
                             <div class="edu-item">
@@ -200,7 +200,7 @@
 
                             <hr class="section-rule">
 
-                            <h2>Skills</h2>
+                            <h2>Tech Stack</h2>
                             <ul class="skill-list">
                                 <li>HTML, CSS, JavaScript</li>
                                 <li>Figma, UI/UX Prototyping</li>
@@ -318,9 +318,9 @@
 
                             <div class="quest-box quest-project">
                                 <div>
-                                    <strong class="quest-title">Capstone - FixIT Iskolar (In Progress)</strong><br>
-                                    <small>A Web-Based Campus Maintenance and Asset Management System for 
-                                        PUP Sto. Tomas</small>
+                                    <strong class="quest-title">Capstone - CampusCare (In Progress)</strong><br>
+                                    <small>CampusCare: Web-Based Damage Report and Asset Monitoring System for PUP Sto.
+                                        Tomas Facility Management Office</small>
                                 </div>
 
                                 <div class="quest-actions">
@@ -347,6 +347,27 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="content-head d-md-none fixed-bottom justify-content-center p-2">
+                    <ul class="nav site-nav" id="portfolioTabs-mobile" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="about-tab-mobile" data-bs-toggle="tab"
+                                data-bs-target="#about" type="button" role="tab">About</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="education-tab-mobile" data-bs-toggle="tab"
+                                data-bs-target="#education" type="button" role="tab">CV</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="portfolio-tab-mobile" data-bs-toggle="tab"
+                                data-bs-target="#portfolio" type="button" role="tab">Portfolio</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="other-tab-mobile" data-bs-toggle="tab" data-bs-target="#other"
+                                type="button" role="tab">Other</button>
+                        </li>
+                    </ul>
                 </div>
             </main>
 
