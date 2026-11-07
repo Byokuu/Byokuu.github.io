@@ -21,6 +21,49 @@
         </div>
     </header>
 
+    <section id="authGate" class="container py-5 d-none" style="max-width:460px">
+        <div class="panel">
+            <h1 class="h4 mb-1" id="gateTitle">Admin sign in</h1>
+            <p class="text-secondary small" id="gateHint"></p>
+            <div class="alert alert-success py-2 small d-none" id="loginOk" role="status"></div>
+            <form id="loginForm" novalidate>
+                <div class="mb-3"><label class="form-label" for="lgId">Username</label>
+                    <input class="form-control" id="lgId" name="username" autocomplete="username" required>
+                    <div class="invalid-feedback">Enter your username.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="lgPw">Password</label>
+                    <input class="form-control" type="password" id="lgPw" name="password"
+                        autocomplete="current-password" required>
+                    <div class="invalid-feedback">Enter your password.</div>
+                </div>
+                <div class="text-danger small mb-3 d-none" id="loginErr"></div>
+                <button class="btn btn-maroon w-100" type="submit">Log in</button>
+            </form>
+            <form id="setupForm" class="d-none" novalidate>
+                <div class="mb-3"><label class="form-label" for="stName">Full name</label>
+                    <input class="form-control" id="stName" name="name" autocomplete="name" required>
+                    <div class="invalid-feedback">Enter your name.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="stUser">Username</label>
+                    <input class="form-control" id="stUser" name="username" autocomplete="username" required>
+                    <div class="invalid-feedback">Choose a username.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="stPw">Password</label>
+                    <input class="form-control" type="password" id="stPw" name="password" autocomplete="new-password"
+                        required>
+                    <div class="invalid-feedback">Enter a password.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="stPw2">Confirm password</label>
+                    <input class="form-control" type="password" id="stPw2" name="confirm" autocomplete="new-password"
+                        required>
+                    <div class="invalid-feedback">Repeat the password.</div>
+                </div>
+                <div class="text-danger small mb-3 d-none" id="setupErr"></div>
+                <button class="btn btn-maroon w-100" type="submit">Create admin account</button>
+            </form>
+        </div>
+    </section>
+
     <main class="container py-4">
 
         <div id="adminApp">
@@ -119,6 +162,7 @@
                                     <option>Overdue</option>
                                     <option>Returned</option>
                                     <option>Rejected</option>
+                                    <option>Cancelled</option>
                                 </select></div>
                         </div>
                         <div class="table-responsive">
@@ -370,6 +414,11 @@
                         <input class="form-control" id="aName" list="aList" placeholder="Name of the technician or team"
                             required><datalist id="aList"></datalist>
                     </form>
+                    <div class="mt-3">
+                        <div class="small text-secondary mb-1">Saved personnel (click a name to use it, x to remove)
+                        </div>
+                        <div id="aChips" class="d-flex flex-wrap gap-2"></div>
+                    </div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
                         data-bs-dismiss="modal">Cancel</button><button type="submit" form="assignForm"

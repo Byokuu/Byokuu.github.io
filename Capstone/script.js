@@ -5,6 +5,8 @@ const coll = (key, prefix, pad, kind) => ({
     all() { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } },
     save(l) { localStorage.setItem(key, JSON.stringify(l)); },
     note(o, text) {
+        const by = sessionStorage.getItem("fixit_admin_name");
+        if (by) text += " (by " + by + ")";
         o.events = (o.events || []).concat({ ts: Date.now(), text });
         if (kind) Log.add({ kind, ref: o.id, text: `${o.id} (${labelOf(o)}) - ${text}` });
     },
@@ -100,6 +102,7 @@ function initReportForm(afterSave) {
             role: d.role || "Office", reporter: (d.reporter || "").trim() || "Maintenance office",
             idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assetId: d.assetId || "", assignee: "", fixedAt: null
         }, d.role ? `Reported by ${(d.reporter || "").trim()} (${d.role})` : `Logged by ${(d.reporter || "").trim()}${d.via ? " - found by " + d.via.toLowerCase() : ""}`);
+        if (d.role) localStorage.setItem("fixit_me", JSON.stringify({ name: (d.reporter || "").trim(), idNo: (d.idNo || "").trim() }));
         document.getElementById("lastId").textContent = t.id;
         document.getElementById("lastName").textContent = t.reporter.split(" ")[0];
         document.getElementById("lastTitle").textContent = t.title;
@@ -111,13 +114,19 @@ function initReportForm(afterSave) {
         bootstrap.Modal.getOrCreateInstance(rm).hide();
     });
     const syncId = bindRole("role", "idWrap", "idNo");
+    if ($("role")) rm.addEventListener("show.bs.modal", () => {
+        const u = currentUser(); if (!u) return;
+        $("role").value = u.role; $("role").dispatchEvent(new Event("change"));
+        $("reporter").value = u.name; $("idNo").value = u.idNo;
+        $("role").closest(".row").classList.add("d-none");
+    });
     rm.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); syncId(); });
     document.getElementById("copyId").addEventListener("click", async e => {
         const id = document.getElementById("lastId").textContent;
         try { await navigator.clipboard.writeText(id); e.target.textContent = "Copied"; }
         catch { e.target.textContent = "Press Ctrl+C"; }
     });
-    rm.addEventListener("shown.bs.modal", () => document.getElementById("reporter").focus());
+    rm.addEventListener("shown.bs.modal", () => ($("reporter").offsetParent ? $("reporter") : $("title")).focus());
     const as = $("assetId");
     if (as) rm.addEventListener("show.bs.modal", () => {
         as.innerHTML = '<option value="">None</option>' + Assets.all().filter(a => !a.archived).map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.tag)})</option>`).join("");
@@ -221,17 +230,22 @@ function initBorrowClient() {
         <td><div class="fw-semibold">${esc(an(l.assetId))}</div><div class="small text-secondary">${esc(l.purpose)}</div></td>
         <td class="small">${esc(l.borrower)}<br><span class="text-secondary">${esc(l.role)}</span></td>
         <td class="small">${fmtD(l.from)} &rarr; ${fmtD(l.due)}</td>
-        <td>${badge(loanStatus(l))}</td>
+        <td>${badge(loanStatus(l))}${l.status === "Pending" && Mine.has(l.id) ? ` <button class="btn btn-sm btn-outline-danger ms-1" data-cancel="${l.id}">Cancel</button>` : ""}</td>
       </tr>`).join("") : `<tr><td colspan="5" class="empty">No borrowing requests yet.</td></tr>`;
     };
     modal.addEventListener("show.bs.modal", () => {
         const free = Assets.all().filter(a => !a.archived && availability(a) === "Available");
         $("bAsset").innerHTML = free.length ? '<option value="">Choose equipment...</option>' + free.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.tag)}) - ${esc(a.location)}</option>`).join("")
             : '<option value="">No equipment available right now</option>';
+        const u = currentUser();
+        if (u) {
+            $("bRole").value = u.role; $("bRole").dispatchEvent(new Event("change"));
+            $("bName").value = u.name; $("bId").value = u.idNo; $("bRole").closest(".row").classList.add("d-none");
+        }
         $("bFrom").min = $("bDue").min = today();
         if (!$("bFrom").value) $("bFrom").value = today();
     });
-    modal.addEventListener("shown.bs.modal", () => $("bName").focus());
+    modal.addEventListener("shown.bs.modal", () => ($("bName").offsetParent ? $("bName") : $("bPurpose")).focus());
     modal.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); sync(); });
     form.addEventListener("submit", e => {
         e.preventDefault();
@@ -240,19 +254,50 @@ function initBorrowClient() {
         const d = Object.fromEntries(new FormData(form));
         const l = Loans.add({ assetId: d.asset, borrower: d.name.trim(), role: d.role, idNo: (d.idNo || "").trim(), purpose: d.purpose.trim(), from: d.from, due: d.due, status: "Pending" }, "Request sent by " + d.name.trim() + " (" + d.role + ")");
         bootstrap.Modal.getOrCreateInstance(modal).hide();
-        toast(`Request ${l.id} sent. Wait for the office to approve it.`);
+        Mine.add(l.id); localStorage.setItem("fixit_me", JSON.stringify({ name: d.name.trim(), idNo: (d.idNo || "").trim() })); toast(`Request ${l.id} sent. Wait for the office to approve it.`);
         bootstrap.Tab.getOrCreateInstance("#tabBorrowBtn").show(); render();
     });
     search.addEventListener("input", render);
+    body.addEventListener("click", e => {
+        const b = e.target.closest("button[data-cancel]"); if (!b) return;
+        if (!confirm(`Cancel request ${b.dataset.cancel}?`)) return;
+        Loans.patch(b.dataset.cancel, { status: "Cancelled" }, "Cancelled by the borrower");
+        toast(`Request ${b.dataset.cancel} cancelled`); render();
+    });
     window.addEventListener("storage", render);
     render();
 }
 
 /* ---------- Admin: assign, borrowing, assets, reports ---------- */
+/* saved personnel, own requests, CSV export */
+const Staff = {
+    all() { try { return JSON.parse(localStorage.getItem("fixit_staff")) || []; } catch { return []; } },
+    add(n) { const l = this.all(); if (n && !l.some(x => x.toLowerCase() === n.toLowerCase())) { l.push(n); localStorage.setItem("fixit_staff", JSON.stringify(l.sort())); } },
+    remove(n) { localStorage.setItem("fixit_staff", JSON.stringify(this.all().filter(x => x !== n))); }
+};
+const Mine = {
+    all() { try { return JSON.parse(localStorage.getItem("fixit_mine")) || []; } catch { return []; } },
+    add(id) { localStorage.setItem("fixit_mine", JSON.stringify(this.all().concat(id))); },
+    has(id) { return this.all().includes(id); }
+};
+function downloadCSV(name, head, rows) {
+    const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = "\ufeff" + [head, ...rows].map(r => r.map(q).join(",")).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = `${name}-${today()}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function renderChips() {
+    $("aChips").innerHTML = Staff.all().map(n => `<span class="badge text-bg-light border fw-normal"><button type="button" class="btn btn-link p-0 text-decoration-none text-dark" data-pick="${esc(n)}">${esc(n)}</button> <button type="button" class="btn btn-link p-0 text-danger text-decoration-none" data-del="${esc(n)}" aria-label="Remove ${esc(n)}">&times;</button></span>`).join("")
+        || '<span class="text-secondary small">None yet. A name you assign is saved here.</span>';
+}
 function openAssign(id) {
     const t = Tickets.all().find(x => x.id === id);
     $("aId").value = id; $("aTitle").textContent = t.id + " - " + t.title; $("aName").value = t.assignee || "";
-    $("aList").innerHTML = [...new Set(Tickets.all().map(x => x.assignee).filter(Boolean))].map(n => `<option value="${esc(n)}">`).join("");
+    $("aList").innerHTML = [...new Set([...Staff.all(), ...Tickets.all().map(x => x.assignee).filter(Boolean)])].map(n => `<option value="${esc(n)}">`).join("");
+    renderChips();
     bootstrap.Modal.getOrCreateInstance("#assignModal").show();
 }
 const tally = (list, f) => list.reduce((o, x) => { const k = f(x); o[k] = (o[k] || 0) + 1; return o; }, {});
@@ -266,10 +311,32 @@ const tbl = (h, rows) => rows.length ? `<div class="table-responsive"><table cla
 function initAdminExtras() {
     const modal = id => bootstrap.Modal.getOrCreateInstance(id);
 
+
+    /* saved personnel chips */
+    $("aChips").addEventListener("click", e => {
+        const p = e.target.closest("[data-pick]"), x = e.target.closest("[data-del]");
+        if (p) $("aName").value = p.dataset.pick;
+        if (x) { Staff.remove(x.dataset.del); renderChips(); }
+    });
+
+    /* CSV export */
+    const csvBtn = (paneId, fn) => {
+        const panel = document.querySelector(`#${paneId} section.panel`);
+        panel.insertAdjacentHTML("afterbegin", '<div class="text-end mb-2 no-print"><button type="button" class="btn btn-outline-secondary btn-sm">Export CSV</button></div>');
+        panel.firstElementChild.firstElementChild.addEventListener("click", fn);
+    };
+    csvBtn("tabTickets", () => downloadCSV("tickets", ["Ticket", "Damage", "Building", "Room / spot", "Type", "Urgency", "Status", "Reported by", "Role", "ID no.", "Assigned to", "Related asset", "Reported", "Fixed", "Archived", "Details"],
+        Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
+    csvBtn("tabBorrow", () => downloadCSV("borrowing", ["Request", "Equipment", "Borrower", "Role", "ID no.", "Purpose", "Borrow on", "Return by", "Status", "Returned", "Returned as"],
+        Loans.all().map(l => [l.id, an(l.assetId), l.borrower, l.role, l.idNo || "", l.purpose, l.from, l.due, loanStatus(l), l.returnedAt ? fmtT(l.returnedAt) : "", l.returnCond || ""])));
+    csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Name", "ID no.", "Category", "Location", "Department", "Condition", "Availability", "Archived"],
+        Assets.all().map(a => [a.id, a.name, a.tag, a.category, a.location, a.dept, a.condition, availability(a), a.archived ? "Yes" : ""])));
+
     /* assign personnel */
     $("assignForm").addEventListener("submit", e => {
         e.preventDefault();
         const id = $("aId").value, name = $("aName").value.trim(), t = Tickets.all().find(x => x.id === id);
+        Staff.add(name);
         Tickets.patch(id, { assignee: name, status: t.status === "Pending" ? "In progress" : t.status }, "Assigned to " + name + (t.status === "Pending" ? " (work started)" : ""));
         modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets();
     });
@@ -413,12 +480,163 @@ function initAdminExtras() {
     renderAll();
 }
 
+/* ---------- Client login (accounts are kept in this browser) ---------- */
+const Users = {
+    all() { try { return JSON.parse(localStorage.getItem("fixit_users")) || []; } catch { return []; } },
+    save(l) { localStorage.setItem("fixit_users", JSON.stringify(l)); }
+};
+const currentUser = () => { const id = localStorage.getItem("fixit_session"); return Users.all().find(u => u.idNo === id) || null; };
+async function hashPw(pw, salt) {
+    const text = salt + ":" + pw;
+    if (window.crypto && crypto.subtle) {
+        const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+        return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+    }
+    let h = 5381; for (const c of text) h = ((h << 5) + h + c.charCodeAt(0)) | 0;
+    return "x" + (h >>> 0).toString(16);
+}
+function addEyes(gate) {
+    /* show / hide password (closed eye = hidden, open eye = shown) */
+    const svg = p => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+    const eyeOpen = svg('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>');
+    const eyeShut = svg('<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>');
+    gate.querySelectorAll('input[type="password"]').forEach(inp => {
+        const wrap = document.createElement("div"); wrap.className = "pw-wrap";
+        inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+        const fb = wrap.nextElementSibling; if (fb && fb.classList.contains("invalid-feedback")) wrap.appendChild(fb);
+        const b = document.createElement("button"); b.type = "button"; b.className = "pw-eye";
+        const set = shown => { inp.type = shown ? "text" : "password"; b.innerHTML = shown ? eyeOpen : eyeShut; b.setAttribute("aria-label", shown ? "Hide password" : "Show password"); b.setAttribute("aria-pressed", shown); };
+        b.reset = () => set(false); b.addEventListener("click", () => set(inp.type === "password")); set(false);
+        wrap.appendChild(b);
+    });
+}
+function initAuth() {
+    const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
+    const tag = document.createElement("span"); tag.className = "small me-2 text-nowrap";
+    const out = document.createElement("button"); out.type = "button"; out.className = "btn btn-sm btn-outline-light"; out.textContent = "Log out";
+    nav.append(tag, out);
+    addEyes(gate);
+    const apply = () => {
+        const u = currentUser();
+        gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
+        nav.querySelectorAll("button[data-bs-toggle]").forEach(b => b.classList.toggle("d-none", !u));
+        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u);
+        tag.textContent = u ? `${u.name} (${u.role})` : "";
+        gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
+        window.dispatchEvent(new Event("authchange"));
+    };
+    const fail = (id, m) => { $(id).textContent = m; $(id).classList.remove("d-none"); };
+    $("loginForm").addEventListener("submit", async e => {
+        e.preventDefault(); const f = e.target; $("loginErr").classList.add("d-none"); $("loginOk").classList.add("d-none");
+        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+        const d = Object.fromEntries(new FormData(f)), id = d.idNo.trim().toLowerCase();
+        const u = Users.all().find(x => x.idNo.toLowerCase() === id);
+        if (!u || u.pw !== await hashPw(d.password, id)) return fail("loginErr", "Wrong ID number or password.");
+        localStorage.setItem("fixit_session", u.idNo); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome back, " + u.name);
+    });
+    $("regForm").addEventListener("submit", async e => {
+        e.preventDefault(); const f = e.target; $("regErr").classList.add("d-none");
+        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+        const d = Object.fromEntries(new FormData(f)), idNo = d.idNo.trim(), users = Users.all();
+        if (users.some(u => u.idNo.toLowerCase() === idNo.toLowerCase())) return fail("regErr", "This ID number already has an account. Try logging in.");
+        if (d.password.length < 6) return fail("regErr", "Use a password with at least 6 characters.");
+        if (d.password !== d.confirm) return fail("regErr", "The two passwords do not match.");
+        users.push({ idNo, name: d.name.trim(), role: d.role, pw: await hashPw(d.password, idNo.toLowerCase()), createdAt: Date.now() });
+        Users.save(users); f.reset(); f.classList.remove("was-validated");
+        gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
+        bootstrap.Tab.getOrCreateInstance('[data-bs-target="#paneLogin"]').show();
+        $("lgId").value = idNo; $("loginOk").textContent = "Account created for " + d.name.trim() + ". Please log in."; $("loginOk").classList.remove("d-none");
+        $("lgPw").focus();
+    });
+    out.addEventListener("click", () => { localStorage.removeItem("fixit_session"); apply(); toast("You have been logged out"); });
+    apply();
+}
+
+/* ---------- Admin login (account is kept in this browser) ---------- */
+function initAdminAuth() {
+    const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
+    const tag = document.createElement("span"); tag.className = "small me-2 text-nowrap";
+    const out = document.createElement("button"); out.type = "button"; out.className = "btn btn-sm btn-outline-light"; out.textContent = "Log out";
+    nav.append(tag, out);
+    addEyes(gate);
+    const admins = () => { try { return JSON.parse(localStorage.getItem("fixit_admins")) || []; } catch { return []; } };
+    const current = () => { const u = sessionStorage.getItem("fixit_admin_session"); return admins().find(a => a.username === u) || null; };
+    const fail = (id, m) => { $(id).textContent = m; $(id).classList.remove("d-none"); };
+    const apply = () => {
+        const u = current(), setup = admins().length === 0;
+        gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
+        nav.querySelectorAll("button[data-bs-toggle]").forEach(b => b.classList.toggle("d-none", !u));
+        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u);
+        tag.textContent = u ? "Signed in as " + u.name : "";
+        $("loginForm").classList.toggle("d-none", setup); $("setupForm").classList.toggle("d-none", !setup);
+        $("gateTitle").textContent = setup ? "Set up the admin account" : "Admin sign in";
+        $("gateHint").textContent = setup ? "No admin account exists yet. Create the first one." : "Log in to manage tickets, assets, and borrowing.";
+        if (u) sessionStorage.setItem("fixit_admin_name", u.name); else sessionStorage.removeItem("fixit_admin_name");
+        gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
+    };
+    $("loginForm").addEventListener("submit", async e => {
+        e.preventDefault(); const f = e.target; $("loginErr").classList.add("d-none"); $("loginOk").classList.add("d-none");
+        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+        const d = Object.fromEntries(new FormData(f)), id = d.username.trim().toLowerCase();
+        const a = admins().find(x => x.username.toLowerCase() === id);
+        if (!a || a.pw !== await hashPw(d.password, "admin:" + id)) return fail("loginErr", "Wrong username or password.");
+        sessionStorage.setItem("fixit_admin_session", a.username); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome, " + a.name);
+    });
+    $("setupForm").addEventListener("submit", async e => {
+        e.preventDefault(); const f = e.target; $("setupErr").classList.add("d-none");
+        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+        const d = Object.fromEntries(new FormData(f)), username = d.username.trim();
+        if (d.password.length < 6) return fail("setupErr", "Use a password with at least 6 characters.");
+        if (d.password !== d.confirm) return fail("setupErr", "The two passwords do not match.");
+        localStorage.setItem("fixit_admins", JSON.stringify([{ username, name: d.name.trim(), pw: await hashPw(d.password, "admin:" + username.toLowerCase()), createdAt: Date.now() }]));
+        f.reset(); f.classList.remove("was-validated"); apply();
+        $("lgId").value = username; $("loginOk").textContent = "Admin account created. Please log in."; $("loginOk").classList.remove("d-none"); $("lgPw").focus();
+    });
+    out.addEventListener("click", () => { sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You have been logged out"); });
+    apply();
+}
+
+/* ---------- My history (client) ---------- */
+function initHistoryClient() {
+    const input = $("hSearch");
+    const me = () => { try { return JSON.parse(localStorage.getItem("fixit_me")) || {}; } catch { return {}; } };
+    const none = t => `<tr><td colspan="5" class="empty">${t}</td></tr>`;
+    const render = () => {
+        const u = currentUser();
+        input.classList.toggle("d-none", !!u);
+        const q = input.value.trim().toLowerCase();
+        if (!u && q.length < 3) {
+            $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your reports and borrowed items.";
+            $("htRows").innerHTML = $("hlRows").innerHTML = none("Nothing to show yet."); return;
+        }
+        const T = Tickets.all().filter(t => !t.archived && (u ? (t.idNo ? t.idNo === u.idNo : t.reporter === u.name) : ((t.reporter || "") + " " + (t.idNo || t.studentNo || "")).toLowerCase().includes(q)));
+        const L = Loans.all().filter(l => u ? (l.idNo ? l.idNo === u.idNo : l.borrower === u.name) : ((l.borrower || "") + " " + (l.idNo || "")).toLowerCase().includes(q));
+        $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") + `${T.length} damage report${T.length === 1 ? "" : "s"} (${T.filter(t => t.status === "Fixed").length} fixed) and ${L.length} borrowing request${L.length === 1 ? "" : "s"} (${L.filter(l => l.status === "Returned").length} returned).`;
+        $("htRows").innerHTML = T.length ? T.map(t => `<tr><td>${tlBtn("t", t.id)}</td>
+          <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div></td>
+          <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
+          <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No damage reports found.");
+        $("hlRows").innerHTML = L.length ? L.map(l => `<tr><td>${tlBtn("l", l.id)}</td>
+          <td><div class="fw-semibold">${esc(an(l.assetId))}</div><div class="small text-secondary">${esc(l.purpose)}</div></td>
+          <td class="small">${fmtD(l.from)} &rarr; ${fmtD(l.due)}</td><td>${badge(loanStatus(l))}</td>
+          <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td></tr>`).join("") : none("No borrowing requests found.");
+    };
+    input.addEventListener("input", render);
+    document.querySelector('[data-bs-target="#tabHist"]').addEventListener("shown.bs.tab", () => {
+        if (!input.value) input.value = me().idNo || me().name || "";
+        render();
+    });
+    window.addEventListener("storage", render);
+    window.addEventListener("authchange", render);
+    render();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", e => {
         const b = e.target.closest("[data-tl]");
         if (b) showTimeline(b.dataset.tl === "t" ? Tickets : Loans, b.dataset.id);
     });
     const p = document.body.dataset.page;
-    if (p === "student") { initStudent(); initBorrowClient(); }
-    if (p === "admin") { initAdmin(); initAdminExtras(); }
-}); 
+    if (p === "student") { initAuth(); initStudent(); initBorrowClient(); initHistoryClient(); }
+    if (p === "admin") { initAdminAuth(); initAdmin(); initAdminExtras(); }
+});

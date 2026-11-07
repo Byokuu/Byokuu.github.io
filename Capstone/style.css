@@ -520,3 +520,38 @@ body {
     font-size: .82rem;
     color: var(--mute)
 }
+
+.st-Cancelled {
+    background: #e7e5e6;
+    color: #555
+}
+
+/* show/hide password */
+.pw-wrap {
+    position: relative
+}
+
+.pw-wrap .form-control {
+    padding-right: 2.75rem;
+    background-image: none !important
+}
+
+.pw-eye {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2.75rem;
+    height: calc(1.5em + .75rem + 2px);
+    border: 0;
+    background: none;
+    color: var(--mute);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 0 .375rem .375rem 0
+}
+
+.pw-eye:hover {
+    color: var(--maroon)
+}
