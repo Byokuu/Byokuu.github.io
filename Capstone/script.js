@@ -49,7 +49,7 @@ function showTimeline(c, id) {
     const bits = [`Added ${fmtT(o.createdAt)}`];
     if (o.fixedAt) bits.push(`Fixed ${fmtT(o.fixedAt)} (after ${spanTxt(o.fixedAt - o.createdAt)})`);
     if (o.returnedAt) bits.push(`Returned ${fmtT(o.returnedAt)}`);
-    $("tlSummary").innerHTML = bits.map(esc).join("<br>");
+    $("tlSummary").innerHTML = bits.map(esc).join("<br>") + (o.photos && o.photos.length ? '<div class="mt-2">' + photoStrip(o) + "</div>" : "");
     $("tlBody").innerHTML = tlItems(o);
     bootstrap.Modal.getOrCreateInstance("#timelineModal").show();
 }
@@ -88,19 +88,134 @@ function toast(msg) {
     wrap.appendChild(el); setTimeout(() => el.remove(), 3000);
 }
 
+/* ---------- Photos (kept in the browser's IndexedDB) ---------- */
+const PhotoDB = {
+    db: null,
+    open() {
+        if (this.db) return Promise.resolve(this.db);
+        return new Promise((res, rej) => {
+            const r = indexedDB.open("campuscare", 1);
+            r.onupgradeneeded = () => r.result.createObjectStore("photos");
+            r.onsuccess = () => { this.db = r.result; res(r.result); };
+            r.onerror = () => rej(r.error);
+        });
+    },
+    async run(mode, fn) {
+        const db = await this.open();
+        return new Promise((res, rej) => {
+            const tx = db.transaction("photos", mode); const req = fn(tx.objectStore("photos"));
+            tx.oncomplete = () => res(req && req.result); tx.onerror = () => rej(tx.error);
+        });
+    },
+    put(id, blob) { return this.run("readwrite", s => s.put(blob, id)); },
+    get(id) { return this.run("readonly", s => s.get(id)); },
+    remove(id) { return this.run("readwrite", s => s.delete(id)); }
+};
+const photoCache = {};
+async function photoUrl(id) {
+    if (!(id in photoCache)) { try { const b = await PhotoDB.get(id); photoCache[id] = b ? URL.createObjectURL(b) : ""; } catch { photoCache[id] = ""; } }
+    return photoCache[id];
+}
+function resizeImage(file, max = 1280) {
+    return new Promise((res, rej) => {
+        const img = new Image(), url = URL.createObjectURL(file);
+        img.onload = () => {
+            const s = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+            c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+            c.toBlob(b => b ? res(b) : rej(new Error("resize failed")), "image/jpeg", 0.78);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("not an image")); };
+        img.src = url;
+    });
+}
+const photoStrip = t => (t.photos && t.photos.length)
+    ? `<div class="photo-strip">${t.photos.map(id => `<button type="button" class="photo-thumb" data-photo="${id}" aria-label="View photo"><img alt=""></button>`).join("")}</div>` : "";
+async function hydratePhotos(root) {
+    for (const b of root.querySelectorAll(".photo-thumb:not([data-ready])")) {
+        b.dataset.ready = "1";
+        const url = await photoUrl(b.dataset.photo);
+        if (url) b.querySelector("img").src = url; else b.classList.add("d-none");
+    }
+}
+const Photos = {
+    pending: [],
+    render() {
+        $("photoPreview").innerHTML = this.pending.map((p, i) => `<div class="photo-prev"><img src="${p.url}" alt="Photo ${i + 1}"><button type="button" data-rm="${i}" aria-label="Remove photo ${i + 1}">&times;</button></div>`).join("");
+    },
+    async add(files) {
+        for (const f of files) {
+            if (this.pending.length >= 3) { toast("You can add up to 3 photos."); break; }
+            if (!f.type.startsWith("image/")) { toast(`${f.name} is not an image.`); continue; }
+            try { const blob = await resizeImage(f); this.pending.push({ blob, url: URL.createObjectURL(blob) }); }
+            catch { toast(`Could not read ${f.name}.`); }
+        }
+        this.render();
+    },
+    async saveAll() {
+        const ids = [];
+        try {
+            for (const p of this.pending) {
+                const id = "ph-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+                await PhotoDB.put(id, p.blob); ids.push(id);
+            }
+        } catch { toast("Photos could not be saved in this browser. The report was sent without them."); }
+        return ids;
+    },
+    clear() { this.pending.forEach(p => URL.revokeObjectURL(p.url)); this.pending = []; if ($("photoPreview")) this.render(); },
+    init() {
+        const drop = $("photoDrop"); if (!drop) return;
+        const pick = () => $("photoInput").click();
+        drop.addEventListener("click", e => { if (!e.target.closest("button")) pick(); });
+        drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+        ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+        ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+        drop.addEventListener("drop", e => this.add([...e.dataTransfer.files]));
+        $("photoInput").addEventListener("change", e => { this.add([...e.target.files]); e.target.value = ""; });
+        $("photoCamera").addEventListener("change", e => { this.add([...e.target.files]); e.target.value = ""; });
+        $("photoCamBtn").addEventListener("click", () => $("photoCamera").click());
+        $("photoGalBtn").addEventListener("click", pick);
+        $("photoPreview").addEventListener("click", e => {
+            const b = e.target.closest("[data-rm]"); if (!b) return;
+            const [p] = this.pending.splice(+b.dataset.rm, 1); URL.revokeObjectURL(p.url); this.render();
+        });
+    }
+};
+function initPhotoViewer() {
+    let queued = false;
+    new MutationObserver(() => { if (!queued) { queued = true; queueMicrotask(() => { queued = false; hydratePhotos(document); }); } }).observe(document.body, { childList: true, subtree: true });
+    let lb = { ids: [], i: 0 };
+    const show = async () => {
+        $("phImg").src = await photoUrl(lb.ids[lb.i]);
+        $("phCount").textContent = `Photo ${lb.i + 1} of ${lb.ids.length}`;
+        $("phPrev").classList.toggle("d-none", lb.ids.length < 2); $("phNext").classList.toggle("d-none", lb.ids.length < 2);
+    };
+    document.addEventListener("click", e => {
+        const t = e.target.closest(".photo-thumb"); if (!t) return;
+        lb.ids = [...t.parentElement.querySelectorAll(".photo-thumb")].map(x => x.dataset.photo); lb.i = lb.ids.indexOf(t.dataset.photo);
+        const go = () => { show(); bootstrap.Modal.getOrCreateInstance("#photoModal").show(); };
+        const open = document.querySelector(".modal.show");
+        if (open) { open.addEventListener("hidden.bs.modal", go, { once: true }); bootstrap.Modal.getInstance(open).hide(); } else go();
+    });
+    $("phPrev").addEventListener("click", () => { lb.i = (lb.i - 1 + lb.ids.length) % lb.ids.length; show(); });
+    $("phNext").addEventListener("click", () => { lb.i = (lb.i + 1) % lb.ids.length; show(); });
+    hydratePhotos(document);
+}
+
 /* ---------- Shared: report form + modals ---------- */
 function initReportForm(afterSave) {
     const form = document.getElementById("ticketForm");
     const rm = document.getElementById("reportModal");
-    form.addEventListener("submit", e => {
+    form.addEventListener("submit", async e => {
         e.preventDefault();
         if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
         const d = Object.fromEntries(new FormData(form));
+        const photoIds = await Photos.saveAll();
         const t = Store.add({
             title: d.title.trim(), building: d.building, location: d.location.trim(),
             category: d.category, urgency: d.urgency, description: d.description.trim(),
             role: d.role || "Office", reporter: (d.reporter || "").trim() || "Maintenance office",
-            idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assetId: d.assetId || "", assignee: "", fixedAt: null
+            idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assetId: d.assetId || "", assignee: "", fixedAt: null, photos: photoIds
         }, d.role ? `Reported by ${(d.reporter || "").trim()} (${d.role})` : `Logged by ${(d.reporter || "").trim()}${d.via ? " - found by " + d.via.toLowerCase() : ""}`);
         if (d.role) localStorage.setItem("fixit_me", JSON.stringify({ name: (d.reporter || "").trim(), idNo: (d.idNo || "").trim() }));
         document.getElementById("lastId").textContent = t.id;
@@ -114,19 +229,26 @@ function initReportForm(afterSave) {
         bootstrap.Modal.getOrCreateInstance(rm).hide();
     });
     const syncId = bindRole("role", "idWrap", "idNo");
-    if ($("role")) rm.addEventListener("show.bs.modal", () => {
-        const u = currentUser(); if (!u) return;
-        $("role").value = u.role; $("role").dispatchEvent(new Event("change"));
-        $("reporter").value = u.name; $("idNo").value = u.idNo;
-        $("role").closest(".row").classList.add("d-none");
+    rm.addEventListener("show.bs.modal", () => {
+        const lock = el => { el.setAttribute("aria-readonly", "true"); el.tabIndex = -1; el.classList.add("locked"); if (el.tagName !== "SELECT") el.readOnly = true; };
+        if ($("role")) {
+            const u = currentUser(); if (!u) return;
+            $("role").value = u.role; $("role").dispatchEvent(new Event("change"));
+            $("reporter").value = u.name; $("idNo").value = u.idNo;
+            [$("role"), $("reporter"), $("idNo")].forEach(lock);
+        } else if ($("reporter")) {
+            const n = sessionStorage.getItem("fixit_admin_name");
+            if (n) { $("reporter").value = n; lock($("reporter")); }
+        }
     });
-    rm.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); syncId(); });
+    Photos.init();
+    rm.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); syncId(); Photos.clear(); });
     document.getElementById("copyId").addEventListener("click", async e => {
         const id = document.getElementById("lastId").textContent;
         try { await navigator.clipboard.writeText(id); e.target.textContent = "Copied"; }
         catch { e.target.textContent = "Press Ctrl+C"; }
     });
-    rm.addEventListener("shown.bs.modal", () => ($("reporter").offsetParent ? $("reporter") : $("title")).focus());
+    rm.addEventListener("shown.bs.modal", () => $("title").focus());
     const as = $("assetId");
     if (as) rm.addEventListener("show.bs.modal", () => {
         as.innerHTML = '<option value="">None</option>' + Assets.all().filter(a => !a.archived).map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.tag)})</option>`).join("");
@@ -144,7 +266,7 @@ function initStudent() {
         body.innerHTML = list.length ? list.map(t => `
       <tr>
         <td>${tlBtn("t", t.id)}</td>
-        <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div></td>
+        <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
         <td class="urg-${t.urgency}">${t.urgency}</td>
         <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
         <td class="small text-secondary">${fmt(t.createdAt)}</td>
@@ -182,7 +304,7 @@ function initAdmin() {
         <td>${tlBtn("t", t.id)}</td>
         <td><div class="fw-semibold">${esc(t.title)}</div>
             <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}${t.assetId ? ` &bull; <span class="tid">${esc(t.assetId)}</span>` : ""}</div>
-            ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}</td>
+            ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}${photoStrip(t)}</td>
         <td class="small">${esc(t.reporter)}<br><span class="text-secondary">${esc(who(t))}</span></td>
         <td class="urg-${t.urgency}">${t.urgency}</td>
         <td>${badge(t.status)}<div class="small text-secondary mt-1">${fmt(t.updatedAt)}</div></td>
@@ -240,12 +362,12 @@ function initBorrowClient() {
         const u = currentUser();
         if (u) {
             $("bRole").value = u.role; $("bRole").dispatchEvent(new Event("change"));
-            $("bName").value = u.name; $("bId").value = u.idNo; $("bRole").closest(".row").classList.add("d-none");
+            $("bName").value = u.name; $("bId").value = u.idNo;[$("bRole"), $("bName"), $("bId")].forEach(el => { el.setAttribute("aria-readonly", "true"); el.tabIndex = -1; el.classList.add("locked"); if (el.tagName !== "SELECT") el.readOnly = true; });
         }
         $("bFrom").min = $("bDue").min = today();
         if (!$("bFrom").value) $("bFrom").value = today();
     });
-    modal.addEventListener("shown.bs.modal", () => ($("bName").offsetParent ? $("bName") : $("bPurpose")).focus());
+    modal.addEventListener("shown.bs.modal", () => $("bAsset").focus());
     modal.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); sync(); });
     form.addEventListener("submit", e => {
         e.preventDefault();
@@ -467,6 +589,7 @@ function initAdminExtras() {
         if (act === "restore") { c.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${id} restored`); }
         else {
             if (!confirm(`Delete ${id} forever? This can't be undone. The activity log keeps a record of it.`)) return;
+            (c === Tickets ? (Tickets.all().find(t => t.id === id) || {}).photos || [] : []).forEach(p => PhotoDB.remove(p).catch(() => { }));
             c.remove(id, "Deleted forever"); toast(`${id} deleted forever`);
         }
         renderAll(); window.renderTickets();
@@ -475,7 +598,7 @@ function initAdminExtras() {
     const renderAll = () => { renderLoans(); renderAssets(); renderReports(); renderHistory(); };
     ["lSearch", "lStatus"].forEach(id => $(id).addEventListener("input", renderLoans));
     $("sSearch").addEventListener("input", renderAssets);
-    document.querySelectorAll('#adminTabs [data-bs-toggle="tab"]').forEach(b => b.addEventListener("shown.bs.tab", renderAll));
+    document.addEventListener("shown.bs.tab", e => { if (e.target.closest("#adminTabs, #adminBottomNav")) renderAll(); });
     window.addEventListener("storage", renderAll);
     renderAll();
 }
@@ -516,6 +639,7 @@ function initAuth() {
     const out = document.createElement("button"); out.type = "button"; out.className = "btn btn-sm btn-outline-light"; out.textContent = "Log out";
     nav.append(tag, out);
     addEyes(gate);
+    window.doLogout = () => out.click();
     const apply = () => {
         const u = currentUser();
         gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
@@ -596,6 +720,21 @@ function initAdminAuth() {
     apply();
 }
 
+/* ---------- Mobile bottom sheets (client) ---------- */
+function initSheets() {
+    $("actionSheet").addEventListener("click", e => {
+        const b = e.target.closest("[data-open]"); if (!b) return;
+        $("actionSheet").addEventListener("hidden.bs.offcanvas", () => bootstrap.Modal.getOrCreateInstance(b.dataset.open).show(), { once: true });
+        bootstrap.Offcanvas.getOrCreateInstance("#actionSheet").hide();
+    });
+    $("accountSheet").addEventListener("show.bs.offcanvas", () => {
+        const u = currentUser(); if (!u) return;
+        $("shAvatar").textContent = u.name.trim().charAt(0).toUpperCase();
+        $("shName").textContent = u.name; $("shMeta").textContent = u.role + " - " + u.idNo;
+    });
+    $("sheetLogout").addEventListener("click", () => { bootstrap.Offcanvas.getOrCreateInstance("#accountSheet").hide(); window.doLogout(); });
+}
+
 /* ---------- My history (client) ---------- */
 function initHistoryClient() {
     const input = $("hSearch");
@@ -613,7 +752,7 @@ function initHistoryClient() {
         const L = Loans.all().filter(l => u ? (l.idNo ? l.idNo === u.idNo : l.borrower === u.name) : ((l.borrower || "") + " " + (l.idNo || "")).toLowerCase().includes(q));
         $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") + `${T.length} damage report${T.length === 1 ? "" : "s"} (${T.filter(t => t.status === "Fixed").length} fixed) and ${L.length} borrowing request${L.length === 1 ? "" : "s"} (${L.filter(l => l.status === "Returned").length} returned).`;
         $("htRows").innerHTML = T.length ? T.map(t => `<tr><td>${tlBtn("t", t.id)}</td>
-          <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div></td>
+          <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
           <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
           <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No damage reports found.");
         $("hlRows").innerHTML = L.length ? L.map(l => `<tr><td>${tlBtn("l", l.id)}</td>
@@ -622,7 +761,8 @@ function initHistoryClient() {
           <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td></tr>`).join("") : none("No borrowing requests found.");
     };
     input.addEventListener("input", render);
-    document.querySelector('[data-bs-target="#tabHist"]').addEventListener("shown.bs.tab", () => {
+    document.addEventListener("shown.bs.tab", e => {
+        if (e.target.getAttribute("data-bs-target") !== "#tabHist") return;
         if (!input.value) input.value = me().idNo || me().name || "";
         render();
     });
@@ -636,7 +776,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const b = e.target.closest("[data-tl]");
         if (b) showTimeline(b.dataset.tl === "t" ? Tickets : Loans, b.dataset.id);
     });
+    document.addEventListener("shown.bs.tab", e => {
+        const t = e.target.getAttribute("data-bs-target");
+        document.querySelectorAll("[data-main-nav]").forEach(b => {
+            const on = b.getAttribute("data-bs-target") === t;
+            b.classList.toggle("active", on); b.setAttribute("aria-selected", on);
+        });
+    });
+    initPhotoViewer();
     const p = document.body.dataset.page;
-    if (p === "student") { initAuth(); initStudent(); initBorrowClient(); initHistoryClient(); }
+    if (p === "student") { initAuth(); initStudent(); initBorrowClient(); initHistoryClient(); initSheets(); }
     if (p === "admin") { initAdminAuth(); initAdmin(); initAdminExtras(); }
 });
