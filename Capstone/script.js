@@ -215,8 +215,8 @@ function initReportForm(afterSave) {
             title: d.title.trim(), building: d.building, location: d.location.trim(),
             category: d.category, urgency: d.urgency, description: d.description.trim(),
             role: d.role || "Office", reporter: (d.reporter || "").trim() || "Maintenance office",
-            idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assetId: d.assetId || "", assignee: "", fixedAt: null, photos: photoIds
-        }, d.role ? `Reported by ${(d.reporter || "").trim()} (${d.role})` : `Logged by ${(d.reporter || "").trim()}${d.via ? " - found by " + d.via.toLowerCase() : ""}`);
+            idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assetId: d.assetId || "", assignee: "", fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim()
+        }, d.role ? `Reported by ${(d.reporter || "").trim()} (${d.role})` : `Logged by ${(d.reporter || "").trim()}${d.via ? " - found by " + d.via.toLowerCase() : ""}${d.onBehalf && d.onBehalf.trim() ? ", reported by " + d.onBehalf.trim() : ""}`);
         if (d.role) localStorage.setItem("fixit_me", JSON.stringify({ name: (d.reporter || "").trim(), idNo: (d.idNo || "").trim() }));
         document.getElementById("lastId").textContent = t.id;
         document.getElementById("lastName").textContent = t.reporter.split(" ")[0];
@@ -305,7 +305,7 @@ function initAdmin() {
         <td><div class="fw-semibold">${esc(t.title)}</div>
             <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}${t.assetId ? ` &bull; <span class="tid">${esc(t.assetId)}</span>` : ""}</div>
             ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}${photoStrip(t)}</td>
-        <td class="small">${esc(t.reporter)}<br><span class="text-secondary">${esc(who(t))}</span></td>
+        <td class="small">${esc(t.onBehalf || t.reporter)}<br><span class="text-secondary">${t.onBehalf ? "Logged by " + esc(t.reporter) : esc(who(t))}</span></td>
         <td class="urg-${t.urgency}">${t.urgency}</td>
         <td>${badge(t.status)}<div class="small text-secondary mt-1">${fmt(t.updatedAt)}</div></td>
         <td class="small">${t.assignee ? esc(t.assignee) : '<span class="text-secondary">Unassigned</span>'}</td>
@@ -448,7 +448,7 @@ function initAdminExtras() {
         panel.firstElementChild.firstElementChild.addEventListener("click", fn);
     };
     csvBtn("tabTickets", () => downloadCSV("tickets", ["Ticket", "Damage", "Building", "Room / spot", "Type", "Urgency", "Status", "Reported by", "Role", "ID no.", "Assigned to", "Related asset", "Reported", "Fixed", "Archived", "Details"],
-        Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
+        Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.onBehalf || t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
     csvBtn("tabBorrow", () => downloadCSV("borrowing", ["Request", "Equipment", "Borrower", "Role", "ID no.", "Purpose", "Borrow on", "Return by", "Status", "Returned", "Returned as"],
         Loans.all().map(l => [l.id, an(l.assetId), l.borrower, l.role, l.idNo || "", l.purpose, l.from, l.due, loanStatus(l), l.returnedAt ? fmtT(l.returnedAt) : "", l.returnCond || ""])));
     csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Name", "ID no.", "Category", "Location", "Department", "Condition", "Availability", "Archived"],
@@ -618,6 +618,77 @@ async function hashPw(pw, salt) {
     let h = 5381; for (const c of text) h = ((h << 5) + h + c.charCodeAt(0)) | 0;
     return "x" + (h >>> 0).toString(16);
 }
+/* ---------- Auto log-out when idle, and edit profile ---------- */
+const IDLE_MS = 15 * 60 * 1000;
+const IDLE_EVENTS = ["mousemove", "keydown", "click", "touchstart", "scroll"];
+const Idle = {
+    t: null, on: false, cb: null,
+    bump: () => { clearTimeout(Idle.t); Idle.t = setTimeout(() => Idle.cb && Idle.cb(), IDLE_MS); },
+    start(cb) {
+        this.cb = cb;
+        if (!this.on) { this.on = true; IDLE_EVENTS.forEach(ev => document.addEventListener(ev, this.bump, { passive: true })); }
+        this.bump();
+    },
+    stop() { clearTimeout(this.t); if (this.on) { this.on = false; IDLE_EVENTS.forEach(ev => document.removeEventListener(ev, this.bump)); } }
+};
+function closeEverything() {
+    document.querySelectorAll(".modal.show").forEach(m => { const i = bootstrap.Modal.getInstance(m); if (i) i.hide(); });
+    document.querySelectorAll(".offcanvas.show").forEach(o => { const i = bootstrap.Offcanvas.getInstance(o); if (i) i.hide(); });
+}
+function initProfile(cfg) {
+    const form = $("profileForm"), modalEl = $("profileModal"), err = $("profErr");
+    addEyes(modalEl);
+    const fail = m => { err.textContent = m; err.classList.remove("d-none"); };
+    window.openProfile = () => {
+        const u = cfg.get(); if (!u) return;
+        $("pfName").value = u.name; $("pfId").value = cfg.idText(u);
+        err.classList.add("d-none"); form.classList.remove("was-validated");
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    };
+    modalEl.addEventListener("hidden.bs.modal", () => {
+        ["pfCur", "pfNew", "pfNew2"].forEach(id => $(id).value = ""); modalEl.querySelectorAll(".pw-eye").forEach(b => b.reset());
+    });
+    form.addEventListener("submit", async e => {
+        e.preventDefault(); err.classList.add("d-none");
+        if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
+        const u = cfg.get(), name = $("pfName").value.trim(), cur = $("pfCur").value, n1 = $("pfNew").value, n2 = $("pfNew2").value;
+        const patch = { name };
+        if (cur || n1 || n2) {
+            if (!cur) return fail("Enter your current password to change it.");
+            if (u.pw !== await hashPw(cur, cfg.salt(u))) return fail("Your current password is wrong.");
+            if (n1.length < 6) return fail("Use a new password with at least 6 characters.");
+            if (n1 !== n2) return fail("The two new passwords do not match.");
+            patch.pw = await hashPw(n1, cfg.salt(u));
+        }
+        cfg.save(u, patch);
+        bootstrap.Modal.getOrCreateInstance(modalEl).hide(); window.refreshAuth();
+        toast(patch.pw ? "Profile and password updated" : "Profile updated");
+    });
+}
+
+function buildUserMenu(nav) {
+    const wrap = document.createElement("div"); wrap.className = "dropdown user-menu";
+    const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+    wrap.innerHTML = `<button type="button" class="user-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
+        <span class="user-avatar"></span><span class="user-name"></span>${svg('<path d="M6 9l6 6 6-6"/>')}</button>
+      <div class="dropdown-menu dropdown-menu-end user-dd">
+        <div class="user-card"><span class="user-avatar lg"></span><div><div class="user-card-name"></div><div class="user-card-meta"></div></div></div>
+        <div class="dropdown-divider"></div>
+        <button type="button" class="dropdown-item">${svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')}Edit profile</button>
+        <div class="dropdown-divider"></div>
+        <button type="button" class="dropdown-item text-danger">${svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>')}Log out</button>
+      </div>`;
+    nav.append(wrap);
+    const tag = wrap.querySelector(".user-toggle"), [prof, out] = wrap.querySelectorAll(".dropdown-item");
+    return { tag, prof, out, hdr: null };
+}
+function fillUserMenu(tag, name, meta) {
+    const w = tag.closest(".user-menu"), ini = (name.trim().charAt(0) || "?").toUpperCase();
+    w.querySelectorAll(".user-avatar").forEach(a => a.textContent = ini);
+    w.querySelector(".user-name").textContent = name;
+    w.querySelector(".user-card-name").textContent = name;
+    w.querySelector(".user-card-meta").textContent = meta;
+}
 function addEyes(gate) {
     /* show / hide password (closed eye = hidden, open eye = shown) */
     const svg = p => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -635,17 +706,16 @@ function addEyes(gate) {
 }
 function initAuth() {
     const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
-    const tag = document.createElement("span"); tag.className = "small me-2 text-nowrap";
-    const out = document.createElement("button"); out.type = "button"; out.className = "btn btn-sm btn-outline-light"; out.textContent = "Log out";
-    nav.append(tag, out);
+    const { tag, prof, out, hdr } = buildUserMenu(nav);
     addEyes(gate);
     window.doLogout = () => out.click();
     const apply = () => {
         const u = currentUser();
         gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
         nav.querySelectorAll("button[data-bs-toggle]").forEach(b => b.classList.toggle("d-none", !u));
-        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u);
-        tag.textContent = u ? `${u.name} (${u.role})` : "";
+        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u); prof.classList.toggle("d-none", !u);
+        fillUserMenu(tag, u ? u.name : "", u ? `${u.role} - ${u.idNo}` : "");
+        if (u) Idle.start(() => { closeEverything(); localStorage.removeItem("fixit_session"); apply(); toast("You were logged out after 15 minutes of inactivity."); }); else Idle.stop();
         gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
         window.dispatchEvent(new Event("authchange"));
     };
@@ -673,15 +743,19 @@ function initAuth() {
         $("lgPw").focus();
     });
     out.addEventListener("click", () => { localStorage.removeItem("fixit_session"); apply(); toast("You have been logged out"); });
+    prof.addEventListener("click", () => window.openProfile());
+    initProfile({
+        get: currentUser, salt: u => u.idNo.toLowerCase(), idText: u => u.idNo,
+        save: (u, patch) => { const l = Users.all(); Object.assign(l.find(x => x.idNo === u.idNo), patch); Users.save(l); }
+    });
+    window.refreshAuth = apply;
     apply();
 }
 
 /* ---------- Admin login (account is kept in this browser) ---------- */
 function initAdminAuth() {
     const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
-    const tag = document.createElement("span"); tag.className = "small me-2 text-nowrap";
-    const out = document.createElement("button"); out.type = "button"; out.className = "btn btn-sm btn-outline-light"; out.textContent = "Log out";
-    nav.append(tag, out);
+    const { tag, prof, out, hdr } = buildUserMenu(nav);
     addEyes(gate);
     const admins = () => { try { return JSON.parse(localStorage.getItem("fixit_admins")) || []; } catch { return []; } };
     const current = () => { const u = sessionStorage.getItem("fixit_admin_session"); return admins().find(a => a.username === u) || null; };
@@ -690,8 +764,9 @@ function initAdminAuth() {
         const u = current(), setup = admins().length === 0;
         gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
         nav.querySelectorAll("button[data-bs-toggle]").forEach(b => b.classList.toggle("d-none", !u));
-        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u);
-        tag.textContent = u ? "Signed in as " + u.name : "";
+        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u); prof.classList.toggle("d-none", !u);
+        fillUserMenu(tag, u ? u.name : "", u ? "Admin - " + u.username : "");
+        if (u) Idle.start(() => { closeEverything(); sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You were logged out after 15 minutes of inactivity."); }); else Idle.stop();
         $("loginForm").classList.toggle("d-none", setup); $("setupForm").classList.toggle("d-none", !setup);
         $("gateTitle").textContent = setup ? "Set up the admin account" : "Admin sign in";
         $("gateHint").textContent = setup ? "No admin account exists yet. Create the first one." : "Log in to manage tickets, assets, and borrowing.";
@@ -717,6 +792,12 @@ function initAdminAuth() {
         $("lgId").value = username; $("loginOk").textContent = "Admin account created. Please log in."; $("loginOk").classList.remove("d-none"); $("lgPw").focus();
     });
     out.addEventListener("click", () => { sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You have been logged out"); });
+    prof.addEventListener("click", () => window.openProfile());
+    initProfile({
+        get: current, salt: u => "admin:" + u.username.toLowerCase(), idText: u => u.username,
+        save: (u, patch) => { const l = admins(); Object.assign(l.find(x => x.username === u.username), patch); localStorage.setItem("fixit_admins", JSON.stringify(l)); }
+    });
+    window.refreshAuth = apply;
     apply();
 }
 
@@ -731,6 +812,11 @@ function initSheets() {
         const u = currentUser(); if (!u) return;
         $("shAvatar").textContent = u.name.trim().charAt(0).toUpperCase();
         $("shName").textContent = u.name; $("shMeta").textContent = u.role + " - " + u.idNo;
+    });
+    $("sheetProfile").addEventListener("click", () => {
+        const el = $("accountSheet");
+        el.addEventListener("hidden.bs.offcanvas", () => window.openProfile(), { once: true });
+        bootstrap.Offcanvas.getOrCreateInstance(el).hide();
     });
     $("sheetLogout").addEventListener("click", () => { bootstrap.Offcanvas.getOrCreateInstance("#accountSheet").hide(); window.doLogout(); });
 }
@@ -771,6 +857,41 @@ function initHistoryClient() {
     render();
 }
 
+/* ---------- Mobile page title + client summary ---------- */
+const M_TITLES = {
+    student: {
+        "#tabReports": ["Damage reports", "Track what has been reported on campus"],
+        "#tabBorrow": ["Equipment borrowing", "Requests for school equipment"],
+        "#tabHist": ["My history", "Your reports and borrowed items"]
+    },
+    admin: {
+        "#tabTickets": ["Maintenance tracking", "Assign, update, and close tickets"],
+        "#tabBorrow": ["Borrowing", "Approve requests and record returns"],
+        "#tabAssets": ["Assets", "Inventory, condition, and availability"],
+        "#tabReports": ["Reports and analytics", "Summaries of tickets, assets, and borrowing"],
+        "#tabHistory": ["History and archive", "Activity log and archived items"]
+    }
+};
+function updateMobileHead(t) {
+    const m = (M_TITLES[document.body.dataset.page] || {})[t];
+    if (m && $("mTitle")) { $("mTitle").textContent = m[0]; $("mSub").textContent = m[1]; }
+}
+function initHero() {
+    if (!$("heroName")) return;
+    const render = () => {
+        const u = currentUser(); if (!u) return;
+        const T = Tickets.all().filter(t => !t.archived && (t.idNo ? t.idNo === u.idNo : t.reporter === u.name));
+        $("heroName").textContent = u.name.trim().split(" ")[0];
+        $("heroTotal").textContent = T.length;
+        $("heroOpen").textContent = T.filter(t => t.status !== "Fixed").length;
+        $("heroFixed").textContent = T.filter(t => t.status === "Fixed").length;
+    };
+    window.addEventListener("authchange", render); window.addEventListener("storage", render);
+    document.addEventListener("shown.bs.tab", render);
+    new MutationObserver(render).observe($("rows"), { childList: true });
+    render();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", e => {
         const b = e.target.closest("[data-tl]");
@@ -778,6 +899,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.addEventListener("shown.bs.tab", e => {
         const t = e.target.getAttribute("data-bs-target");
+        updateMobileHead(t);
         document.querySelectorAll("[data-main-nav]").forEach(b => {
             const on = b.getAttribute("data-bs-target") === t;
             b.classList.toggle("active", on); b.setAttribute("aria-selected", on);
@@ -785,6 +907,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     initPhotoViewer();
     const p = document.body.dataset.page;
-    if (p === "student") { initAuth(); initStudent(); initBorrowClient(); initHistoryClient(); initSheets(); }
+    updateMobileHead(p === "student" ? "#tabReports" : "#tabTickets");
+    if (p === "student") { initAuth(); initStudent(); initBorrowClient(); initHistoryClient(); initSheets(); initHero(); }
     if (p === "admin") { initAdminAuth(); initAdmin(); initAdminExtras(); }
 });

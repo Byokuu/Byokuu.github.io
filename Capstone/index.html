@@ -13,7 +13,8 @@
 <body data-page="student">
     <header class="topbar shadow">
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-3">
-            <div class="brand">CampusCare</div>
+            <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span
+                    class="brand-text">CampusCare<small>PUPSTC Facility Management Office</small></span></div>
             <nav class="nav align-items-center d-none d-md-flex"></nav>
         </div>
     </header>
@@ -84,6 +85,10 @@
     </section>
 
     <main class="container py-4">
+        <div class="m-head d-md-none">
+            <h1 id="mTitle"></h1>
+            <p id="mSub"></p>
+        </div>
         <ul class="nav nav-tabs mb-3 d-none d-md-flex" role="tablist">
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
                     data-bs-target="#tabReports" type="button" role="tab">Damage reports</button></li>
@@ -100,6 +105,15 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tabReports">
+                <div class="m-hero d-md-none">
+                    <div class="m-hero-hi">Hello, <b id="heroName"></b></div>
+                    <div class="m-hero-sub">Report a damage or borrow equipment in a few taps.</div>
+                    <div class="m-hero-stats">
+                        <div><b id="heroTotal">0</b><span>My reports</span></div>
+                        <div><b id="heroOpen">0</b><span>Open</span></div>
+                        <div><b id="heroFixed">0</b><span>Fixed</span></div>
+                    </div>
+                </div>
                 <section class="panel">
                     <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
                         <h1 class="h4 mb-0">Track reports</h1>
@@ -492,6 +506,8 @@
                     <div class="small text-secondary" id="shMeta"></div>
                 </div>
             </div>
+            <button class="btn btn-outline-secondary w-100 py-2 mb-2" type="button" id="sheetProfile">Edit
+                profile</button>
             <button class="btn btn-outline-danger w-100 py-2" type="button" id="sheetLogout">Log out</button>
         </div>
     </div>
@@ -506,6 +522,43 @@
                 <div class="modal-footer border-0 justify-content-between"><button type="button"
                         class="btn btn-outline-light btn-sm" id="phPrev">Previous</button><button type="button"
                         class="btn btn-outline-light btn-sm" id="phNext">Next</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade slide-up" id="profileModal" tabindex="-1" aria-labelledby="profT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="profT">Edit profile</h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm" novalidate>
+                        <div class="mb-3"><label class="form-label" for="pfName">Full name</label>
+                            <input class="form-control" id="pfName" autocomplete="name" required>
+                            <div class="invalid-feedback">Enter your name.</div>
+                        </div>
+                        <div class="mb-4"><label class="form-label" for="pfId">Student no. / Employee ID</label>
+                            <input class="form-control locked" id="pfId" readonly tabindex="-1">
+                            <div class="form-text">This can't be changed.</div>
+                        </div>
+                        <h3 class="h6">Change password <span class="text-secondary fw-normal">(optional)</span></h3>
+                        <div class="mb-3"><label class="form-label" for="pfCur">Current password</label>
+                            <input class="form-control" type="password" id="pfCur" autocomplete="current-password">
+                        </div>
+                        <div class="mb-3"><label class="form-label" for="pfNew">New password</label>
+                            <input class="form-control" type="password" id="pfNew" autocomplete="new-password">
+                        </div>
+                        <div class="mb-3"><label class="form-label" for="pfNew2">Confirm new password</label>
+                            <input class="form-control" type="password" id="pfNew2" autocomplete="new-password">
+                        </div>
+                        <div class="text-danger small d-none" id="profErr"></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="profileForm"
+                        class="btn btn-maroon">Save changes</button></div>
             </div>
         </div>
     </div>
