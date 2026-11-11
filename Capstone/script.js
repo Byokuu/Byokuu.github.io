@@ -637,32 +637,44 @@ function closeEverything() {
 }
 function initProfile(cfg) {
     const form = $("profileForm"), modalEl = $("profileModal"), err = $("profErr");
+    const pwIds = ["pfCur", "pfNew", "pfNew2"];
     addEyes(modalEl);
+    let mode = "name";
     const fail = m => { err.textContent = m; err.classList.remove("d-none"); };
+    const done = msg => { bootstrap.Modal.getOrCreateInstance(modalEl).hide(); window.refreshAuth(); toast(msg); };
+    const setMode = m => {
+        mode = m; err.classList.add("d-none"); form.classList.remove("was-validated");
+        modalEl.querySelectorAll("[data-pf]").forEach(b => { const on = b.dataset.pf === m; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on); });
+        $("pfPaneName").classList.toggle("d-none", m !== "name"); $("pfPanePw").classList.toggle("d-none", m !== "pw");
+        $("pfName").required = m === "name";
+        pwIds.forEach(id => { $(id).required = m === "pw"; $(id).value = ""; $(id).readOnly = true; });
+        modalEl.querySelectorAll(".pw-eye").forEach(b => b.reset());
+    };
+    pwIds.forEach(id => $(id).addEventListener("focus", e => { e.target.readOnly = false; }));
+    modalEl.querySelectorAll("[data-pf]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.pf)));
     window.openProfile = () => {
         const u = cfg.get(); if (!u) return;
-        $("pfName").value = u.name; $("pfId").value = cfg.idText(u);
-        err.classList.add("d-none"); form.classList.remove("was-validated");
+        $("pfName").value = u.name; $("pfId").value = cfg.idText(u); setMode("name");
         bootstrap.Modal.getOrCreateInstance(modalEl).show();
     };
-    modalEl.addEventListener("hidden.bs.modal", () => {
-        ["pfCur", "pfNew", "pfNew2"].forEach(id => $(id).value = ""); modalEl.querySelectorAll(".pw-eye").forEach(b => b.reset());
-    });
+    modalEl.addEventListener("hidden.bs.modal", () => setMode("name"));
     form.addEventListener("submit", async e => {
         e.preventDefault(); err.classList.add("d-none");
         if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
-        const u = cfg.get(), name = $("pfName").value.trim(), cur = $("pfCur").value, n1 = $("pfNew").value, n2 = $("pfNew2").value;
-        const patch = { name };
-        if (cur || n1 || n2) {
-            if (!cur) return fail("Enter your current password to change it.");
+        const u = cfg.get();
+        if (mode === "name") {
+            const name = $("pfName").value.trim();
+            if (!name) return fail("Enter your name.");
+            if (name === u.name) return fail("That is already your name.");
+            cfg.save(u, { name }); done("Name updated");
+        } else {
+            const cur = $("pfCur").value, n1 = $("pfNew").value, n2 = $("pfNew2").value;
             if (u.pw !== await hashPw(cur, cfg.salt(u))) return fail("Your current password is wrong.");
             if (n1.length < 6) return fail("Use a new password with at least 6 characters.");
+            if (n1 === cur) return fail("The new password must be different from the current one.");
             if (n1 !== n2) return fail("The two new passwords do not match.");
-            patch.pw = await hashPw(n1, cfg.salt(u));
+            cfg.save(u, { pw: await hashPw(n1, cfg.salt(u)) }); done("Password updated");
         }
-        cfg.save(u, patch);
-        bootstrap.Modal.getOrCreateInstance(modalEl).hide(); window.refreshAuth();
-        toast(patch.pw ? "Profile and password updated" : "Profile updated");
     });
 }
 
@@ -905,6 +917,7 @@ document.addEventListener("DOMContentLoaded", () => {
             b.classList.toggle("active", on); b.setAttribute("aria-selected", on);
         });
     });
+    ["hide.bs.modal", "hide.bs.offcanvas"].forEach(ev => document.addEventListener(ev, () => { if (document.activeElement) document.activeElement.blur(); }));
     initPhotoViewer();
     const p = document.body.dataset.page;
     updateMobileHead(p === "student" ? "#tabReports" : "#tabTickets");
