@@ -242,6 +242,11 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
+                    <span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" />
+                        </svg></span>
                     <div>
                         <h2 class="h4 mb-0" id="reportTitle">Report a damage</h2>
                         <p class="text-secondary small mb-0">Tell us where it is and we'll send it to the maintenance
@@ -251,7 +256,14 @@
                 </div>
                 <div class="modal-body">
                     <form id="ticketForm" novalidate>
-                        <div class="row g-3 mb-3">
+                        <div class="who-chip" id="whoChip"><span class="user-avatar"></span>
+                            <div>
+                                <div class="who-label">Reporting as</div>
+                                <div class="who-name"></div>
+                                <div class="who-meta"></div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3 d-none">
                             <div class="col-sm">
                                 <label class="form-label" for="role">I am a</label>
                                 <select class="form-select" id="role" name="role">
@@ -272,6 +284,7 @@
                                 <div class="invalid-feedback">Enter your ID number.</div>
                             </div>
                         </div>
+                        <div class="form-section">Damage details</div>
                         <div class="mb-3">
                             <label class="form-label" for="title">What is damaged?</label>
                             <input class="form-control" id="title" name="title"
@@ -306,14 +319,18 @@
                                 </select>
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label" for="urgency">How urgent?</label>
-                                <select class="form-select" id="urgency" name="urgency">
-                                    <option>Low</option>
-                                    <option selected>Medium</option>
-                                    <option>High</option>
-                                </select>
+                                <label class="form-label" id="urgLbl">How urgent?</label>
+                                <div class="seg-radio" role="radiogroup" aria-labelledby="urgLbl">
+                                    <input type="radio" class="btn-check" name="urgency" id="urgLow" value="Low"
+                                        autocomplete="off"><label class="u-low" for="urgLow">Low</label>
+                                    <input type="radio" class="btn-check" name="urgency" id="urgMed" value="Medium"
+                                        autocomplete="off" checked><label class="u-med" for="urgMed">Medium</label>
+                                    <input type="radio" class="btn-check" name="urgency" id="urgHigh" value="High"
+                                        autocomplete="off"><label class="u-high" for="urgHigh">High</label>
+                                </div>
                             </div>
                         </div>
+                        <div class="form-section">Additional information</div>
                         <div class="mb-3">
                             <label class="form-label" for="description">More details <span
                                     class="text-secondary">(optional)</span></label>
@@ -405,6 +422,11 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
+                    <span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
+                            <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
+                        </svg></span>
                     <div>
                         <h2 class="h4 mb-0" id="borrowTitle">Borrow equipment</h2>
                         <p class="text-secondary small mb-0">Only items that are free right now are listed. The office
@@ -414,7 +436,14 @@
                 </div>
                 <div class="modal-body">
                     <form id="borrowForm" novalidate>
-                        <div class="row g-3 mb-3">
+                        <div class="who-chip" id="borrowChip"><span class="user-avatar"></span>
+                            <div>
+                                <div class="who-label">Requesting as</div>
+                                <div class="who-name"></div>
+                                <div class="who-meta"></div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3 d-none">
                             <div class="col-sm"><label class="form-label" for="bRole">I am a</label>
                                 <select class="form-select" id="bRole" name="role">
                                     <option>Student</option>
@@ -432,6 +461,7 @@
                                 <div class="invalid-feedback">Enter your ID number.</div>
                             </div>
                         </div>
+                        <div class="form-section">Equipment</div>
                         <div class="mb-3"><label class="form-label" for="bAsset">Equipment</label>
                             <select class="form-select" id="bAsset" name="asset" required></select>
                             <div class="invalid-feedback">Choose the equipment you need.</div>
@@ -441,6 +471,7 @@
                                 placeholder="e.g. Intramurals, class presentation" required>
                             <div class="invalid-feedback">Tell us what it is for.</div>
                         </div>
+                        <div class="form-section">Schedule</div>
                         <div class="row g-3">
                             <div class="col-sm-6"><label class="form-label" for="bFrom">Borrow on</label>
                                 <input class="form-control" type="date" id="bFrom" name="from" required>

@@ -320,6 +320,12 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
+                    <span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                            <rect x="9" y="3" width="6" height="4" rx="1" />
+                            <path d="M9 12h6M9 16h4" />
+                        </svg></span>
                     <div>
                         <h2 class="h4 mb-0" id="reportTitle">Log a damage</h2>
                         <p class="small mb-0 opacity-75">For damage found during inspections or reported to the office
@@ -329,7 +335,14 @@
                 </div>
                 <div class="modal-body">
                     <form id="ticketForm" novalidate>
-                        <div class="mb-3">
+                        <div class="who-chip" id="whoChip"><span class="user-avatar"></span>
+                            <div>
+                                <div class="who-label">Logging as</div>
+                                <div class="who-name"></div>
+                                <div class="who-meta"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3 d-none">
                             <label class="form-label" for="reporter">Your Name</label>
                             <input class="form-control" id="reporter" name="reporter"
                                 placeholder="Name of the office staff logging this" required>
@@ -341,6 +354,7 @@
                             <input class="form-control" id="onBehalf" name="onBehalf"
                                 placeholder="e.g. Prof. Santos, if they called or walked in">
                         </div>
+                        <div class="form-section">Damage details</div>
                         <div class="mb-3">
                             <label class="form-label" for="title">What is damaged?</label>
                             <input class="form-control" id="title" name="title"
@@ -373,15 +387,18 @@
                                     <option>Other</option>
                                 </select>
                             </div>
-                            <div class="col-sm-4">
-                                <label class="form-label" for="urgency">Priority</label>
-                                <select class="form-select" id="urgency" name="urgency">
-                                    <option>Low</option>
-                                    <option selected>Medium</option>
-                                    <option>High</option>
-                                </select>
+                            <div class="col-sm-5">
+                                <label class="form-label" id="urgLbl">Priority</label>
+                                <div class="seg-radio" role="radiogroup" aria-labelledby="urgLbl">
+                                    <input type="radio" class="btn-check" name="urgency" id="urgLow" value="Low"
+                                        autocomplete="off"><label class="u-low" for="urgLow">Low</label>
+                                    <input type="radio" class="btn-check" name="urgency" id="urgMed" value="Medium"
+                                        autocomplete="off" checked><label class="u-med" for="urgMed">Medium</label>
+                                    <input type="radio" class="btn-check" name="urgency" id="urgHigh" value="High"
+                                        autocomplete="off"><label class="u-high" for="urgHigh">High</label>
+                                </div>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-3">
                                 <label class="form-label" for="status">Starting Status</label>
                                 <select class="form-select" id="status" name="status">
                                     <option>Pending</option>
@@ -394,6 +411,7 @@
                                     class="text-secondary">(optional)</span></label>
                             <select class="form-select" id="assetId" name="assetId"></select>
                         </div>
+                        <div class="form-section">Additional information</div>
                         <div>
                             <label class="form-label" for="description">More Details <span
                                     class="text-secondary">(optional)</span></label>

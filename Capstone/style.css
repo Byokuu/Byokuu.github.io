@@ -1159,3 +1159,208 @@ h3,
     color: var(--maroon);
     box-shadow: 0 1px 3px rgba(0, 0, 0, .14)
 }
+
+/* ===== polished form windows ===== */
+.modal-header {
+    align-items: center;
+    gap: .9rem;
+    padding: 1.1rem 1.5rem
+}
+
+.modal-header .btn-close {
+    margin-left: auto
+}
+
+.modal-header h2.h4 {
+    font-size: 1.2rem;
+    font-weight: 700
+}
+
+.mh-icon {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--maroon);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.mh-icon svg {
+    width: 22px;
+    height: 22px
+}
+
+.modal-admin .mh-icon {
+    background: var(--gold);
+    color: var(--maroon-d)
+}
+
+.modal-body {
+    padding: 1.4rem 1.5rem
+}
+
+.modal-footer {
+    background: #faf7f7;
+    border-top: 1px solid var(--line);
+    padding: .9rem 1.5rem;
+    border-radius: 0 0 14px 14px;
+    gap: .5rem
+}
+
+.modal-footer .btn {
+    padding: .5rem 1.25rem
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: .85rem;
+    color: #3b3536;
+    margin-bottom: .35rem
+}
+
+.form-label .text-secondary {
+    font-weight: 400
+}
+
+.form-label:has(+ [required])::after,
+.form-label:has(+ .pw-wrap [required])::after {
+    content: " *";
+    color: #b3261e
+}
+
+.form-control,
+.form-select {
+    padding: .6rem .8rem
+}
+
+.form-control::placeholder {
+    color: #a9a2a4
+}
+
+.form-section {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 1.5rem 0 .85rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--maroon)
+}
+
+.form-section::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line)
+}
+
+.who-chip+.form-section,
+.who-chip+.d-none+.form-section {
+    margin-top: 1.25rem
+}
+
+.who-chip {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .7rem .9rem;
+    background: #f9f4f4;
+    border: 1px solid var(--line);
+    border-radius: 12px
+}
+
+.who-chip .user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    background: var(--maroon);
+    color: #fff
+}
+
+.who-label {
+    font-size: .66rem;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--mute)
+}
+
+.who-name {
+    font-weight: 700;
+    line-height: 1.2
+}
+
+.who-meta {
+    font-size: .82rem;
+    color: var(--mute)
+}
+
+.seg-radio {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .4rem
+}
+
+.seg-radio label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    padding: .55rem .5rem;
+    border: 1px solid #dcd5d7;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--mute);
+    font-weight: 500;
+    font-size: .92rem;
+    cursor: pointer;
+    transition: border-color .15s, background .15s
+}
+
+.seg-radio label::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dot)
+}
+
+.seg-radio label:hover {
+    border-color: var(--dot)
+}
+
+.seg-radio .btn-check:checked+label {
+    background: var(--bgc);
+    border-color: var(--dot);
+    color: var(--tc);
+    font-weight: 600;
+    box-shadow: 0 0 0 1px var(--dot)
+}
+
+.seg-radio .btn-check:focus-visible+label {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px
+}
+
+.u-low {
+    --dot: #2e9e5b;
+    --bgc: #e7f6ec;
+    --tc: #17623a
+}
+
+.u-med {
+    --dot: #d9a441;
+    --bgc: #fdf3dc;
+    --tc: #7a5200
+}
+
+.u-high {
+    --dot: #c4372d;
+    --bgc: #fdecea;
+    --tc: #8a1c14
+}
