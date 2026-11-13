@@ -236,9 +236,10 @@ function initReportForm(afterSave) {
             $("role").value = u.role; $("role").dispatchEvent(new Event("change"));
             $("reporter").value = u.name; $("idNo").value = u.idNo;
             [$("role"), $("reporter"), $("idNo")].forEach(lock);
+            fillChip("whoChip", u.name, `${u.role} \u00b7 ${u.idNo}`);
         } else if ($("reporter")) {
             const n = sessionStorage.getItem("fixit_admin_name");
-            if (n) { $("reporter").value = n; lock($("reporter")); }
+            if (n) { $("reporter").value = n; lock($("reporter")); fillChip("whoChip", n, "Facility Management Office"); }
         }
     });
     Photos.init();
@@ -339,68 +340,12 @@ function initAdmin() {
     render();
 }
 
-/* ---------- Borrowing (client) ---------- */
-function initBorrowClient() {
-    const form = $("borrowForm"), modal = $("borrowModal"), body = $("loanRows"), search = $("loanSearch");
-    const sync = bindRole("bRole", "bIdWrap", "bId");
-    const render = () => {
-        const q = search.value.trim().toLowerCase();
-        const list = Loans.all().filter(l => !q || (l.id + an(l.assetId) + l.borrower + l.purpose).toLowerCase().includes(q));
-        body.innerHTML = list.length ? list.map(l => `
-      <tr>
-        <td>${tlBtn("l", l.id)}</td>
-        <td><div class="fw-semibold">${esc(an(l.assetId))}</div><div class="small text-secondary">${esc(l.purpose)}</div></td>
-        <td class="small">${esc(l.borrower)}<br><span class="text-secondary">${esc(l.role)}</span></td>
-        <td class="small">${fmtD(l.from)} &rarr; ${fmtD(l.due)}</td>
-        <td>${badge(loanStatus(l))}${l.status === "Pending" && Mine.has(l.id) ? ` <button class="btn btn-sm btn-outline-danger ms-1" data-cancel="${l.id}">Cancel</button>` : ""}</td>
-      </tr>`).join("") : `<tr><td colspan="5" class="empty">No borrowing requests yet.</td></tr>`;
-    };
-    modal.addEventListener("show.bs.modal", () => {
-        const free = Assets.all().filter(a => !a.archived && availability(a) === "Available");
-        $("bAsset").innerHTML = free.length ? '<option value="">Choose equipment...</option>' + free.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.tag)}) - ${esc(a.location)}</option>`).join("")
-            : '<option value="">No equipment available right now</option>';
-        const u = currentUser();
-        if (u) {
-            $("bRole").value = u.role; $("bRole").dispatchEvent(new Event("change"));
-            $("bName").value = u.name; $("bId").value = u.idNo;[$("bRole"), $("bName"), $("bId")].forEach(el => { el.setAttribute("aria-readonly", "true"); el.tabIndex = -1; el.classList.add("locked"); if (el.tagName !== "SELECT") el.readOnly = true; });
-        }
-        $("bFrom").min = $("bDue").min = today();
-        if (!$("bFrom").value) $("bFrom").value = today();
-    });
-    modal.addEventListener("shown.bs.modal", () => $("bAsset").focus());
-    modal.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); sync(); });
-    form.addEventListener("submit", e => {
-        e.preventDefault();
-        $("bDue").setCustomValidity($("bDue").value && $("bDue").value < $("bFrom").value ? "x" : "");
-        if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
-        const d = Object.fromEntries(new FormData(form));
-        const l = Loans.add({ assetId: d.asset, borrower: d.name.trim(), role: d.role, idNo: (d.idNo || "").trim(), purpose: d.purpose.trim(), from: d.from, due: d.due, status: "Pending" }, "Request sent by " + d.name.trim() + " (" + d.role + ")");
-        bootstrap.Modal.getOrCreateInstance(modal).hide();
-        Mine.add(l.id); localStorage.setItem("fixit_me", JSON.stringify({ name: d.name.trim(), idNo: (d.idNo || "").trim() })); toast(`Request ${l.id} sent. Wait for the office to approve it.`);
-        bootstrap.Tab.getOrCreateInstance("#tabBorrowBtn").show(); render();
-    });
-    search.addEventListener("input", render);
-    body.addEventListener("click", e => {
-        const b = e.target.closest("button[data-cancel]"); if (!b) return;
-        if (!confirm(`Cancel request ${b.dataset.cancel}?`)) return;
-        Loans.patch(b.dataset.cancel, { status: "Cancelled" }, "Cancelled by the borrower");
-        toast(`Request ${b.dataset.cancel} cancelled`); render();
-    });
-    window.addEventListener("storage", render);
-    render();
-}
-
 /* ---------- Admin: assign, borrowing, assets, reports ---------- */
 /* saved personnel, own requests, CSV export */
 const Staff = {
     all() { try { return JSON.parse(localStorage.getItem("fixit_staff")) || []; } catch { return []; } },
     add(n) { const l = this.all(); if (n && !l.some(x => x.toLowerCase() === n.toLowerCase())) { l.push(n); localStorage.setItem("fixit_staff", JSON.stringify(l.sort())); } },
     remove(n) { localStorage.setItem("fixit_staff", JSON.stringify(this.all().filter(x => x !== n))); }
-};
-const Mine = {
-    all() { try { return JSON.parse(localStorage.getItem("fixit_mine")) || []; } catch { return []; } },
-    add(id) { localStorage.setItem("fixit_mine", JSON.stringify(this.all().concat(id))); },
-    has(id) { return this.all().includes(id); }
 };
 function downloadCSV(name, head, rows) {
     const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -694,6 +639,11 @@ function buildUserMenu(nav) {
     const tag = wrap.querySelector(".user-toggle"), [prof, out] = wrap.querySelectorAll(".dropdown-item");
     return { tag, prof, out, hdr: null };
 }
+function fillChip(id, name, meta) {
+    const c = $(id); if (!c) return;
+    c.querySelector(".user-avatar").textContent = (name.trim().charAt(0) || "?").toUpperCase();
+    c.querySelector(".who-name").textContent = name; c.querySelector(".who-meta").textContent = meta;
+}
 function fillUserMenu(tag, name, meta) {
     const w = tag.closest(".user-menu"), ini = (name.trim().charAt(0) || "?").toUpperCase();
     w.querySelectorAll(".user-avatar").forEach(a => a.textContent = ini);
@@ -815,11 +765,6 @@ function initAdminAuth() {
 
 /* ---------- Mobile bottom sheets (client) ---------- */
 function initSheets() {
-    $("actionSheet").addEventListener("click", e => {
-        const b = e.target.closest("[data-open]"); if (!b) return;
-        $("actionSheet").addEventListener("hidden.bs.offcanvas", () => bootstrap.Modal.getOrCreateInstance(b.dataset.open).show(), { once: true });
-        bootstrap.Offcanvas.getOrCreateInstance("#actionSheet").hide();
-    });
     $("accountSheet").addEventListener("show.bs.offcanvas", () => {
         const u = currentUser(); if (!u) return;
         $("shAvatar").textContent = u.name.trim().charAt(0).toUpperCase();
@@ -843,20 +788,15 @@ function initHistoryClient() {
         input.classList.toggle("d-none", !!u);
         const q = input.value.trim().toLowerCase();
         if (!u && q.length < 3) {
-            $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your reports and borrowed items.";
-            $("htRows").innerHTML = $("hlRows").innerHTML = none("Nothing to show yet."); return;
+            $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your damage reports.";
+            $("htRows").innerHTML = none("Nothing to show yet."); return;
         }
         const T = Tickets.all().filter(t => !t.archived && (u ? (t.idNo ? t.idNo === u.idNo : t.reporter === u.name) : ((t.reporter || "") + " " + (t.idNo || t.studentNo || "")).toLowerCase().includes(q)));
-        const L = Loans.all().filter(l => u ? (l.idNo ? l.idNo === u.idNo : l.borrower === u.name) : ((l.borrower || "") + " " + (l.idNo || "")).toLowerCase().includes(q));
-        $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") + `${T.length} damage report${T.length === 1 ? "" : "s"} (${T.filter(t => t.status === "Fixed").length} fixed) and ${L.length} borrowing request${L.length === 1 ? "" : "s"} (${L.filter(l => l.status === "Returned").length} returned).`;
+        $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") + `${T.length} damage report${T.length === 1 ? "" : "s"}, ${T.filter(t => t.status === "Fixed").length} fixed.`;
         $("htRows").innerHTML = T.length ? T.map(t => `<tr><td>${tlBtn("t", t.id)}</td>
           <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
           <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
           <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No damage reports found.");
-        $("hlRows").innerHTML = L.length ? L.map(l => `<tr><td>${tlBtn("l", l.id)}</td>
-          <td><div class="fw-semibold">${esc(an(l.assetId))}</div><div class="small text-secondary">${esc(l.purpose)}</div></td>
-          <td class="small">${fmtD(l.from)} &rarr; ${fmtD(l.due)}</td><td>${badge(loanStatus(l))}</td>
-          <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td></tr>`).join("") : none("No borrowing requests found.");
     };
     input.addEventListener("input", render);
     document.addEventListener("shown.bs.tab", e => {
@@ -873,8 +813,7 @@ function initHistoryClient() {
 const M_TITLES = {
     student: {
         "#tabReports": ["Damage reports", "Track what has been reported on campus"],
-        "#tabBorrow": ["Equipment borrowing", "Requests for school equipment"],
-        "#tabHist": ["My history", "Your reports and borrowed items"]
+        "#tabHist": ["My history", "Your damage reports"]
     },
     admin: {
         "#tabTickets": ["Maintenance tracking", "Assign, update, and close tickets"],
@@ -917,10 +856,11 @@ document.addEventListener("DOMContentLoaded", () => {
             b.classList.toggle("active", on); b.setAttribute("aria-selected", on);
         });
     });
+    /* move focus out of a window before it is hidden (stops the aria-hidden warning) */
     ["hide.bs.modal", "hide.bs.offcanvas"].forEach(ev => document.addEventListener(ev, () => { if (document.activeElement) document.activeElement.blur(); }));
     initPhotoViewer();
     const p = document.body.dataset.page;
     updateMobileHead(p === "student" ? "#tabReports" : "#tabTickets");
-    if (p === "student") { initAuth(); initStudent(); initBorrowClient(); initHistoryClient(); initSheets(); initHero(); }
+    if (p === "student") { initAuth(); initStudent(); initHistoryClient(); initSheets(); initHero(); }
     if (p === "admin") { initAdminAuth(); initAdmin(); initAdminExtras(); }
 });
