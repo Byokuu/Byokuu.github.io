@@ -1,6 +1,6 @@
 const $ = id => document.getElementById(id);
 const fmtT = ms => new Date(ms).toLocaleString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
-const labelOf = o => o.title || o.name || (o.assetId ? an(o.assetId) : "");
+const labelOf = o => o.title || o.name || o.area || "";
 const coll = (key, prefix, pad, kind) => ({
     all() { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } },
     save(l) { localStorage.setItem(key, JSON.stringify(l)); },
@@ -29,14 +29,10 @@ const coll = (key, prefix, pad, kind) => ({
         this.save(this.all().filter(x => x.id !== id));
     }
 });
-const Tickets = coll("fixit_tickets", "FX", 4, "ticket"), Assets = coll("fixit_assets", "AS", 3, "asset"), Loans = coll("fixit_loans", "BR", 4, "loan"), Log = coll("fixit_log", "LG", 5);
+const Tickets = coll("fixit_tickets", "FX", 4, "ticket"), Assets = coll("fixit_assets", "AS", 3, "asset"), Cleanings = coll("fixit_cleanings", "CL", 4, "cleaning"), Log = coll("fixit_log", "LG", 5);
 Tickets.setStatus = (id, s) => {
     const msg = { Fixed: "Marked as fixed", "In progress": "Work started", Pending: "Reopened (back to pending)" }[s];
-    const t = Tickets.patch(id, { status: s, fixedAt: s === "Fixed" ? Date.now() : null }, msg);
-    if (t && s === "Fixed" && t.assetId) {
-        const a = Assets.all().find(x => x.id === t.assetId);
-        if (a && a.condition === "Damaged") Assets.patch(a.id, { condition: "Good" }, "Condition set to Good after repair " + t.id);
-    }
+    Tickets.patch(id, { status: s, fixedAt: s === "Fixed" ? Date.now() : null }, msg);
 };
 /* timeline helpers */
 const eventsOf = o => o.events && o.events.length ? o.events : [{ ts: o.createdAt, text: "Created" }];
@@ -48,7 +44,7 @@ function showTimeline(c, id) {
     $("tlTitle").textContent = `${o.id} - ${labelOf(o)}`;
     const bits = [`Added ${fmtT(o.createdAt)}`];
     if (o.fixedAt) bits.push(`Fixed ${fmtT(o.fixedAt)} (after ${spanTxt(o.fixedAt - o.createdAt)})`);
-    if (o.returnedAt) bits.push(`Returned ${fmtT(o.returnedAt)}`);
+    if (o.cleanedAt) bits.push(`Cleaned ${fmtT(o.cleanedAt)}`);
     $("tlSummary").innerHTML = bits.map(esc).join("<br>") + (o.photos && o.photos.length ? '<div class="mt-2">' + photoStrip(o) + "</div>" : "");
     $("tlBody").innerHTML = tlItems(o);
     bootstrap.Modal.getOrCreateInstance("#timelineModal").show();
@@ -59,10 +55,6 @@ const Store = Tickets;
 const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 const fmtD = d => d ? new Date(d + "T00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
 const assetOf = id => Assets.all().find(a => a.id === id);
-const an = id => (assetOf(id) || { name: "(deleted asset)" }).name;
-const activeLoan = (aid, sts, skip) => Loans.all().find(l => l.assetId === aid && l.id !== skip && sts.includes(l.status));
-const availability = a => activeLoan(a.id, ["Borrowed"]) ? "Borrowed" : activeLoan(a.id, ["Approved"]) ? "Reserved" : a.condition === "Damaged" ? "Under repair" : "Available";
-const loanStatus = l => l.status === "Borrowed" && l.due < today() ? "Overdue" : l.status;
 
 function bindRole(roleId, wrapId, inputId) {
     const r = $(roleId); if (!r) return () => { };
@@ -215,7 +207,7 @@ function initReportForm(afterSave) {
             title: d.title.trim(), building: d.building, location: d.location.trim(),
             category: d.category, urgency: d.urgency, description: d.description.trim(),
             role: d.role || "Office", reporter: (d.reporter || "").trim() || "Maintenance office",
-            idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assetId: d.assetId || "", assignee: "", fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim()
+            idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assignee: "", fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim()
         }, d.role ? `Reported by ${(d.reporter || "").trim()} (${d.role})` : `Logged by ${(d.reporter || "").trim()}${d.via ? " - found by " + d.via.toLowerCase() : ""}${d.onBehalf && d.onBehalf.trim() ? ", reported by " + d.onBehalf.trim() : ""}`);
         if (d.role) localStorage.setItem("fixit_me", JSON.stringify({ name: (d.reporter || "").trim(), idNo: (d.idNo || "").trim() }));
         document.getElementById("lastId").textContent = t.id;
@@ -250,10 +242,6 @@ function initReportForm(afterSave) {
         catch { e.target.textContent = "Press Ctrl+C"; }
     });
     rm.addEventListener("shown.bs.modal", () => $("title").focus());
-    const as = $("assetId");
-    if (as) rm.addEventListener("show.bs.modal", () => {
-        as.innerHTML = '<option value="">None</option>' + Assets.all().filter(a => !a.archived).map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.tag)})</option>`).join("");
-    });
 }
 
 /* ---------- Student page ---------- */
@@ -304,7 +292,7 @@ function initAdmin() {
       <tr>
         <td>${tlBtn("t", t.id)}</td>
         <td><div class="fw-semibold">${esc(t.title)}</div>
-            <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}${t.assetId ? ` &bull; <span class="tid">${esc(t.assetId)}</span>` : ""}</div>
+            <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}</div>
             ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}${photoStrip(t)}</td>
         <td class="small">${esc(t.onBehalf || t.reporter)}<br><span class="text-secondary">${t.onBehalf ? "Logged by " + esc(t.reporter) : esc(who(t))}</span></td>
         <td class="urg-${t.urgency}">${t.urgency}</td>
@@ -394,10 +382,10 @@ function initAdminExtras() {
     };
     csvBtn("tabTickets", () => downloadCSV("tickets", ["Ticket", "Damage", "Building", "Room / spot", "Type", "Urgency", "Status", "Reported by", "Role", "ID no.", "Assigned to", "Related asset", "Reported", "Fixed", "Archived", "Details"],
         Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.onBehalf || t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
-    csvBtn("tabBorrow", () => downloadCSV("borrowing", ["Request", "Equipment", "Borrower", "Role", "ID no.", "Purpose", "Borrow on", "Return by", "Status", "Returned", "Returned as"],
-        Loans.all().map(l => [l.id, an(l.assetId), l.borrower, l.role, l.idNo || "", l.purpose, l.from, l.due, loanStatus(l), l.returnedAt ? fmtT(l.returnedAt) : "", l.returnCond || ""])));
-    csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Name", "ID no.", "Category", "Location", "Department", "Condition", "Availability", "Archived"],
-        Assets.all().map(a => [a.id, a.name, a.tag, a.category, a.location, a.dept, a.condition, availability(a), a.archived ? "Yes" : ""])));
+    csvBtn("tabClean", () => downloadCSV("facility-cleaning", ["Record", "Building", "Area", "Area type", "Scheduled", "Staff assigned", "Status", "Cleaned on", "Notes"],
+        Cleanings.all().map(c => [c.id, c.building, c.area, c.areaType, c.when ? fmtT(new Date(c.when).getTime()) : "", c.staff, c.status, c.cleanedAt ? fmtT(c.cleanedAt) : "", c.notes || ""])));
+    csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Item", "ID no.", "Category", "Quantity", "Unit", "Location", "Department", "Archived"],
+        Assets.all().map(a => [a.id, a.name, a.tag, a.category, a.qty ?? "", a.unit || "", a.location, a.dept, a.archived ? "Yes" : ""])));
 
     /* assign personnel */
     $("assignForm").addEventListener("submit", e => {
@@ -408,118 +396,171 @@ function initAdminExtras() {
         modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets();
     });
 
-    /* borrowing */
-    function renderLoans() {
-        const q = $("lSearch").value.trim().toLowerCase(), st = $("lStatus").value;
-        const list = Loans.all().filter(l => (!st || loanStatus(l) === st) && (!q || (l.id + an(l.assetId) + l.borrower + l.purpose).toLowerCase().includes(q)));
-        $("loanRows").innerHTML = list.length ? list.map(l => {
-            const A = (act, cls, txt) => `<button class="btn btn-sm ${cls}" data-act="${act}" data-id="${l.id}">${txt}</button> `;
-            const acts = l.status === "Pending" ? A("approve", "btn-success", "Approve") + A("reject", "btn-outline-danger", "Reject")
-                : l.status === "Approved" ? A("release", "btn-outline-primary", "Hand over") + A("reject", "btn-outline-danger", "Cancel")
-                    : l.status === "Borrowed" ? A("return", "btn-success", "Mark returned") : "";
-            return `<tr>
-        <td>${tlBtn("l", l.id)}</td>
-        <td><div class="fw-semibold">${esc(an(l.assetId))}</div><div class="small text-secondary">${esc(l.purpose)}</div></td>
-        <td class="small">${esc(l.borrower)}<br><span class="text-secondary">${esc(l.role)}${l.idNo ? " - " + esc(l.idNo) : ""}</span></td>
-        <td class="small">${fmtD(l.from)} &rarr; ${fmtD(l.due)}${l.returnedAt ? `<br><span class="text-secondary">Returned ${fmt(l.returnedAt)}${l.returnCond ? " (" + l.returnCond + ")" : ""}</span>` : ""}</td>
-        <td>${badge(loanStatus(l))}</td>
-        <td class="text-end text-nowrap">${acts}</td></tr>`;
-        }).join("") : `<tr><td colspan="6" class="empty">No borrowing requests match.</td></tr>`;
+    /* facility cleaning */
+    let cleanEdit = null;
+    const fmtWhen = s => s ? new Date(s).toLocaleString("en-PH", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "-";
+    const nowLocal = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+    function renderCleanings() {
+        const all = Cleanings.all(), q = $("cSearch").value.trim().toLowerCase(), st = $("cStatus").value, ty = $("cType").value;
+        $("cCTotal").textContent = all.length;
+        $("cCDue").textContent = all.filter(c => c.status === "For Cleaning").length;
+        $("cCDone").textContent = all.filter(c => c.status === "Cleaned").length;
+        const list = all.filter(c => (!st || c.status === st) && (!ty || c.areaType === ty) && (!q || (c.id + c.building + c.area + c.staff).toLowerCase().includes(q)))
+            .sort((x, y) => x.status === y.status ? (x.status === "For Cleaning" ? x.when.localeCompare(y.when) : y.when.localeCompare(x.when)) : (x.status === "For Cleaning" ? -1 : 1));
+        $("cleanRows").innerHTML = list.length ? list.map(c => `<tr>
+          <td>${tlBtn("c", c.id)}</td>
+          <td><div class="fw-semibold">${esc(c.building)} &ndash; ${esc(c.area)}</div><div class="small text-secondary">${esc(c.areaType)}${c.notes ? " &bull; " + esc(c.notes) : ""}</div></td>
+          <td class="small">${fmtWhen(c.when)}${c.cleanedAt ? `<div class="text-secondary">Cleaned ${fmt(c.cleanedAt)}</div>` : ""}</td>
+          <td class="small">${esc(c.staff)}</td>
+          <td>${badge(c.status)}</td>
+          <td class="text-end text-nowrap">${c.status === "For Cleaning"
+                ? `<button class="btn btn-sm btn-success" data-act="done" data-id="${c.id}">Mark as cleaned</button>`
+                : `<button class="btn btn-sm btn-outline-secondary" data-act="reopen" data-id="${c.id}">Reopen</button>`}
+            <button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${c.id}">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${c.id}">Delete</button></td></tr>`).join("")
+            : `<tr><td colspan="6" class="empty">No cleaning records match.</td></tr>`;
     }
-    $("loanRows").addEventListener("click", e => {
+    $("cleanRows").addEventListener("click", e => {
         const b = e.target.closest("button[data-act]"); if (!b) return;
-        const { act, id } = b.dataset, l = Loans.all().find(x => x.id === id), a = assetOf(l.assetId);
-        if (act === "return") { $("rId").value = id; $("rTitle").textContent = `${id} - ${an(l.assetId)}`; modal("#returnModal").show(); return; }
-        if (act === "approve" || act === "release") {
-            if (!a) return toast("This asset no longer exists.");
-            if (activeLoan(a.id, ["Approved", "Borrowed"], id)) return toast("Another request already holds this item.");
-            if (a.condition === "Damaged") return toast("This item is under repair.");
-        }
-        const next = { approve: "Approved", reject: "Rejected", release: "Borrowed" }[act];
-        Loans.patch(id, act === "release" ? { status: next, releasedAt: Date.now() } : { status: next }, { approve: "Approved", reject: l.status === "Approved" ? "Cancelled" : "Rejected", release: "Handed over to borrower" }[act]);
-        toast(`${id} ${next.toLowerCase()}`); renderAll();
+        const { act, id } = b.dataset, c = Cleanings.all().find(x => x.id === id); if (!c) return;
+        if (act === "done") { Cleanings.patch(id, { status: "Cleaned", cleanedAt: Date.now() }, "Marked as cleaned"); toast(`${id} marked as cleaned`); }
+        else if (act === "reopen") { Cleanings.patch(id, { status: "For Cleaning", cleanedAt: null }, "Reopened (back to For Cleaning)"); toast(`${id} is back to For Cleaning`); }
+        else if (act === "edit") { cleanEdit = c; modal("#cleanModal").show(); return; }
+        else { if (!confirm(`Delete cleaning record ${id}? This can't be undone.`)) return; Cleanings.remove(id, "Deleted"); toast(`${id} deleted`); }
+        renderAll();
     });
-    $("returnForm").addEventListener("submit", e => {
-        e.preventDefault();
-        const id = $("rId").value, cond = $("rCond").value, note = $("rNote").value.trim();
-        const l = Loans.patch(id, { status: "Returned", returnedAt: Date.now(), returnCond: cond, returnNote: note }, "Returned in " + cond + " condition" + (note ? ": " + note : ""));
-        const a = assetOf(l.assetId);
-        if (a) {
-            Assets.patch(a.id, { condition: cond }, "Condition set to " + cond + " after return " + id);
-            if (cond === "Damaged") Tickets.add({
-                title: `${a.name} damaged after borrowing`, building: a.location, location: a.location, category: "Equipment", urgency: "Medium",
-                description: note || `Returned by ${l.borrower} in damaged condition.`, role: "Office", reporter: "System", idNo: "", via: "Returned item",
-                assetId: a.id, assignee: "", fixedAt: null, status: "Pending"
-            }, "Created automatically from damaged return " + id);
+    $("cleanModal").addEventListener("show.bs.modal", () => {
+        const f = $("cleanForm"), c = cleanEdit; cleanEdit = null;
+        f.reset(); f.classList.remove("was-validated");
+        $("cleanId").value = c ? c.id : "";
+        $("cleanModalT").textContent = c ? "Edit cleaning record" : "Add cleaning record";
+        $("cleanSave").textContent = c ? "Save changes" : "Save record";
+        $("staffList").innerHTML = Staff.all().map(n => `<option value="${esc(n)}">`).join("");
+        $("cWhen").value = c ? c.when : nowLocal();
+        if (c) { $("cBuilding").value = c.building; $("cArea").value = c.area; $("cAreaType").value = c.areaType; $("cStaff").value = c.staff; $("cState").value = c.status; $("cNotes").value = c.notes || ""; }
+    });
+    $("cleanForm").addEventListener("submit", e => {
+        e.preventDefault(); const f = e.target;
+        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+        const d = Object.fromEntries(new FormData(f)), id = $("cleanId").value;
+        const data = { building: d.building.trim(), area: d.area.trim(), areaType: d.areaType, when: d.when, staff: d.staff.trim(), status: d.state, notes: d.notes.trim() };
+        Staff.add(data.staff);
+        if (id) {
+            const old = Cleanings.all().find(x => x.id === id);
+            data.cleanedAt = data.status === "Cleaned" ? (old.cleanedAt || Date.now()) : null;
+            Cleanings.patch(id, data, "Record updated" + (old.status !== data.status ? ` (${data.status})` : ""));
+            toast(`${id} updated`);
+        } else {
+            data.cleanedAt = data.status === "Cleaned" ? Date.now() : null;
+            const c = Cleanings.add(data, `Scheduled for ${fmtWhen(data.when)}, assigned to ${data.staff}`);
+            toast(`${c.id} added`);
         }
-        modal("#returnModal").hide(); e.target.reset();
-        toast(cond === "Damaged" ? `${id} returned. A repair ticket was created.` : `${id} returned`);
-        renderAll(); window.renderTickets();
+        modal("#cleanModal").hide(); renderAll();
     });
 
-    /* assets */
+    /* assets (cleaning supplies): add, edit, archive, delete */
+    let assetView = "active", delId = null, pendingEdit = null;
+    const assetHead = {
+        active: "<tr><th>ID no.</th><th>Item</th><th>Quantity</th><th>Location</th><th>Department</th><th>Updated</th><th></th></tr>",
+        archived: "<tr><th>ID no.</th><th>Item</th><th>Quantity</th><th>Location</th><th>Archived on</th><th></th></tr>"
+    };
     function renderAssets() {
-        const q = $("sSearch").value.trim().toLowerCase();
-        const list = Assets.all().filter(a => !a.archived && (!q || (a.id + a.name + a.tag + a.location + a.dept + a.category).toLowerCase().includes(q)));
+        const all = Assets.all(), q = $("sSearch").value.trim().toLowerCase(), arch = assetView === "archived";
+        $("cntActive").textContent = all.filter(a => !a.archived).length; $("cntArch").textContent = all.filter(a => a.archived).length;
+        $("assetHead").innerHTML = assetHead[assetView];
+        const list = all.filter(a => !!a.archived === arch && (!q || (a.id + a.name + a.tag + a.location + a.dept + a.category).toLowerCase().includes(q)));
+        const btns = a => arch
+            ? `<button class="btn btn-sm btn-success" data-act="restore" data-id="${a.id}">Restore</button> <button class="btn btn-sm btn-outline-danger" data-act="purge" data-id="${a.id}">Delete permanently</button>`
+            : `<button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${a.id}">Edit</button> <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${a.id}">Delete</button>`;
         $("assetRows").innerHTML = list.length ? list.map(a => `<tr>
-        <td><span class="tid">${a.id}</span><div class="small text-secondary">${esc(a.tag)}</div></td>
-        <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category)}</div></td>
-        <td class="small">${esc(a.location)}</td><td class="small">${esc(a.dept)}</td>
-        <td><select class="form-select form-select-sm" style="min-width:105px" data-cond="${a.id}" aria-label="Condition of ${esc(a.name)}">${["Good", "Fair", "Poor", "Damaged"].map(c => `<option${c === a.condition ? " selected" : ""}>${c}</option>`).join("")}</select></td>
-        <td>${badge(availability(a))}</td>
-        <td class="text-end text-nowrap"><button class="btn btn-sm btn-outline-secondary" data-act="hist" data-id="${a.id}">History</button>
-        <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${a.id}">Archive</button></td></tr>`).join("")
-            : `<tr><td colspan="7" class="empty">No assets yet. Use "+ Add asset" to record one.</td></tr>`;
+          <td><span class="tid">${a.id}</span><div class="small text-secondary">${esc(a.tag)}</div></td>
+          <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category)}</div></td>
+          <td class="fw-semibold">${a.qty ?? "-"} <span class="small text-secondary fw-normal">${esc(a.unit || "")}</span></td>
+          <td class="small">${esc(a.location)}</td>
+          ${arch ? "" : `<td class="small">${esc(a.dept)}</td>`}
+          <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
+          <td class="text-end text-nowrap">${btns(a)}</td></tr>`).join("")
+            : `<tr><td colspan="${arch ? 6 : 7}" class="empty">${arch ? "Nothing in the archive." : 'No items yet. Use "+ Add item" to record one.'}</td></tr>`;
     }
-    $("assetRows").addEventListener("change", e => {
-        if (e.target.matches("select[data-cond]")) { Assets.patch(e.target.dataset.cond, { condition: e.target.value }, "Condition changed to " + e.target.value); renderAll(); }
+    $("assetView").addEventListener("click", e => {
+        const b = e.target.closest("[data-av]"); if (!b) return;
+        assetView = b.dataset.av;
+        $("assetView").querySelectorAll("[data-av]").forEach(x => { const on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-pressed", on); });
+        renderAssets();
     });
-    $("assetRows").addEventListener("click", e => {
-        const b = e.target.closest("button[data-act]"); if (!b) return;
-        const { act, id } = b.dataset, a = assetOf(id);
-        if (act === "del") {
-            if (!confirm(`Archive ${a.name} (${a.tag})? You can restore it from the History tab.`)) return;
-            Assets.patch(id, { archived: true, archivedAt: Date.now() }, "Archived"); toast(`${a.name} archived`); renderAll(); return;
-        }
-        const loans = Loans.all().filter(l => l.assetId === id), fixes = Tickets.all().filter(t => t.assetId === id);
-        $("histTitle").textContent = `${a.name} (${a.tag})`;
-        $("histBody").innerHTML = `<div class="d-flex flex-wrap gap-2 align-items-center mb-3">${badge(availability(a))}
-          <span class="small text-secondary">Condition: <b>${a.condition}</b> &bull; ${esc(a.location)} &bull; ${esc(a.dept)}</span></div>
-          <h3 class="h6">Usage history (${loans.length})</h3>${tbl(["Request", "Borrower", "Period", "Status", "Returned as"], loans.map(l => [l.id, esc(l.borrower), `${fmtD(l.from)} - ${fmtD(l.due)}`, badge(loanStatus(l)), l.returnCond || "-"]))}
-          <h3 class="h6 mt-4">Maintenance records (${fixes.length})</h3>${tbl(["Ticket", "Issue", "Assigned to", "Status", "Logged"], fixes.map(t => [t.id, esc(t.title), esc(t.assignee || "-"), badge(t.status), fmt(t.createdAt)]))}<h3 class="h6 mt-4">Timeline</h3><ol class="tl">${tlItems(a)}</ol>`;
-        modal("#historyModal").show();
-    });
+    const setAssetForm = a => {
+        const f = $("assetForm"); f.reset(); f.classList.remove("was-validated");
+        $("assetId2").value = a ? a.id : "";
+        $("assetModalT").textContent = a ? "Edit item" : "Add item";
+        $("assetSave").textContent = a ? "Save changes" : "Save item";
+        if (a) { $("nName").value = a.name; $("nTag").value = a.tag; $("nCat").value = a.category; $("nQty").value = a.qty ?? ""; $("nUnit").value = a.unit || ""; $("nLoc").value = a.location; $("nDept").value = a.dept; }
+    };
+    $("assetModal").addEventListener("show.bs.modal", () => { setAssetForm(pendingEdit); pendingEdit = null; });
     $("assetForm").addEventListener("submit", e => {
         e.preventDefault();
-        const f = e.target, tag = $("nTag");
-        tag.setCustomValidity(Assets.all().some(a => a.tag.toLowerCase() === tag.value.trim().toLowerCase()) ? "dup" : "");
+        const f = e.target, tag = $("nTag"), eid = $("assetId2").value;
+        tag.setCustomValidity(Assets.all().some(a => a.id !== eid && a.tag.toLowerCase() === tag.value.trim().toLowerCase()) ? "dup" : "");
         if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
         const d = Object.fromEntries(new FormData(f));
-        Assets.add({ name: d.name.trim(), tag: d.tag.trim(), category: d.category, location: d.location.trim(), dept: d.dept.trim(), condition: d.condition }, "Added to inventory (" + d.condition + " condition)");
-        modal("#assetModal").hide(); toast(`${d.name.trim()} added to inventory`); renderAll();
+        const data = { name: d.name.trim(), tag: d.tag.trim(), category: d.category, qty: Number(d.qty), unit: d.unit.trim(), location: d.location.trim(), dept: d.dept.trim() };
+        if (eid) {
+            const old = assetOf(eid);
+            Assets.patch(eid, data, "Item details updated" + (old && old.qty !== data.qty ? ` (quantity ${old.qty ?? 0} to ${data.qty})` : ""));
+            toast(`${data.name} updated`);
+        } else {
+            Assets.add({ ...data, condition: "Good" }, `Added to inventory (${data.qty} ${data.unit})`);
+            toast(`${data.name} added to the inventory`);
+        }
+        modal("#assetModal").hide(); renderAll();
     });
-    $("assetModal").addEventListener("hidden.bs.modal", () => { $("assetForm").reset(); $("assetForm").classList.remove("was-validated"); });
+    /* delete: choose archive or permanent delete */
+    const showStep = confirmStep => {
+        $("delChoices").classList.toggle("d-none", confirmStep); $("delConfirm").classList.toggle("d-none", !confirmStep); $("delGo").classList.toggle("d-none", !confirmStep);
+        $("delT").textContent = confirmStep ? "Delete permanently?" : "Remove this item?";
+    };
+    function openDelete(a, permanentOnly) {
+        delId = a.id; $("delItem").innerHTML = `<b>${esc(a.name)}</b> <span class="text-secondary">(${esc(a.tag)})</span>`;
+        $("delBack").classList.toggle("d-none", permanentOnly); showStep(permanentOnly); modal("#delAssetModal").show();
+    }
+    $("assetRows").addEventListener("click", e => {
+        const b = e.target.closest("button[data-act]"); if (!b) return;
+        const { act, id } = b.dataset, a = assetOf(id); if (!a) return;
+        if (act === "edit") { pendingEdit = a; modal("#assetModal").show(); }
+        else if (act === "restore") { Assets.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${a.name} restored`); renderAll(); }
+        else openDelete(a, act === "purge");
+    });
+    $("chArchive").addEventListener("click", () => {
+        const a = assetOf(delId); if (!a) return;
+        Assets.patch(delId, { archived: true, archivedAt: Date.now() }, "Moved to archive");
+        modal("#delAssetModal").hide(); toast(`${a.name} moved to the archive`); renderAll();
+    });
+    $("chPurge").addEventListener("click", () => showStep(true));
+    $("delBack").addEventListener("click", () => showStep(false));
+    $("delGo").addEventListener("click", () => {
+        const a = assetOf(delId); if (!a) return;
+        Assets.remove(delId, "Deleted permanently");
+        modal("#delAssetModal").hide(); toast(`${a.name} deleted permanently`); renderAll(); window.renderTickets();
+    });
 
     /* reports */
     function renderReports() {
-        const T = Tickets.all().filter(t => !t.archived), A = Assets.all().filter(a => !a.archived), L = Loans.all(), fixed = T.filter(t => t.status === "Fixed");
+        const T = Tickets.all().filter(t => !t.archived), A = Assets.all().filter(a => !a.archived), C = Cleanings.all(), fixed = T.filter(t => t.status === "Fixed");
         const times = fixed.filter(t => t.fixedAt).map(t => t.fixedAt - t.createdAt);
         const avg = times.length ? times.reduce((x, y) => x + y, 0) / times.length / 36e5 : null;
         const stats = [[T.length, "Issues reported"], [T.length ? Math.round(fixed.length / T.length * 100) + "%" : "-", "Issues fixed"],
         [avg === null ? "-" : avg < 48 ? avg.toFixed(1) + " h" : (avg / 24).toFixed(1) + " days", "Avg. repair time"],
-        [A.length, "Assets recorded"], [A.filter(a => availability(a) === "Available").length, "Assets available"], [L.length, "Borrow transactions"]];
+        [A.length, "Items in inventory"], [C.length, "Cleaning records"], [C.filter(c => c.status === "Cleaned").length, "Areas cleaned"]];
         const panel = (title, data) => `<div class="col-md-6"><div class="panel h-100"><h3 class="h6 mb-3">${title}</h3>${bars(data)}</div></div>`;
-        const top = Object.fromEntries(Object.entries(tally(L, l => an(l.assetId))).sort((x, y) => y[1] - x[1]).slice(0, 5));
         $("reportBody").innerHTML = `<p class="text-secondary small">Generated ${fmt(Date.now())}</p>
           <div class="row g-3 mb-3">${stats.map(([n, l]) => `<div class="col-6 col-md-4 col-lg-2"><div class="panel stat"><div class="n fs-4">${n}</div><div class="text-secondary small">${l}</div></div></div>`).join("")}</div>
-          <div class="row g-3">${panel("Repair progress (by status)", tally(T, t => t.status))}${panel("Issues by type", tally(T, t => t.category))}${panel("Asset conditions", tally(A, a => a.condition))}${panel("Borrowing transactions", tally(L, loanStatus))}${panel("Most borrowed equipment", top)}</div>`;
+          <div class="row g-3">${panel("Repair progress (by status)", tally(T, t => t.status))}${panel("Issues by type", tally(T, t => t.category))}${panel("Facility cleaning (by status)", tally(C, c => c.status))}${panel("Cleaning records by area type", tally(C, c => c.areaType))}${panel("Inventory by category", tally(A, a => a.category))}</div>`;
     }
 
     /* history: activity log + archive */
     function renderHistory() {
         const q = $("gSearch").value.trim().toLowerCase(), k = $("gKind").value;
         const logs = Log.all().filter(g => (!k || g.kind === k) && (!q || g.text.toLowerCase().includes(q))).slice(0, 200);
-        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Ticket", asset: "Asset", loan: "Borrowing" }[g.kind]}</span></td><td>${esc(g.text)}</td></tr>`).join("")
+        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Ticket", asset: "Asset", cleaning: "Cleaning", loan: "Borrowing" }[g.kind]}</span></td><td>${esc(g.text)}</td></tr>`).join("")
             : `<tr><td colspan="3" class="empty">No activity yet.</td></tr>`;
         const arch = [...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", o: t, name: t.title })), ...Assets.all().filter(a => a.archived).map(a => ({ k: "asset", o: a, name: `${a.name} (${a.tag})` }))].sort((x, y) => y.o.archivedAt - x.o.archivedAt);
         $("archRows").innerHTML = arch.length ? arch.map(x => `<tr><td><span class="badge text-bg-light border">${x.k === "ticket" ? "Ticket" : "Asset"}</span></td>
@@ -540,8 +581,8 @@ function initAdminExtras() {
         renderAll(); window.renderTickets();
     });
     ["gSearch", "gKind"].forEach(id => $(id).addEventListener("input", renderHistory));
-    const renderAll = () => { renderLoans(); renderAssets(); renderReports(); renderHistory(); };
-    ["lSearch", "lStatus"].forEach(id => $(id).addEventListener("input", renderLoans));
+    const renderAll = () => { renderCleanings(); renderAssets(); renderReports(); renderHistory(); };
+    ["cSearch", "cStatus", "cType"].forEach(id => $(id).addEventListener("input", renderCleanings));
     $("sSearch").addEventListener("input", renderAssets);
     document.addEventListener("shown.bs.tab", e => { if (e.target.closest("#adminTabs, #adminBottomNav")) renderAll(); });
     window.addEventListener("storage", renderAll);
@@ -817,8 +858,8 @@ const M_TITLES = {
     },
     admin: {
         "#tabTickets": ["Maintenance tracking", "Assign, update, and close tickets"],
-        "#tabBorrow": ["Borrowing", "Approve requests and record returns"],
-        "#tabAssets": ["Assets", "Inventory, condition, and availability"],
+        "#tabClean": ["Facility cleaning", "Record and track cleaning of campus areas"],
+        "#tabAssets": ["Assets", "Cleaning supplies and other items"],
         "#tabReports": ["Reports and analytics", "Summaries of tickets, assets, and borrowing"],
         "#tabHistory": ["History and archive", "Activity log and archived items"]
     }
@@ -846,7 +887,7 @@ function initHero() {
 document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", e => {
         const b = e.target.closest("[data-tl]");
-        if (b) showTimeline(b.dataset.tl === "t" ? Tickets : Loans, b.dataset.id);
+        if (b) showTimeline({ t: Tickets, c: Cleanings }[b.dataset.tl], b.dataset.id);
     });
     document.addEventListener("shown.bs.tab", e => {
         const t = e.target.getAttribute("data-bs-target");
