@@ -155,33 +155,30 @@
                     </section>
                 </div>
                 <div class="tab-pane fade" id="tabClean">
+                    <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-2">
+                        <div class="small text-secondary">Today: <b id="cToday"></b></div>
+                        <div class="small text-secondary">Statuses reset every day. Totals keep counting.</div>
+                    </div>
                     <div class="row g-3 mb-4">
-                        <div class="col-4">
-                            <div class="panel stat">
-                                <div class="n" id="cCTotal">0</div>
-                                <div class="text-secondary">Total records</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
+                        <div class="col-6">
                             <div class="panel stat">
                                 <div class="n" id="cCDue">0</div>
-                                <div class="text-secondary">For cleaning</div>
+                                <div class="text-secondary">For cleaning today</div>
                             </div>
                         </div>
-                        <div class="col-4">
+                        <div class="col-6">
                             <div class="panel stat fixed">
                                 <div class="n" id="cCDone">0</div>
-                                <div class="text-secondary">Cleaned</div>
+                                <div class="text-secondary">Cleaned today</div>
                             </div>
                         </div>
                     </div>
                     <section class="panel">
                         <div class="row g-2 mb-3">
                             <div class="col-md-5"><input id="cSearch" class="form-control" type="search"
-                                    placeholder="Search building, area, or staff" aria-label="Search cleaning records">
-                            </div>
+                                    placeholder="Search building, area, or staff" aria-label="Search facilities"></div>
                             <div class="col-6 col-md-2"><select id="cStatus" class="form-select"
-                                    aria-label="Filter by status">
+                                    aria-label="Filter by today's status">
                                     <option value="">All statuses</option>
                                     <option>For Cleaning</option>
                                     <option>Cleaned</option>
@@ -198,17 +195,17 @@
                                     <option>Other</option>
                                 </select></div>
                             <div class="col-md-2 d-grid"><button class="btn btn-maroon" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#cleanModal">+ Add record</button></div>
+                                    data-bs-toggle="modal" data-bs-target="#cleanModal">+ Add facility</button></div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Record</th>
+                                        <th>Facility ID</th>
                                         <th>Facility</th>
-                                        <th>Scheduled</th>
                                         <th>Staff assigned</th>
-                                        <th>Status</th>
+                                        <th>Today</th>
+                                        <th>Total cleaned</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -772,8 +769,8 @@
                             <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
                         </svg></span>
                     <div>
-                        <h2 class="h5 mb-0" id="cleanModalT">Add cleaning record</h2>
-                        <p class="small mb-0 opacity-75">Record the cleaning of a campus facility.</p>
+                        <h2 class="h5 mb-0" id="cleanModalT">Add facility</h2>
+                        <p class="small mb-0 opacity-75">A facility on the daily cleaning list.</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -804,24 +801,18 @@
                                 <option>Other</option>
                             </select>
                         </div>
-                        <div class="form-section">Schedule and staff</div>
+                        <div class="form-section">Staff and schedule</div>
                         <div class="row g-3 mb-3">
-                            <div class="col-sm-6"><label class="form-label" for="cWhen">Date and time</label>
-                                <input class="form-control" type="datetime-local" id="cWhen" name="when" required>
-                                <div class="invalid-feedback">Pick the date and time.</div>
-                            </div>
                             <div class="col-sm-6"><label class="form-label" for="cStaff">Staff assigned</label>
                                 <input class="form-control" id="cStaff" name="staff" list="staffList"
                                     placeholder="Name of the cleaner or team" required>
                                 <datalist id="staffList"></datalist>
                                 <div class="invalid-feedback">Enter the assigned staff.</div>
                             </div>
-                        </div>
-                        <div class="mb-3"><label class="form-label" for="cState">Status</label>
-                            <select class="form-select" id="cState" name="state">
-                                <option>For Cleaning</option>
-                                <option>Cleaned</option>
-                            </select>
+                            <div class="col-sm-6"><label class="form-label" for="cWhen">Usual cleaning time <span
+                                        class="text-secondary">(optional)</span></label>
+                                <input class="form-control" type="time" id="cWhen" name="time">
+                            </div>
                         </div>
                         <div><label class="form-label" for="cNotes">Notes <span
                                     class="text-secondary">(optional)</span></label>
@@ -831,7 +822,7 @@
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
                         data-bs-dismiss="modal">Cancel</button><button type="submit" form="cleanForm"
-                        class="btn btn-maroon" id="cleanSave">Save record</button></div>
+                        class="btn btn-maroon" id="cleanSave">Save facility</button></div>
             </div>
         </div>
     </div>

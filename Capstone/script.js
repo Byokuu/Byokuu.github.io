@@ -382,8 +382,8 @@ function initAdminExtras() {
     };
     csvBtn("tabTickets", () => downloadCSV("tickets", ["Ticket", "Damage", "Building", "Room / spot", "Type", "Urgency", "Status", "Reported by", "Role", "ID no.", "Assigned to", "Related asset", "Reported", "Fixed", "Archived", "Details"],
         Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.onBehalf || t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
-    csvBtn("tabClean", () => downloadCSV("facility-cleaning", ["Record", "Building", "Area", "Area type", "Scheduled", "Staff assigned", "Status", "Cleaned on", "Notes"],
-        Cleanings.all().map(c => [c.id, c.building, c.area, c.areaType, c.when ? fmtT(new Date(c.when).getTime()) : "", c.staff, c.status, c.cleanedAt ? fmtT(c.cleanedAt) : "", c.notes || ""])));
+    csvBtn("tabClean", () => downloadCSV("facility-cleaning", ["Facility ID", "Building", "Area", "Area type", "Staff assigned", "Status today", "Cleaned today at", "Total cleaned", "Last cleaned", "Notes"],
+        Cleanings.all().map(c => { const log = logOf(c), d = doneToday(c), last = log.slice(-1)[0]; return [c.id, c.building, c.area, c.areaType, c.staff, d ? "Cleaned" : "For Cleaning", d ? clock(d.ts) : "", log.length, last ? last.date : "", c.notes || ""]; })));
     csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Item", "ID no.", "Category", "Quantity", "Unit", "Location", "Department", "Archived"],
         Assets.all().map(a => [a.id, a.name, a.tag, a.category, a.qty ?? "", a.unit || "", a.location, a.dept, a.archived ? "Yes" : ""])));
 
@@ -396,67 +396,70 @@ function initAdminExtras() {
         modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets();
     });
 
-    /* facility cleaning */
-    let cleanEdit = null;
-    const fmtWhen = s => s ? new Date(s).toLocaleString("en-PH", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "-";
-    const nowLocal = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+    /* facility cleaning: a daily list. Each day starts as "For Cleaning"; totals keep counting. */
+    let cleanEdit = null, shownDay = today();
+    const dayOf = ts => { const d = new Date(ts); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+    const logOf = c => c.cleanLog || (c.cleanedAt ? [{ date: dayOf(c.cleanedAt), ts: c.cleanedAt }] : []);
+    const doneToday = c => logOf(c).find(x => x.date === today());
+    const clock = ts => new Date(ts).toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
+    const fmtClock = hhmm => hhmm ? clock("2000-01-01T" + hhmm) : "";
     function renderCleanings() {
+        shownDay = today();
         const all = Cleanings.all(), q = $("cSearch").value.trim().toLowerCase(), st = $("cStatus").value, ty = $("cType").value;
-        $("cCTotal").textContent = all.length;
-        $("cCDue").textContent = all.filter(c => c.status === "For Cleaning").length;
-        $("cCDone").textContent = all.filter(c => c.status === "Cleaned").length;
-        const list = all.filter(c => (!st || c.status === st) && (!ty || c.areaType === ty) && (!q || (c.id + c.building + c.area + c.staff).toLowerCase().includes(q)))
-            .sort((x, y) => x.status === y.status ? (x.status === "For Cleaning" ? x.when.localeCompare(y.when) : y.when.localeCompare(x.when)) : (x.status === "For Cleaning" ? -1 : 1));
-        $("cleanRows").innerHTML = list.length ? list.map(c => `<tr>
+        const stat = c => doneToday(c) ? "Cleaned" : "For Cleaning", dueN = all.filter(c => !doneToday(c)).length;
+        $("cCDue").textContent = dueN; $("cCDone").textContent = all.length - dueN;
+        $("cToday").textContent = new Date().toLocaleDateString("en-PH", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+        const list = all.filter(c => (!st || stat(c) === st) && (!ty || c.areaType === ty) && (!q || (c.id + c.building + c.area + c.staff).toLowerCase().includes(q)))
+            .sort((x, y) => stat(x) !== stat(y) ? (stat(x) === "For Cleaning" ? -1 : 1)
+                : stat(x) === "For Cleaning" ? (x.time || "99").localeCompare(y.time || "99") : doneToday(y).ts - doneToday(x).ts);
+        $("cleanRows").innerHTML = list.length ? list.map(c => {
+            const d = doneToday(c), n = logOf(c).length, last = logOf(c).slice(-1)[0];
+            return `<tr>
           <td>${tlBtn("c", c.id)}</td>
-          <td><div class="fw-semibold">${esc(c.building)} &ndash; ${esc(c.area)}</div><div class="small text-secondary">${esc(c.areaType)}${c.notes ? " &bull; " + esc(c.notes) : ""}</div></td>
-          <td class="small">${fmtWhen(c.when)}${c.cleanedAt ? `<div class="text-secondary">Cleaned ${fmt(c.cleanedAt)}</div>` : ""}</td>
+          <td><div class="fw-semibold">${esc(c.building)} &ndash; ${esc(c.area)}</div><div class="small text-secondary">${esc(c.areaType)}${c.time ? " &bull; usually " + fmtClock(c.time) : ""}${c.notes ? " &bull; " + esc(c.notes) : ""}</div></td>
           <td class="small">${esc(c.staff)}</td>
-          <td>${badge(c.status)}</td>
-          <td class="text-end text-nowrap">${c.status === "For Cleaning"
-                ? `<button class="btn btn-sm btn-success" data-act="done" data-id="${c.id}">Mark as cleaned</button>`
-                : `<button class="btn btn-sm btn-outline-secondary" data-act="reopen" data-id="${c.id}">Reopen</button>`}
+          <td>${badge(stat(c))}${d ? `<div class="small text-secondary mt-1">at ${clock(d.ts)}</div>` : ""}</td>
+          <td><span class="fw-semibold">${n}</span> <span class="small text-secondary">${n === 1 ? "time" : "times"}</span>${last ? `<div class="small text-secondary">Last: ${fmtD(last.date)}</div>` : ""}</td>
+          <td class="text-end text-nowrap">${d
+                    ? `<button class="btn btn-sm btn-outline-secondary" data-act="undo" data-id="${c.id}">Undo</button>`
+                    : `<button class="btn btn-sm btn-success" data-act="done" data-id="${c.id}">Mark as cleaned</button>`}
             <button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${c.id}">Edit</button>
-            <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${c.id}">Delete</button></td></tr>`).join("")
-            : `<tr><td colspan="6" class="empty">No cleaning records match.</td></tr>`;
+            <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${c.id}">Delete</button></td></tr>`;
+        }).join("") : `<tr><td colspan="6" class="empty">${all.length ? "No facilities match." : 'No facilities yet. Use "+ Add facility" to list one.'}</td></tr>`;
     }
     $("cleanRows").addEventListener("click", e => {
         const b = e.target.closest("button[data-act]"); if (!b) return;
         const { act, id } = b.dataset, c = Cleanings.all().find(x => x.id === id); if (!c) return;
-        if (act === "done") { Cleanings.patch(id, { status: "Cleaned", cleanedAt: Date.now() }, "Marked as cleaned"); toast(`${id} marked as cleaned`); }
-        else if (act === "reopen") { Cleanings.patch(id, { status: "For Cleaning", cleanedAt: null }, "Reopened (back to For Cleaning)"); toast(`${id} is back to For Cleaning`); }
-        else if (act === "edit") { cleanEdit = c; modal("#cleanModal").show(); return; }
-        else { if (!confirm(`Delete cleaning record ${id}? This can't be undone.`)) return; Cleanings.remove(id, "Deleted"); toast(`${id} deleted`); }
+        if (act === "done") {
+            const log = logOf(c).concat({ date: today(), ts: Date.now(), staff: c.staff });
+            Cleanings.patch(id, { cleanLog: log, cleanedAt: Date.now() }, `Marked as cleaned (total ${log.length})`); toast(`${c.area} marked as cleaned`);
+        } else if (act === "undo") {
+            const log = logOf(c).filter(x => x.date !== today()), last = log.slice(-1)[0];
+            Cleanings.patch(id, { cleanLog: log, cleanedAt: last ? last.ts : null }, "Today's cleaning undone"); toast(`${c.area} is back to For Cleaning`);
+        } else if (act === "edit") { cleanEdit = c; modal("#cleanModal").show(); return; }
+        else { if (!confirm(`Delete ${c.building} - ${c.area} from the list? Its cleaning totals will be lost.`)) return; Cleanings.remove(id, "Deleted"); toast(`${c.area} removed from the list`); }
         renderAll();
     });
     $("cleanModal").addEventListener("show.bs.modal", () => {
         const f = $("cleanForm"), c = cleanEdit; cleanEdit = null;
         f.reset(); f.classList.remove("was-validated");
         $("cleanId").value = c ? c.id : "";
-        $("cleanModalT").textContent = c ? "Edit cleaning record" : "Add cleaning record";
-        $("cleanSave").textContent = c ? "Save changes" : "Save record";
+        $("cleanModalT").textContent = c ? "Edit facility" : "Add facility";
+        $("cleanSave").textContent = c ? "Save changes" : "Save facility";
         $("staffList").innerHTML = Staff.all().map(n => `<option value="${esc(n)}">`).join("");
-        $("cWhen").value = c ? c.when : nowLocal();
-        if (c) { $("cBuilding").value = c.building; $("cArea").value = c.area; $("cAreaType").value = c.areaType; $("cStaff").value = c.staff; $("cState").value = c.status; $("cNotes").value = c.notes || ""; }
+        if (c) { $("cBuilding").value = c.building; $("cArea").value = c.area; $("cAreaType").value = c.areaType; $("cStaff").value = c.staff; $("cWhen").value = c.time || ""; $("cNotes").value = c.notes || ""; }
     });
     $("cleanForm").addEventListener("submit", e => {
         e.preventDefault(); const f = e.target;
         if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
         const d = Object.fromEntries(new FormData(f)), id = $("cleanId").value;
-        const data = { building: d.building.trim(), area: d.area.trim(), areaType: d.areaType, when: d.when, staff: d.staff.trim(), status: d.state, notes: d.notes.trim() };
+        const data = { building: d.building.trim(), area: d.area.trim(), areaType: d.areaType, staff: d.staff.trim(), time: d.time || "", notes: d.notes.trim() };
         Staff.add(data.staff);
-        if (id) {
-            const old = Cleanings.all().find(x => x.id === id);
-            data.cleanedAt = data.status === "Cleaned" ? (old.cleanedAt || Date.now()) : null;
-            Cleanings.patch(id, data, "Record updated" + (old.status !== data.status ? ` (${data.status})` : ""));
-            toast(`${id} updated`);
-        } else {
-            data.cleanedAt = data.status === "Cleaned" ? Date.now() : null;
-            const c = Cleanings.add(data, `Scheduled for ${fmtWhen(data.when)}, assigned to ${data.staff}`);
-            toast(`${c.id} added`);
-        }
+        if (id) { Cleanings.patch(id, data, "Facility details updated"); toast(`${data.area} updated`); }
+        else { Cleanings.add({ ...data, cleanLog: [], cleanedAt: null }, `Added to the cleaning list, assigned to ${data.staff}`); toast(`${data.area} added to the list`); }
         modal("#cleanModal").hide(); renderAll();
     });
+    setInterval(() => { if (today() !== shownDay) renderAll(); }, 60000);
 
     /* assets (cleaning supplies): add, edit, archive, delete */
     let assetView = "active", delId = null, pendingEdit = null;
@@ -549,11 +552,12 @@ function initAdminExtras() {
         const avg = times.length ? times.reduce((x, y) => x + y, 0) / times.length / 36e5 : null;
         const stats = [[T.length, "Issues reported"], [T.length ? Math.round(fixed.length / T.length * 100) + "%" : "-", "Issues fixed"],
         [avg === null ? "-" : avg < 48 ? avg.toFixed(1) + " h" : (avg / 24).toFixed(1) + " days", "Avg. repair time"],
-        [A.length, "Items in inventory"], [C.length, "Cleaning records"], [C.filter(c => c.status === "Cleaned").length, "Areas cleaned"]];
+        [A.length, "Items in inventory"], [C.length, "Facilities listed"], [C.filter(doneToday).length, "Cleaned today"]];
         const panel = (title, data) => `<div class="col-md-6"><div class="panel h-100"><h3 class="h6 mb-3">${title}</h3>${bars(data)}</div></div>`;
+        const totals = C.reduce((o, c) => { o[c.areaType] = (o[c.areaType] || 0) + logOf(c).length; return o; }, {});
         $("reportBody").innerHTML = `<p class="text-secondary small">Generated ${fmt(Date.now())}</p>
           <div class="row g-3 mb-3">${stats.map(([n, l]) => `<div class="col-6 col-md-4 col-lg-2"><div class="panel stat"><div class="n fs-4">${n}</div><div class="text-secondary small">${l}</div></div></div>`).join("")}</div>
-          <div class="row g-3">${panel("Repair progress (by status)", tally(T, t => t.status))}${panel("Issues by type", tally(T, t => t.category))}${panel("Facility cleaning (by status)", tally(C, c => c.status))}${panel("Cleaning records by area type", tally(C, c => c.areaType))}${panel("Inventory by category", tally(A, a => a.category))}</div>`;
+          <div class="row g-3">${panel("Repair progress (by status)", tally(T, t => t.status))}${panel("Issues by type", tally(T, t => t.category))}${panel("Facility cleaning today", tally(C, c => doneToday(c) ? "Cleaned" : "For Cleaning"))}${panel("Total times cleaned, by area type", totals)}${panel("Inventory by category", tally(A, a => a.category))}</div>`;
     }
 
     /* history: activity log + archive */
@@ -858,7 +862,7 @@ const M_TITLES = {
     },
     admin: {
         "#tabTickets": ["Maintenance tracking", "Assign, update, and close tickets"],
-        "#tabClean": ["Facility cleaning", "Record and track cleaning of campus areas"],
+        "#tabClean": ["Facility cleaning", "Daily cleaning list and cleaning totals"],
         "#tabAssets": ["Assets", "Cleaning supplies and other items"],
         "#tabReports": ["Reports and analytics", "Summaries of tickets, assets, and borrowing"],
         "#tabHistory": ["History and archive", "Activity log and archived items"]
