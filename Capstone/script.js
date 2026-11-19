@@ -194,6 +194,83 @@ function initPhotoViewer() {
     hydratePhotos(document);
 }
 
+const getAdminsList = () => { try { return JSON.parse(localStorage.getItem("fixit_admins")) || []; } catch { return []; } };
+const saveAdminsList = l => localStorage.setItem("fixit_admins", JSON.stringify(l));
+const currentAdminObj = () => {
+    const u = sessionStorage.getItem("fixit_admin_session");
+    return getAdminsList().find(a => a.username === u) || null;
+};
+
+const Personnel = {
+    all() {
+        const adm = currentAdminObj();
+        if (!adm) return [];
+        if (!Array.isArray(adm.personnel)) {
+            adm.personnel = [];
+            const list = getAdminsList();
+            const idx = list.findIndex(a => a.username === adm.username);
+            if (idx !== -1) { list[idx] = adm; saveAdminsList(list); }
+        }
+        return adm.personnel;
+    },
+    save(items) {
+        const adm = currentAdminObj();
+        if (!adm) return;
+        const list = getAdminsList();
+        const idx = list.findIndex(a => a.username === adm.username);
+        if (idx !== -1) {
+            list[idx].personnel = items;
+            saveAdminsList(list);
+        }
+    },
+    add(entry) {
+        const items = this.all();
+        const n = Math.max(0, ...items.map(x => parseInt((x.id || "").split("-")[1], 10) || 0)) + 1;
+        const rec = {
+            id: "PS-" + String(n).padStart(3, "0"),
+            name: (entry.name || "").trim(),
+            role: (entry.role || "").trim() || "Maintenance Staff",
+            status: entry.status || "Present"
+        };
+        items.push(rec);
+        this.save(items);
+        return rec;
+    },
+    update(id, patch) {
+        const items = this.all().map(x => x.id === id ? { ...x, ...patch } : x);
+        this.save(items);
+    },
+    remove(id) {
+        this.save(this.all().filter(x => x.id !== id));
+    },
+    labelOf(p) {
+        return p.role && p.name !== p.role ? `${p.name} (${p.role})` : p.name;
+    }
+};
+
+/* Keep Staff compatibility with existing callers */
+const Staff = {
+    all() { return Personnel.all().filter(p => p.status !== "On Leave").map(p => Personnel.labelOf(p)); },
+    add(n) {
+        const v = (n || "").trim();
+        if (!v) return;
+        if (!Personnel.all().some(p => p.name.toLowerCase() === v.toLowerCase() || Personnel.labelOf(p).toLowerCase() === v.toLowerCase())) {
+            Personnel.add({ name: v, role: "Maintenance Staff", status: "Present" });
+        }
+    },
+    remove(n) {
+        const target = Personnel.all().find(p => p.name === n || Personnel.labelOf(p) === n);
+        if (target) Personnel.remove(target.id);
+    }
+};
+
+function populateAssigneeSelect() {
+    const sel = $("rAssignee");
+    if (!sel) return;
+    const labels = Personnel.all().filter(p => p.status === "Present").map(p => Personnel.labelOf(p));
+    sel.innerHTML = `<option value="">Unassigned</option>` + labels.map(l => `<option value="${esc(l)}">${esc(l)}</option>`).join("");
+}
+
 /* ---------- Shared: report form + modals ---------- */
 function initReportForm(afterSave) {
     const form = document.getElementById("ticketForm");
@@ -203,12 +280,18 @@ function initReportForm(afterSave) {
         if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
         const d = Object.fromEntries(new FormData(form));
         const photoIds = await Photos.saveAll();
+        const assignee = (d.assignee || "").trim();
+        const status = assignee && (!d.status || d.status === "Pending") ? "In progress" : (d.status || "Pending");
+        const baseNote = d.role
+            ? `Reported by ${(d.reporter || "").trim()} (${d.role})`
+            : `Logged by ${(d.reporter || "").trim()}${d.via ? " - found by " + d.via.toLowerCase() : ""}${d.onBehalf && d.onBehalf.trim() ? ", reported by " + d.onBehalf.trim() : ""}`;
+        const note = assignee ? `${baseNote} · Assigned to ${assignee}` : baseNote;
         const t = Store.add({
             title: d.title.trim(), building: d.building, location: d.location.trim(),
             category: d.category, urgency: d.urgency, description: d.description.trim(),
             role: d.role || "Office", reporter: (d.reporter || "").trim() || "Maintenance office",
-            idNo: (d.idNo || "").trim(), via: d.via || "", status: d.status || "Pending", assignee: "", fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim()
-        }, d.role ? `Reported by ${(d.reporter || "").trim()} (${d.role})` : `Logged by ${(d.reporter || "").trim()}${d.via ? " - found by " + d.via.toLowerCase() : ""}${d.onBehalf && d.onBehalf.trim() ? ", reported by " + d.onBehalf.trim() : ""}`);
+            idNo: (d.idNo || "").trim(), via: d.via || "", status, assignee, fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim()
+        }, note);
         if (d.role) localStorage.setItem("fixit_me", JSON.stringify({ name: (d.reporter || "").trim(), idNo: (d.idNo || "").trim() }));
         document.getElementById("lastId").textContent = t.id;
         document.getElementById("lastName").textContent = t.reporter.split(" ")[0];
@@ -222,6 +305,7 @@ function initReportForm(afterSave) {
     });
     const syncId = bindRole("role", "idWrap", "idNo");
     rm.addEventListener("show.bs.modal", () => {
+        populateAssigneeSelect();
         const lock = el => { el.setAttribute("aria-readonly", "true"); el.tabIndex = -1; el.classList.add("locked"); if (el.tagName !== "SELECT") el.readOnly = true; };
         if ($("role")) {
             const u = currentUser(); if (!u) return;
@@ -270,8 +354,6 @@ function initStudent() {
 
 /* ---------- Admin page ---------- */
 function initAdmin() {
-    const app = document.getElementById("adminApp");
-
     const body = document.getElementById("rows");
     const fStatus = document.getElementById("fStatus"), fUrg = document.getElementById("fUrg"), search = document.getElementById("search");
 
@@ -314,9 +396,20 @@ function initAdmin() {
         const { act, id } = b.dataset;
         if (act === "assign") { openAssign(id); return; }
         if (act === "delete") {
-            if (!confirm(`Archive ticket ${id}? You can restore it from the History tab.`)) return;
-            Store.patch(id, { archived: true, archivedAt: Date.now() }, "Archived"); toast(`${id} archived`);
-        } else { Store.setStatus(id, act); toast(`${id} marked as ${act.toLowerCase()}`); }
+            openConfirmDelete({
+                title: `Archive ticket ${id}?`,
+                item: `${id}`,
+                desc: "You can restore it anytime from the History tab.",
+                btnText: "Archive ticket",
+                onConfirm: () => {
+                    Store.patch(id, { archived: true, archivedAt: Date.now() }, "Archived");
+                    toast(`${id} archived`);
+                    render();
+                }
+            });
+            return;
+        }
+        Store.setStatus(id, act); toast(`${id} marked as ${act.toLowerCase()}`);
         render();
     });
     [fStatus, fUrg].forEach(el => el.addEventListener("change", render));
@@ -328,13 +421,7 @@ function initAdmin() {
     render();
 }
 
-/* ---------- Admin: assign, borrowing, assets, reports ---------- */
-/* saved personnel, own requests, CSV export */
-const Staff = {
-    all() { try { return JSON.parse(localStorage.getItem("fixit_staff")) || []; } catch { return []; } },
-    add(n) { const l = this.all(); if (n && !l.some(x => x.toLowerCase() === n.toLowerCase())) { l.push(n); localStorage.setItem("fixit_staff", JSON.stringify(l.sort())); } },
-    remove(n) { localStorage.setItem("fixit_staff", JSON.stringify(this.all().filter(x => x !== n))); }
-};
+/* ---------- Admin: personnel, assign, cleaning, assets, reports ---------- */
 function downloadCSV(name, head, rows) {
     const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const csv = "\ufeff" + [head, ...rows].map(r => r.map(q).join(",")).join("\r\n");
@@ -345,8 +432,9 @@ function downloadCSV(name, head, rows) {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 function renderChips() {
+    if (!$("aChips")) return;
     $("aChips").innerHTML = Staff.all().map(n => `<span class="badge text-bg-light border fw-normal"><button type="button" class="btn btn-link p-0 text-decoration-none text-dark" data-pick="${esc(n)}">${esc(n)}</button> <button type="button" class="btn btn-link p-0 text-danger text-decoration-none" data-del="${esc(n)}" aria-label="Remove ${esc(n)}">&times;</button></span>`).join("")
-        || '<span class="text-secondary small">None yet. A name you assign is saved here.</span>';
+        || '<span class="text-secondary small">None yet. Personnel saved on your account appear here.</span>';
 }
 function openAssign(id) {
     const t = Tickets.all().find(x => x.id === id);
@@ -363,20 +451,120 @@ const bars = obj => {
 };
 const tbl = (h, rows) => rows.length ? `<div class="table-responsive"><table class="table table-sm"><thead><tr>${h.map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : '<p class="text-secondary small">Nothing recorded yet.</p>';
 
+let pendingConfirmAction = null;
+function openConfirmDelete({ title, item, desc, btnText, onConfirm }) {
+    $("cfmDelT").textContent = title;
+    $("cfmDelItem").textContent = item;
+    $("cfmDelDesc").textContent = desc || "";
+    $("cfmDelBtn").textContent = btnText || "Delete";
+    pendingConfirmAction = onConfirm;
+    bootstrap.Modal.getOrCreateInstance("#confirmDelModal").show();
+}
+
 function initAdminExtras() {
     const modal = id => bootstrap.Modal.getOrCreateInstance(id);
 
+    if ($("cfmDelBtn")) {
+        $("cfmDelBtn").addEventListener("click", () => {
+            const fn = pendingConfirmAction;
+            pendingConfirmAction = null;
+            bootstrap.Modal.getOrCreateInstance("#confirmDelModal").hide();
+            if (typeof fn === "function") fn();
+        });
+    }
+
+    let personnelEdit = null;
+    function renderPersonnel() {
+        const rowsEl = $("personnelRows");
+        if (!rowsEl) return;
+        const q = ($("pSearch") ? $("pSearch").value : "").trim().toLowerCase();
+        const list = Personnel.all().filter(p => !q || (p.id + " " + p.name + " " + (p.role || "") + " " + (p.status || "")).toLowerCase().includes(q));
+        rowsEl.innerHTML = list.length ? list.map(p => `<tr>
+          <td><div class="fw-semibold">${esc(p.name)}</div><div class="small text-secondary">${esc(p.id)}</div></td>
+          <td class="small">${esc(p.role || "Maintenance Staff")}</td>
+          <td><span class="badge ${p.status === "Present" ? "text-bg-success" : "text-bg-secondary"}">${esc(p.status || "Present")}</span></td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-outline-secondary" data-pact="edit" data-id="${p.id}">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" data-pact="del" data-id="${p.id}">Remove</button>
+          </td>
+        </tr>`).join("")
+            : `<tr><td colspan="4" class="empty">No personnel found. Use "+ Add personnel" to add one.</td></tr>`;
+        renderChips();
+        populateAssigneeSelect();
+    }
+    if ($("pSearch")) $("pSearch").addEventListener("input", renderPersonnel);
+    if ($("personnelRows")) {
+        $("personnelRows").addEventListener("click", e => {
+            const b = e.target.closest("button[data-pact]"); if (!b) return;
+            const { pact, id } = b.dataset;
+            const p = Personnel.all().find(x => x.id === id); if (!p) return;
+            if (pact === "edit") { personnelEdit = p; modal("#personnelModal").show(); return; }
+            if (pact === "del") {
+                openConfirmDelete({
+                    title: "Remove personnel?",
+                    item: p.name,
+                    desc: "This removes them from your saved personnel list.",
+                    btnText: "Remove",
+                    onConfirm: () => {
+                        Personnel.remove(id);
+                        toast(`${p.name} removed`);
+                        renderAll();
+                    }
+                });
+                return;
+            }
+        });
+    }
+    if ($("personnelModal")) {
+        $("personnelModal").addEventListener("show.bs.modal", () => {
+            const f = $("personnelForm"), p = personnelEdit; personnelEdit = null;
+            f.reset(); f.classList.remove("was-validated");
+            $("pId").value = p ? p.id : "";
+            $("personnelModalT").textContent = p ? "Edit personnel" : "Add personnel";
+            $("personnelSave").textContent = p ? "Save changes" : "Save personnel";
+            if (p) {
+                $("pName").value = p.name || "";
+                $("pRole").value = p.role || "";
+                $("pStatus").value = p.status || "Present";
+            }
+        });
+    }
+    if ($("personnelForm")) {
+        $("personnelForm").addEventListener("submit", e => {
+            e.preventDefault(); const f = e.target;
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f));
+            const id = $("pId").value;
+            const payload = {
+                name: (d.name || "").trim(),
+                role: (d.role || "").trim() || "Maintenance Staff",
+                status: d.status || "Present"
+            };
+            if (id) {
+                Personnel.update(id, payload);
+                toast(`${payload.name} updated`);
+            } else {
+                Personnel.add(payload);
+                toast(`${payload.name} added to personnel`);
+            }
+            modal("#personnelModal").hide();
+            renderAll();
+        });
+    }
 
     /* saved personnel chips */
-    $("aChips").addEventListener("click", e => {
-        const p = e.target.closest("[data-pick]"), x = e.target.closest("[data-del]");
-        if (p) $("aName").value = p.dataset.pick;
-        if (x) { Staff.remove(x.dataset.del); renderChips(); }
-    });
+    if ($("aChips")) {
+        $("aChips").addEventListener("click", e => {
+            const p = e.target.closest("[data-pick]"), x = e.target.closest("[data-del]");
+            if (p) $("aName").value = p.dataset.pick;
+            if (x) { Staff.remove(x.dataset.del); renderAll(); }
+        });
+    }
 
     /* CSV export */
     const csvBtn = (paneId, fn) => {
         const panel = document.querySelector(`#${paneId} section.panel`);
+        if (!panel) return;
         panel.insertAdjacentHTML("afterbegin", '<div class="text-end mb-2 no-print"><button type="button" class="btn btn-outline-secondary btn-sm">Export CSV</button></div>');
         panel.firstElementChild.firstElementChild.addEventListener("click", fn);
     };
@@ -393,7 +581,7 @@ function initAdminExtras() {
         const id = $("aId").value, name = $("aName").value.trim(), t = Tickets.all().find(x => x.id === id);
         Staff.add(name);
         Tickets.patch(id, { assignee: name, status: t.status === "Pending" ? "In progress" : t.status }, "Assigned to " + name + (t.status === "Pending" ? " (work started)" : ""));
-        modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets();
+        modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets(); renderPersonnel();
     });
 
     /* facility cleaning: a daily list. Each day starts as "For Cleaning"; totals keep counting. */
@@ -437,7 +625,19 @@ function initAdminExtras() {
             const log = logOf(c).filter(x => x.date !== today()), last = log.slice(-1)[0];
             Cleanings.patch(id, { cleanLog: log, cleanedAt: last ? last.ts : null }, "Today's cleaning undone"); toast(`${c.area} is back to For Cleaning`);
         } else if (act === "edit") { cleanEdit = c; modal("#cleanModal").show(); return; }
-        else { if (!confirm(`Delete ${c.building} - ${c.area} from the list? Its cleaning totals will be lost.`)) return; Cleanings.remove(id, "Deleted"); toast(`${c.area} removed from the list`); }
+        else {
+            openConfirmDelete({
+                title: "Delete facility?",
+                item: `${c.building} - ${c.area}`,
+                desc: "Its cleaning totals will be lost.",
+                btnText: "Delete facility",
+                onConfirm: () => {
+                    Cleanings.remove(id, "Deleted");
+                    toast(`${c.area} removed from the list`);
+                    renderAll();
+                }
+            });
+        }
         renderAll();
     });
     $("cleanModal").addEventListener("show.bs.modal", () => {
@@ -576,16 +776,30 @@ function initAdminExtras() {
     $("archRows").addEventListener("click", e => {
         const b = e.target.closest("button[data-act]"); if (!b) return;
         const { act, k, id } = b.dataset, c = k === "ticket" ? Tickets : Assets;
-        if (act === "restore") { c.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${id} restored`); }
-        else {
-            if (!confirm(`Delete ${id} forever? This can't be undone. The activity log keeps a record of it.`)) return;
-            (c === Tickets ? (Tickets.all().find(t => t.id === id) || {}).photos || [] : []).forEach(p => PhotoDB.remove(p).catch(() => { }));
-            c.remove(id, "Deleted forever"); toast(`${id} deleted forever`);
+        if (act === "restore") {
+            c.patch(id, { archived: false, archivedAt: null }, "Restored from archive");
+            toast(`${id} restored`);
+            renderAll();
+            window.renderTickets();
+        } else {
+            openConfirmDelete({
+                title: `Delete ${id} forever?`,
+                item: id,
+                desc: "This can't be undone. The activity log keeps a record of it.",
+                btnText: "Delete forever",
+                onConfirm: () => {
+                    (c === Tickets ? (Tickets.all().find(t => t.id === id) || {}).photos || [] : []).forEach(p => PhotoDB.remove(p).catch(() => { }));
+                    c.remove(id, "Deleted forever");
+                    toast(`${id} deleted forever`);
+                    renderAll();
+                    window.renderTickets();
+                }
+            });
         }
         renderAll(); window.renderTickets();
     });
     ["gSearch", "gKind"].forEach(id => $(id).addEventListener("input", renderHistory));
-    const renderAll = () => { renderCleanings(); renderAssets(); renderReports(); renderHistory(); };
+    const renderAll = () => { renderPersonnel(); renderCleanings(); renderAssets(); renderReports(); renderHistory(); };
     ["cSearch", "cStatus", "cType"].forEach(id => $(id).addEventListener("input", renderCleanings));
     $("sSearch").addEventListener("input", renderAssets);
     document.addEventListener("shown.bs.tab", e => { if (e.target.closest("#adminTabs, #adminBottomNav")) renderAll(); });
@@ -619,7 +833,7 @@ const Idle = {
         if (!this.on) { this.on = true; IDLE_EVENTS.forEach(ev => document.addEventListener(ev, this.bump, { passive: true })); }
         this.bump();
     },
-    stop() { clearTimeout(this.t); if (this.on) { this.on = false; IDLE_EVENTS.forEach(ev => document.removeEventListener(ev, this.bump)); } }
+    stop() { clearTimeout(Idle.t); if (this.on) { this.on = false; IDLE_EVENTS.forEach(ev => document.removeEventListener(ev, this.bump)); } }
 };
 function closeEverything() {
     document.querySelectorAll(".modal.show").forEach(m => { const i = bootstrap.Modal.getInstance(m); if (i) i.hide(); });
@@ -794,7 +1008,13 @@ function initAdminAuth() {
         const d = Object.fromEntries(new FormData(f)), username = d.username.trim();
         if (d.password.length < 6) return fail("setupErr", "Use a password with at least 6 characters.");
         if (d.password !== d.confirm) return fail("setupErr", "The two passwords do not match.");
-        localStorage.setItem("fixit_admins", JSON.stringify([{ username, name: d.name.trim(), pw: await hashPw(d.password, "admin:" + username.toLowerCase()), createdAt: Date.now() }]));
+        localStorage.setItem("fixit_admins", JSON.stringify([{
+            username,
+            name: d.name.trim(),
+            pw: await hashPw(d.password, "admin:" + username.toLowerCase()),
+            createdAt: Date.now(),
+            personnel: []
+        }]));
         f.reset(); f.classList.remove("was-validated"); apply();
         $("lgId").value = username; $("loginOk").textContent = "Admin account created. Please log in."; $("loginOk").classList.remove("d-none"); $("lgPw").focus();
     });
@@ -864,6 +1084,7 @@ const M_TITLES = {
         "#tabTickets": ["Maintenance tracking", "Assign, update, and close tickets"],
         "#tabClean": ["Facility cleaning", "Daily cleaning list and cleaning totals"],
         "#tabAssets": ["Assets", "Cleaning supplies and other items"],
+        "#tabPersonnel": ["Personnel", "Saved maintenance and utility staff on your account"],
         "#tabReports": ["Reports and analytics", "Summaries of tickets, assets, and borrowing"],
         "#tabHistory": ["History and archive", "Activity log and archived items"]
     }
