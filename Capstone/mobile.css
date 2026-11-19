@@ -115,7 +115,7 @@ main.container {
 .tab-pane .table:not(.table-sm) tr {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     gap: .3rem .5rem;
     background: #fff;
     border: 1px solid var(--line);
@@ -159,47 +159,53 @@ main.container {
 /* Client cards (#rows and #htRows on index.html) */
 body[data-page="student"] #rows tr,
 body[data-page="student"] #htRows tr {
-    gap: .28rem .5rem;
-    padding: .75rem .85rem;
+    position: relative;
+    gap: .3rem .5rem;
+    padding: .8rem .9rem;
 }
 
 body[data-page="student"] #rows tr td:nth-child(1),
 body[data-page="student"] #htRows tr td:nth-child(1) {
     order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 6.5rem !important;
 }
 
-body[data-page="student"] #rows tr td:nth-child(3) {
-    order: 2;
-    margin-left: auto;
-    font-size: .82rem;
-}
-
+body[data-page="student"] #rows tr td:nth-child(4),
 body[data-page="student"] #htRows tr td:nth-child(3) {
-    order: 2;
-    margin-left: auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: center;
+    position: static;
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: left;
+    padding-top: .1rem !important;
 }
 
+body[data-page="student"] #rows tr td:nth-child(4) .badge-status,
+body[data-page="student"] #htRows tr td:nth-child(3) .badge-status {
+    position: absolute;
+    top: .8rem;
+    right: .9rem;
+}
+
+body[data-page="student"] #rows tr td:nth-child(4)>div,
 body[data-page="student"] #htRows tr td:nth-child(3)>div {
-    flex: 1 1 100%;
     text-align: left;
-    margin-top: .25rem !important;
+    margin-top: 0 !important;
+    font-size: .82rem;
 }
 
 body[data-page="student"] #rows tr td:nth-child(2),
 body[data-page="student"] #htRows tr td:nth-child(2) {
-    order: 3;
+    order: 2;
     flex: 1 1 100%;
     padding-top: .15rem !important;
 }
 
-body[data-page="student"] #rows tr td:nth-child(4) {
+body[data-page="student"] #rows tr td:nth-child(3) {
     order: 4;
-    flex: 1 1 100%;
-    padding-top: .15rem !important;
+    font-size: .82rem;
 }
 
 body[data-page="student"] #rows tr td:nth-child(5),
@@ -212,120 +218,237 @@ body[data-page="student"] #htRows tr td:nth-child(5) {
 }
 
 /* Personnel cards */
-#personnelRows tr td:nth-child(2) {
-    flex: 1 1 auto;
-    font-weight: 700;
-    font-size: .98rem;
+#personnelRows tr {
+    gap: .35rem .6rem;
+    padding: .9rem .95rem;
 }
 
 #personnelRows tr td:nth-child(1) {
-    margin-left: auto;
-    font-size: .78rem;
-    color: var(--mute);
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#personnelRows tr td:nth-child(1) .fw-semibold {
+    font-size: 1.02rem;
+    color: var(--ink);
+    line-height: 1.25;
+}
+
+#personnelRows tr td:nth-child(1) .small {
+    display: inline-block;
+    margin-top: .2rem;
+    font-size: .76rem;
+    font-family: ui-monospace, Consolas, monospace;
 }
 
 #personnelRows tr td:nth-child(3) {
-    flex: 1 1 auto;
-    font-size: .84rem;
+    order: 2;
+    flex: 0 0 auto;
+    margin-left: auto;
+    align-self: flex-start;
+}
+
+#personnelRows tr td:nth-child(2) {
+    order: 3;
+    flex: 1 1 100%;
+    font-size: .86rem;
+    font-weight: 600;
+    color: var(--maroon);
+    padding-top: .15rem !important;
+}
+
+#personnelRows tr td:nth-child(2)::before {
+    content: "Role: ";
+    font-weight: 500;
     color: var(--mute);
 }
 
-#personnelRows tr td:nth-child(4) {
-    margin-left: auto;
+#personnelRows tr td.text-end {
+    order: 4;
 }
 
 /* Assets cards */
+#assetRows tr {
+    gap: .45rem .6rem;
+    padding: .9rem .95rem;
+}
+
 #assetRows tr td:nth-child(1) {
+    order: 1;
     font-weight: 700;
     font-size: .82rem;
 }
 
 #assetRows tr td:nth-child(2) {
+    order: 2;
     margin-left: auto;
+    text-align: right;
     font-size: .78rem;
     color: var(--mute);
 }
 
 #assetRows tr td:nth-child(3) {
+    order: 3;
     flex: 1 1 100%;
-    font-weight: 700;
-    font-size: .96rem;
+    font-size: 1rem;
+    padding-top: .15rem !important;
 }
 
-#assetRows tr td:nth-child(4),
-#assetRows tr td:nth-child(5),
-#assetRows tr td:nth-child(6),
-#assetRows tr td:nth-child(7),
-#assetRows tr td:nth-child(8) {
+#assetRows tr td:nth-child(3) .fw-semibold {
+    font-size: 1.05rem;
+    color: var(--ink);
+}
+
+#assetRows tr td:nth-child(4) {
+    order: 4;
+    flex: 0 0 auto;
+    background: #f7e9ea;
+    color: var(--maroon) !important;
+    font-weight: 700 !important;
+    font-size: .85rem !important;
+    padding: .25rem .6rem !important;
+    border-radius: 999px;
+}
+
+#assetRows tr td:nth-child(5):not(.text-end),
+#assetRows tr td:nth-child(6):not(.text-end),
+#assetRows tr td:nth-child(7):not(.text-end) {
+    order: 5;
+    flex: 1 1 100%;
     font-size: .82rem;
     color: var(--mute);
 }
 
-#assetRows tr td:nth-child(5) {
+#assetRows tr td:nth-child(5):not(.text-end)::before {
+    content: "Location: ";
     font-weight: 600;
     color: var(--ink);
 }
 
-/* Cleaning cards */
-#cleanRows tr td:nth-child(1) {
-    font-weight: 700;
-    font-size: .82rem;
+#assetRows tr td:nth-child(6):not(.text-end)::before {
+    content: "Updated: ";
+    font-weight: 600;
+    color: var(--ink);
 }
 
-#cleanRows tr td:nth-child(2) {
-    margin-left: auto;
-    font-size: .78rem;
+#assetRows tr[data-archived="true"] td:nth-child(6):not(.text-end)::before {
+    content: "Archived: ";
+}
+
+#assetRows tr td.text-end {
+    order: 10;
+}
+
+#assetRows tr td.text-end::before {
+    content: none;
+}
+
+/* Cleaning cards (admin) */
+#cleanRows tr td:nth-child(1) {
+    order: 1;
+    align-self: flex-start;
+    font-weight: 700;
+    font-size: .82rem;
 }
 
 #cleanRows tr td:nth-child(3) {
-    flex: 1 1 100%;
-    font-weight: 700;
-    font-size: .96rem;
-}
-
-#cleanRows tr td:nth-child(4),
-#cleanRows tr td:nth-child(5) {
-    font-size: .82rem;
-    color: var(--mute);
-}
-
-#cleanRows tr td:nth-child(6) {
+    order: 2;
     margin-left: auto;
-}
-
-#cleanRows tr td:nth-child(7),
-#cleanRows tr td:nth-child(8) {
-    font-size: .78rem;
-    color: var(--mute);
-}
-
-/* Tickets cards */
-#rows tr td:nth-child(1) {
-    font-weight: 700;
-    font-size: .82rem;
-}
-
-#rows tr td:nth-child(2) {
-    margin-left: auto;
+    align-self: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: flex-start;
     font-size: .78rem;
 }
 
-#rows tr td:nth-child(3) {
+#cleanRows tr td:nth-child(3)>div {
     flex: 1 1 100%;
-    font-weight: 700;
-    font-size: .96rem;
+    text-align: right;
+    margin-top: .25rem !important;
 }
 
-#rows tr td:nth-child(4),
-#rows tr td:nth-child(5),
-#rows tr td:nth-child(7),
-#rows tr td:nth-child(8) {
+#cleanRows tr td:nth-child(2) {
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    font-size: inherit;
+    padding-top: .2rem !important;
+}
+
+#cleanRows tr td:nth-child(4) {
+    order: 4;
+    flex: 1 1 auto;
     font-size: .82rem;
     color: var(--mute);
+    padding-top: .1rem !important;
 }
 
-#rows tr td:nth-child(6) {
+#cleanRows tr td.text-end {
+    order: 5;
+}
+
+/* Admin tickets cards */
+body[data-page="admin"] #rows tr {
+    gap: .3rem .5rem;
+    padding: .8rem .9rem;
+}
+
+body[data-page="admin"] #rows tr td:nth-child(1) {
+    order: 1;
+    flex: 0 0 auto;
+    align-self: flex-start;
+}
+
+body[data-page="admin"] #rows tr td:nth-child(5) {
+    order: 2;
+    flex: 0 0 auto;
     margin-left: auto;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+}
+
+body[data-page="admin"] #rows tr td:nth-child(5)>div {
+    text-align: right;
+    margin-top: .25rem !important;
+}
+
+body[data-page="admin"] #rows tr td:nth-child(2) {
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    font-size: inherit;
+    padding-top: .2rem !important;
+}
+
+body[data-page="admin"] #rows tr td:nth-child(3) {
+    order: 4;
+    flex: 1 1 100%;
+    font-weight: 400;
+    font-size: .84rem;
+    padding-top: .1rem !important;
+}
+
+body[data-page="admin"] #rows tr td:nth-child(4) {
+    order: 5;
+    font-size: .82rem;
+    padding-top: .1rem !important;
+}
+
+body[data-page="admin"] #rows tr td:nth-child(6) {
+    order: 6;
+    margin-left: auto;
+    font-size: .82rem;
+    color: var(--mute);
+    padding-top: .1rem !important;
+}
+
+body[data-page="admin"] #rows tr td.text-end {
+    order: 7;
 }
 
 .panel .table-responsive {

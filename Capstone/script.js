@@ -570,8 +570,8 @@ function initAdminExtras() {
     };
     csvBtn("tabTickets", () => downloadCSV("tickets", ["Ticket", "Damage", "Building", "Room / spot", "Type", "Urgency", "Status", "Reported by", "Role", "ID no.", "Assigned to", "Related asset", "Reported", "Fixed", "Archived", "Details"],
         Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.onBehalf || t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
-    csvBtn("tabClean", () => downloadCSV("facility-cleaning", ["Facility ID", "Building", "Area", "Area type", "Staff assigned", "Status today", "Cleaned today at", "Total cleaned", "Last cleaned", "Notes"],
-        Cleanings.all().map(c => { const log = logOf(c), d = doneToday(c), last = log.slice(-1)[0]; return [c.id, c.building, c.area, c.areaType, c.staff, d ? "Cleaned" : "For Cleaning", d ? clock(d.ts) : "", log.length, last ? last.date : "", c.notes || ""]; })));
+    csvBtn("tabClean", () => downloadCSV("facility-cleaning", ["Facility ID", "Building", "Area", "Area type", "Status today", "Cleaned today at", "Total cleaned", "Last cleaned", "Notes"],
+        Cleanings.all().map(c => { const log = logOf(c), d = doneToday(c), last = log.slice(-1)[0]; return [c.id, c.building, c.area, c.areaType, d ? "Cleaned" : "For Cleaning", d ? clock(d.ts) : "", log.length, last ? last.date : "", c.notes || ""]; })));
     csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Item", "ID no.", "Category", "Quantity", "Unit", "Location", "Department", "Archived"],
         Assets.all().map(a => [a.id, a.name, a.tag, a.category, a.qty ?? "", a.unit || "", a.location, a.dept, a.archived ? "Yes" : ""])));
 
@@ -597,7 +597,7 @@ function initAdminExtras() {
         const stat = c => doneToday(c) ? "Cleaned" : "For Cleaning", dueN = all.filter(c => !doneToday(c)).length;
         $("cCDue").textContent = dueN; $("cCDone").textContent = all.length - dueN;
         $("cToday").textContent = new Date().toLocaleDateString("en-PH", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-        const list = all.filter(c => (!st || stat(c) === st) && (!ty || c.areaType === ty) && (!q || (c.id + c.building + c.area + c.staff).toLowerCase().includes(q)))
+        const list = all.filter(c => (!st || stat(c) === st) && (!ty || c.areaType === ty) && (!q || (c.id + c.building + c.area).toLowerCase().includes(q)))
             .sort((x, y) => stat(x) !== stat(y) ? (stat(x) === "For Cleaning" ? -1 : 1)
                 : stat(x) === "For Cleaning" ? (x.time || "99").localeCompare(y.time || "99") : doneToday(y).ts - doneToday(x).ts);
         $("cleanRows").innerHTML = list.length ? list.map(c => {
@@ -605,7 +605,6 @@ function initAdminExtras() {
             return `<tr>
           <td>${tlBtn("c", c.id)}</td>
           <td><div class="fw-semibold">${esc(c.building)} &ndash; ${esc(c.area)}</div><div class="small text-secondary">${esc(c.areaType)}${c.time ? " &bull; usually " + fmtClock(c.time) : ""}${c.notes ? " &bull; " + esc(c.notes) : ""}</div></td>
-          <td class="small">${esc(c.staff)}</td>
           <td>${badge(stat(c))}${d ? `<div class="small text-secondary mt-1">at ${clock(d.ts)}</div>` : ""}</td>
           <td><span class="fw-semibold">${n}</span> <span class="small text-secondary">${n === 1 ? "time" : "times"}</span>${last ? `<div class="small text-secondary">Last: ${fmtD(last.date)}</div>` : ""}</td>
           <td class="text-end text-nowrap">${d
@@ -613,13 +612,13 @@ function initAdminExtras() {
                     : `<button class="btn btn-sm btn-success" data-act="done" data-id="${c.id}">Mark as cleaned</button>`}
             <button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${c.id}">Edit</button>
             <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${c.id}">Delete</button></td></tr>`;
-        }).join("") : `<tr><td colspan="6" class="empty">${all.length ? "No facilities match." : 'No facilities yet. Use "+ Add facility" to list one.'}</td></tr>`;
+        }).join("") : `<tr><td colspan="5" class="empty">${all.length ? "No facilities match." : 'No facilities yet. Use "+ Add facility" to list one.'}</td></tr>`;
     }
     $("cleanRows").addEventListener("click", e => {
         const b = e.target.closest("button[data-act]"); if (!b) return;
         const { act, id } = b.dataset, c = Cleanings.all().find(x => x.id === id); if (!c) return;
         if (act === "done") {
-            const log = logOf(c).concat({ date: today(), ts: Date.now(), staff: c.staff });
+            const log = logOf(c).concat({ date: today(), ts: Date.now() });
             Cleanings.patch(id, { cleanLog: log, cleanedAt: Date.now() }, `Marked as cleaned (total ${log.length})`); toast(`${c.area} marked as cleaned`);
         } else if (act === "undo") {
             const log = logOf(c).filter(x => x.date !== today()), last = log.slice(-1)[0];
@@ -646,17 +645,15 @@ function initAdminExtras() {
         $("cleanId").value = c ? c.id : "";
         $("cleanModalT").textContent = c ? "Edit facility" : "Add facility";
         $("cleanSave").textContent = c ? "Save changes" : "Save facility";
-        $("staffList").innerHTML = Staff.all().map(n => `<option value="${esc(n)}">`).join("");
-        if (c) { $("cBuilding").value = c.building; $("cArea").value = c.area; $("cAreaType").value = c.areaType; $("cStaff").value = c.staff; $("cWhen").value = c.time || ""; $("cNotes").value = c.notes || ""; }
+        if (c) { $("cBuilding").value = c.building; $("cArea").value = c.area; $("cAreaType").value = c.areaType; $("cWhen").value = c.time || ""; $("cNotes").value = c.notes || ""; }
     });
     $("cleanForm").addEventListener("submit", e => {
         e.preventDefault(); const f = e.target;
         if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
         const d = Object.fromEntries(new FormData(f)), id = $("cleanId").value;
-        const data = { building: d.building.trim(), area: d.area.trim(), areaType: d.areaType, staff: d.staff.trim(), time: d.time || "", notes: d.notes.trim() };
-        Staff.add(data.staff);
+        const data = { building: d.building.trim(), area: d.area.trim(), areaType: d.areaType, time: d.time || "", notes: d.notes.trim() };
         if (id) { Cleanings.patch(id, data, "Facility details updated"); toast(`${data.area} updated`); }
-        else { Cleanings.add({ ...data, cleanLog: [], cleanedAt: null }, `Added to the cleaning list, assigned to ${data.staff}`); toast(`${data.area} added to the list`); }
+        else { Cleanings.add({ ...data, cleanLog: [], cleanedAt: null }, "Added to the cleaning list"); toast(`${data.area} added to the list`); }
         modal("#cleanModal").hide(); renderAll();
     });
     setInterval(() => { if (today() !== shownDay) renderAll(); }, 60000);
