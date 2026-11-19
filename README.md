@@ -17,7 +17,7 @@
 ---
 
 ### ✧ Current Quests ✧
-- [ ] 🎓 Graduate College (Main Story Quest)
+- [ ] 🎓 Graduate College
 
 ---
 
