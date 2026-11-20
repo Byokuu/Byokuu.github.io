@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>CampusCare Admin - FAMO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="../css/mobile.css" rel="stylesheet" media="(max-width: 767.98px)">
+</head>
+
+<body data-page="famo" data-role="famo">
+    <header class="topbar shadow">
+        <div class="container d-flex flex-wrap align-items-center justify-content-between py-3">
+            <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span
+                    class="brand-text">CampusCare<small>Admin console</small></span></div>
+            <nav class="nav align-items-center"></nav>
+        </div>
+    </header>
+
+    <section id="authGate" class="container py-5 d-none" style="max-width:460px">
+        <div class="panel">
+            <h1 class="h4 mb-1" id="gateTitle">Admin sign in</h1>
+            <p class="text-secondary small" id="gateHint"></p>
+            <div class="alert alert-success py-2 small d-none" id="loginOk" role="status"></div>
+            <form id="loginForm" novalidate>
+                <div class="mb-3"><label class="form-label" for="lgId">Username</label>
+                    <input class="form-control" id="lgId" name="username" autocomplete="username" required>
+                    <div class="invalid-feedback">Enter your username.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="lgPw">Password</label>
+                    <input class="form-control" type="password" id="lgPw" name="password"
+                        autocomplete="current-password" required>
+                    <div class="invalid-feedback">Enter your password.</div>
+                </div>
+                <div class="text-danger small mb-3 d-none" id="loginErr"></div>
+                <button class="btn btn-maroon w-100" type="submit">Log in</button>
+            </form>
+            <form id="setupForm" class="d-none" novalidate>
+                <div class="mb-3"><label class="form-label" for="stName">Full name</label>
+                    <input class="form-control" id="stName" name="name" autocomplete="name" required>
+                    <div class="invalid-feedback">Enter your name.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="stUser">Username</label>
+                    <input class="form-control" id="stUser" name="username" autocomplete="username" required>
+                    <div class="invalid-feedback">Choose a username.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="stPw">Password</label>
+                    <input class="form-control" type="password" id="stPw" name="password" autocomplete="new-password"
+                        required>
+                    <div class="invalid-feedback">Enter a password.</div>
+                </div>
+                <div class="mb-3"><label class="form-label" for="stPw2">Confirm password</label>
+                    <input class="form-control" type="password" id="stPw2" name="confirm" autocomplete="new-password"
+                        required>
+                    <div class="invalid-feedback">Repeat the password.</div>
+                </div>
+                <div class="text-danger small mb-3 d-none" id="setupErr"></div>
+                <button class="btn btn-maroon w-100" type="submit">Create admin account</button>
+            </form>
+        </div>
+    </section>
+
+    <main class="container py-4">
+
+        <div id="adminApp" data-role-scope="famo">
+            <div class="m-head d-md-none">
+                <h1 id="mTitle"></h1>
+                <p id="mSub"></p>
+            </div>
+
+            <ul class="nav nav-tabs mb-3 d-none d-md-flex" id="adminTabs" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
+                        data-bs-target="#tabClean" type="button" role="tab">Facilities</button></li>
+                <li class="nav-item" data-role-only="famo"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                        data-bs-target="#tabSupplies" type="button" role="tab" data-role-only="famo">Cleaning
+                        Supplies</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                        data-bs-target="#tabReports" type="button" role="tab">Reports</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                        data-bs-target="#tabHistory" type="button" role="tab">History</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                        data-bs-target="#tabPersonnel" type="button" role="tab">Personnel</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                        data-bs-target="#tabTickets" type="button" role="tab">Damage Reports <span
+                            class="badge text-bg-light border ms-auto">Extra</span></button></li>
+                <li class="nav-item ms-auto d-flex align-items-center gap-2 pb-1">
+                    <button class="btn btn-gold" type="button" data-bs-toggle="modal" data-bs-target="#assetModal"
+                        data-role-only="famo">+ Add
+                        supply</button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade" id="tabTickets">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat">
+                                <div class="n" id="cTotal">0</div>
+                                <div class="text-secondary">Total tickets</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat">
+                                <div class="n" id="cPending">0</div>
+                                <div class="text-secondary">Pending</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat prog">
+                                <div class="n" id="cProg">0</div>
+                                <div class="text-secondary">In progress</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="panel stat fixed">
+                                <div class="n" id="cFixed">0</div>
+                                <div class="text-secondary">Fixed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section class="panel">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-5"><input id="search" class="form-control" type="search"
+                                    placeholder="Search ticket, place or reporter" aria-label="Search tickets"></div>
+                            <div class="col-6 col-md-3">
+                                <select id="fStatus" class="form-select" aria-label="Filter by status">
+                                    <option value="">All statuses</option>
+                                    <option>Pending</option>
+                                    <option>In progress</option>
+                                    <option>Fixed</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <select id="fUrg" class="form-select" aria-label="Filter by urgency">
+                                    <option value="">All urgency</option>
+                                    <option>High</option>
+                                    <option>Medium</option>
+                                    <option>Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket</th>
+                                        <th>Damage</th>
+                                        <th>Reported by</th>
+                                        <th>Urgency</th>
+                                        <th>Status</th>
+                                        <th>Assigned to</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                <div class="tab-pane fade show active" id="tabClean">
+                    <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-2">
+                        <div class="small text-secondary">Today: <b id="cToday"></b></div>
+                        <div class="small text-secondary">Statuses reset every day. Totals keep counting.</div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="panel stat">
+                                <div class="n" id="cCDue">0</div>
+                                <div class="text-secondary">For cleaning today</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="panel stat fixed">
+                                <div class="n" id="cCDone">0</div>
+                                <div class="text-secondary">Cleaned today</div>
+                            </div>
+                        </div>
+                    </div>
+                    <section class="panel">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-5"><input id="cSearch" class="form-control" type="search"
+                                    placeholder="Search building, area, or staff" aria-label="Search facilities"></div>
+                            <div class="col-6 col-md-2"><select id="cStatus" class="form-select"
+                                    aria-label="Filter by today's status">
+                                    <option value="">All statuses</option>
+                                    <option>For Cleaning</option>
+                                    <option>Cleaned</option>
+                                </select></div>
+                            <div class="col-6 col-md-3"><select id="cType" class="form-select"
+                                    aria-label="Filter by area type">
+                                    <option value="">All area types</option>
+                                    <option>Classroom</option>
+                                    <option>Laboratory</option>
+                                    <option>Restroom</option>
+                                    <option>Hallway</option>
+                                    <option>Outdoor area</option>
+                                    <option>Office</option>
+                                    <option>Other</option>
+                                </select></div>
+                            <div class="col-md-2 d-grid"><button class="btn btn-maroon" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#cleanModal">+ Add facility</button></div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Facility ID</th>
+                                        <th>Facility</th>
+                                        <th>Today</th>
+                                        <th>Total cleaned</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cleanRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                <div class="tab-pane fade" id="tabSupplies" data-role-only="famo">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <h2 class="h5 mb-0">Cleaning Supplies Inventory</h2>
+                            <div class="small text-secondary">Track cleaning supplies, sanitation stock, and storage
+                                levels (FAMO only).</div>
+                        </div>
+                        <span class="badge text-bg-dark">FAMO Only</span>
+                    </div>
+                    <section class="panel">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                            <div class="seg" id="assetView" role="group" aria-label="Show supplies"
+                                style="min-width:250px">
+                                <button type="button" class="seg-btn active" data-av="active" aria-pressed="true">Active
+                                    <span class="text-secondary" id="cntActive">0</span></button>
+                                <button type="button" class="seg-btn" data-av="archived" aria-pressed="false">Archived
+                                    <span class="text-secondary" id="cntArch">0</span></button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <input id="sSearch" class="form-control w-auto" style="min-width:240px" type="search"
+                                    placeholder="Search supply name, ID, or stockroom"
+                                    aria-label="Search cleaning supplies">
+                                <select id="supplyCatFilter" class="form-select w-auto"
+                                    aria-label="Filter cleaning supplies by category">
+                                    <option value="">All supply categories</option>
+                                    <option>Cleaning supplies</option>
+                                    <option>Cleaning tools</option>
+                                    <option>Paper goods</option>
+                                    <option>Other</option>
+                                </select>
+                                <button class="btn btn-maroon" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#assetModal">+ Add supply</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead id="assetHead"></thead>
+                                <tbody id="assetRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                <div class="tab-pane fade" id="tabReports">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0">Reports &amp; analytics</h2>
+                        <button class="btn btn-outline-secondary btn-sm no-print" type="button"
+                            onclick="window.print()">Print report</button>
+                    </div>
+                    <div id="reportBody"></div>
+                </div>
+                <div class="tab-pane fade" id="tabHistory">
+                    <section class="panel mb-3">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                            <h2 class="h5 mb-0">Activity log</h2>
+                            <div class="d-flex gap-2">
+                                <input id="gSearch" class="form-control" type="search" placeholder="Search activity"
+                                    aria-label="Search activity">
+                                <select id="gKind" class="form-select w-auto" aria-label="Filter activity">
+                                    <option value="">Everything</option>
+                                    <option value="ticket">Tickets</option>
+                                    <option value="asset">Assets</option>
+                                    <option value="cleaning">Cleaning</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive log-scroll">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>When</th>
+                                        <th>Type</th>
+                                        <th>What happened</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section class="panel">
+                        <h2 class="h5 mb-1">Archived items</h2>
+                        <p class="small text-secondary">Archived tickets and assets are hidden from the lists and
+                            reports. Restore them any time, or delete them forever.</p>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Item</th>
+                                        <th>Archived</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                <div class="tab-pane fade" id="tabPersonnel">
+                    <section class="panel">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                            <h2 class="h5 mb-0">Personnel</h2>
+                            <div class="d-flex flex-wrap gap-2">
+                                <input id="pSearch" class="form-control w-auto" style="min-width:220px" type="search"
+                                    placeholder="Search name or role" aria-label="Search personnel">
+                                <button class="btn btn-maroon" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#personnelModal">+ Add personnel</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role / Specialty</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="personnelRows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <nav class="bnav nav d-md-none" id="adminBottomNav" aria-label="Main navigation">
+            <button class="bnav-item active" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabClean" aria-selected="true"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                </svg><span>Facilities</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabSupplies" aria-selected="false" data-role-only="famo"><svg viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
+                    <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
+                </svg><span>Supplies</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabReports" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+                </svg><span>Reports</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabHistory" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 2" />
+                </svg><span>History</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabPersonnel" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg><span>Personnel</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabTickets" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                    <rect x="9" y="3" width="6" height="4" rx="1" />
+                    <path d="M9 12h6M9 16h4" />
+                </svg><span>Damage</span></button>
+        </nav>
+        <button class="fab" type="button" aria-label="Log a damage" data-bs-toggle="modal"
+            data-bs-target="#reportModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+            </svg></button>
+    </main>
+
+    <div class="modal fade slide-up modal-admin" id="reportModal" tabindex="-1" aria-labelledby="reportTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                            <rect x="9" y="3" width="6" height="4" rx="1" />
+                            <path d="M9 12h6M9 16h4" />
+                        </svg></span>
+                    <div>
+                        <h2 class="h4 mb-0" id="reportTitle">Log a damage</h2>
+                        <p class="small mb-0 opacity-75">For damage found during inspections or reported to the office
+                            by phone, email or walk-in.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ticketForm" novalidate>
+                        <div class="who-chip" id="whoChip"><span class="user-avatar"></span>
+                            <div>
+                                <div class="who-label">Logging as</div>
+                                <div class="who-name"></div>
+                                <div class="who-meta"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3 d-none">
+                            <label class="form-label" for="reporter">Your Name</label>
+                            <input class="form-control" id="reporter" name="reporter"
+                                placeholder="Name of the office staff logging this" required>
+                            <div class="invalid-feedback">Enter your name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="onBehalf">Reported by <span class="text-secondary">(if
+                                    someone else)</span></label>
+                            <input class="form-control" id="onBehalf" name="onBehalf"
+                                placeholder="e.g. Prof. Santos, if they called or walked in">
+                        </div>
+                        <div class="form-section">Damage details</div>
+                        <div class="mb-3">
+                            <label class="form-label" for="title">What is damaged?</label>
+                            <input class="form-control" id="title" name="title"
+                                placeholder="e.g. Cracked window, flickering lights" required>
+                            <div class="invalid-feedback">Describe the damage in a few words.</div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label" for="building">Building</label>
+                                <input class="form-control" id="building" name="building"
+                                    placeholder="e.g. Main Building, Library" required>
+                                <div class="invalid-feedback">Enter the building.</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label" for="location">Room / Spot</label>
+                                <input class="form-control" id="location" name="location" required>
+                                <div class="invalid-feedback">Say where exactly.</div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-4">
+                                <label class="form-label" for="category">Type</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option>Furniture</option>
+                                    <option>Electrical</option>
+                                    <option>Plumbing</option>
+                                    <option>Doors / Windows</option>
+                                    <option>Walls / Ceiling</option>
+                                    <option>Equipment</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-5">
+                                <label class="form-label" id="urgLbl">Priority</label>
+                                <div class="seg-radio" role="radiogroup" aria-labelledby="urgLbl">
+                                    <input type="radio" class="btn-check" name="urgency" id="urgLow" value="Low"
+                                        autocomplete="off"><label class="u-low" for="urgLow">Low</label>
+                                    <input type="radio" class="btn-check" name="urgency" id="urgMed" value="Medium"
+                                        autocomplete="off" checked><label class="u-med" for="urgMed">Medium</label>
+                                    <input type="radio" class="btn-check" name="urgency" id="urgHigh" value="High"
+                                        autocomplete="off"><label class="u-high" for="urgHigh">High</label>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <label class="form-label" for="status">Starting Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option>Pending</option>
+                                    <option>In progress</option>
+                                </select>
+                            </div>
+                            <div class="row g-3 mt-1 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="form-label" for="rAssignee">Assign to <span
+                                            class="text-secondary">(optional)</span></label>
+                                    <select class="form-select" id="rAssignee" name="assignee">
+                                        <option value="">Unassigned</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-section">Additional information</div>
+                        <div>
+                            <label class="form-label" for="description">More Details <span
+                                    class="text-secondary">(optional)</span></label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label" id="photoLbl">Photos <span class="text-secondary">(optional, up to
+                                    3)</span></label>
+                            <div class="photo-drop" id="photoDrop" tabindex="0" role="button"
+                                aria-labelledby="photoLbl">
+                                <div class="photo-drop-desk">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path
+                                            d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" />
+                                        <circle cx="12" cy="13" r="4" />
+                                    </svg>
+                                    <div>Drag photos here or <u>browse</u></div>
+                                    <div class="small">JPG or PNG. Photos are resized automatically.</div>
+                                </div>
+                                <div class="photo-drop-mob">
+                                    <button class="btn btn-outline-secondary" type="button" id="photoCamBtn">Take
+                                        photo</button>
+                                    <button class="btn btn-outline-secondary" type="button" id="photoGalBtn">From
+                                        gallery</button>
+                                </div>
+                            </div>
+                            <input type="file" id="photoInput" accept="image/*" multiple hidden>
+                            <input type="file" id="photoCamera" accept="image/*" capture="environment" hidden>
+                            <div class="photo-preview" id="photoPreview"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="ticketForm" class="btn btn-maroon">Save ticket</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="doneModal" tabindex="-1" aria-labelledby="doneTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:420px">
+            <div class="modal-content done">
+                <div class="done-top">
+                    <svg class="done-check" viewBox="0 0 72 72" width="76" height="76" aria-hidden="true">
+                        <circle class="ring" cx="36" cy="36" r="32"></circle>
+                        <path class="tick" d="M22 37.5l10 10 18-21"></path>
+                    </svg>
+                    <h2 class="h4 mb-1" id="doneTitle">Damage report logged</h2>
+                    <p class="mb-0 done-sub"><span id="lastName" class="d-none"></span>It is now in the extra damage
+                        reports list.</p>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-4">
+                    <div class="stub">
+                        <div class="stub-main">
+                            <div class="stub-label">Report number</div>
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                <div class="stub-id" id="lastId"></div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="copyId">Copy</button>
+                            </div>
+                        </div>
+                        <div class="stub-cut"></div>
+                        <dl class="stub-rows mb-0">
+                            <div>
+                                <dt>Damage</dt>
+                                <dd id="lastTitle"></dd>
+                            </div>
+                            <div>
+                                <dt>Location</dt>
+                                <dd id="lastPlace"></dd>
+                            </div>
+                            <div>
+                                <dt>Status</dt>
+                                <dd id="lastStatus"></dd>
+                            </div>
+                        </dl>
+                    </div>
+                    <p class="text-secondary small text-center mt-3 mb-3">Change its status anytime from the Actions
+                        column.</p>
+                    <button class="btn btn-maroon w-100 py-2" data-bs-dismiss="modal">Back to damage reports</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-admin" id="assignModal" tabindex="-1" aria-labelledby="assignModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="assignModalT">Assign maintenance personnel</h2><button type="button"
+                        class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-secondary" id="aTitle"></p>
+                    <form id="assignForm"><input type="hidden" id="aId"><label class="form-label" for="aName">Assigned
+                            to</label>
+                        <input class="form-control" id="aName" list="aList" placeholder="Name of the technician or team"
+                            required><datalist id="aList"></datalist>
+                    </form>
+                    <div class="mt-3">
+                        <div class="small text-secondary mb-1">Saved personnel (click a name to use it, x to remove)
+                        </div>
+                        <div id="aChips" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="assignForm"
+                        class="btn btn-maroon">Assign</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-admin" id="assetModal" tabindex="-1" aria-labelledby="assetModalT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
+                            <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
+                        </svg></span>
+                    <div>
+                        <h2 class="h5 mb-0" id="assetModalT">Add cleaning supply</h2>
+                        <p class="small mb-0 opacity-75">Track cleaning supplies inventory and stock levels for FAMO.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assetForm" novalidate>
+                        <input type="hidden" id="assetId2">
+                        <div class="form-section" style="margin-top:0">Item</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-8"><label class="form-label" for="nName">Item name</label>
+                                <input class="form-control" id="nName" name="name"
+                                    placeholder="e.g. Liquid hand soap, Floor mop" required>
+                                <div class="invalid-feedback">Enter the item name.</div>
+                            </div>
+                            <div class="col-sm-4"><label class="form-label" for="nTag">ID number</label>
+                                <input class="form-control" id="nTag" name="tag" placeholder="e.g. SOAP-001" required>
+                                <div class="invalid-feedback">Enter a unique ID number.</div>
+                            </div>
+                        </div>
+                        <div class="mb-1"><label class="form-label" for="nCat">Category</label>
+                            <select class="form-select" id="nCat" name="category">
+                                <option>Cleaning supplies</option>
+                                <option>Cleaning tools</option>
+                                <option>Paper goods</option>
+                                <option>Equipment</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-section">Stock</div>
+                        <div class="row g-3">
+                            <div class="col-sm-6"><label class="form-label" for="nQty">Quantity</label>
+                                <input class="form-control" type="number" min="0" step="1" id="nQty" name="qty"
+                                    required>
+                                <div class="invalid-feedback">Enter the quantity (0 or more).</div>
+                            </div>
+                            <div class="col-sm-6"><label class="form-label" for="nUnit">Unit</label>
+                                <input class="form-control" id="nUnit" name="unit" list="unitList"
+                                    placeholder="e.g. bottles, boxes, pcs" required>
+                                <datalist id="unitList">
+                                    <option>pcs</option>
+                                    <option>bottles</option>
+                                    <option>boxes</option>
+                                    <option>packs</option>
+                                    <option>rolls</option>
+                                    <option>liters</option>
+                                    <option>gallons</option>
+                                    <option>sets</option>
+                                </datalist>
+                                <div class="invalid-feedback">Enter the unit.</div>
+                            </div>
+                        </div>
+                        <div class="form-section">Storage</div>
+                        <div class="row g-3">
+                            <div class="col-sm-6"><label class="form-label" for="nLoc">Location</label>
+                                <input class="form-control" id="nLoc" name="location"
+                                    placeholder="e.g. Janitor's stockroom" required>
+                                <div class="invalid-feedback">Enter the location.</div>
+                            </div>
+                            <div class="col-sm-6"><label class="form-label" for="nDept">Assigned department</label>
+                                <input class="form-control" id="nDept" name="dept"
+                                    placeholder="e.g. Facility Management Office" required>
+                                <div class="invalid-feedback">Enter the department.</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="assetForm"
+                        class="btn btn-maroon" id="assetSave">Save item</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-admin" id="historyModal" tabindex="-1" aria-labelledby="historyModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="histTitle">Asset</h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="histBody"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="timelineModal" tabindex="-1" aria-labelledby="tlTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="tlTitle"></h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="tlSummary" class="small text-secondary mb-3"></div>
+                    <ol class="tl" id="tlBody"></ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="photoModal" tabindex="-1" aria-label="Photo viewer" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-0"><span class="small" id="phCount"></span><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body text-center p-2"><img id="phImg" class="img-fluid rounded" alt="Damage photo"
+                        style="max-height:70vh"></div>
+                <div class="modal-footer border-0 justify-content-between"><button type="button"
+                        class="btn btn-outline-light btn-sm" id="phPrev">Previous</button><button type="button"
+                        class="btn btn-outline-light btn-sm" id="phNext">Next</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-admin" id="profileModal" tabindex="-1" aria-labelledby="profT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="profT">Edit profile</h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="seg mb-3" role="group" aria-label="What do you want to change?">
+                        <button type="button" class="seg-btn active" data-pf="name" aria-pressed="true">Change
+                            name</button>
+                        <button type="button" class="seg-btn" data-pf="pw" aria-pressed="false">Change password</button>
+                    </div>
+                    <form id="profileForm" novalidate autocomplete="off">
+                        <div id="pfPaneName">
+                            <div class="mb-3"><label class="form-label" for="pfName">Full name</label>
+                                <input class="form-control" id="pfName" autocomplete="off" required>
+                                <div class="invalid-feedback">Enter your name.</div>
+                            </div>
+                            <div><label class="form-label" for="pfId">Username</label>
+                                <input class="form-control locked" id="pfId" readonly tabindex="-1">
+                                <div class="form-text">This can't be changed.</div>
+                            </div>
+                        </div>
+                        <div id="pfPanePw" class="d-none">
+                            <div class="mb-3"><label class="form-label" for="pfCur">Current password</label>
+                                <input class="form-control" type="password" id="pfCur" autocomplete="new-password"
+                                    readonly>
+                                <div class="invalid-feedback">Enter your current password.</div>
+                            </div>
+                            <div class="mb-3"><label class="form-label" for="pfNew">New password</label>
+                                <input class="form-control" type="password" id="pfNew" autocomplete="new-password"
+                                    readonly>
+                                <div class="invalid-feedback">Enter a new password.</div>
+                            </div>
+                            <div><label class="form-label" for="pfNew2">Confirm new password</label>
+                                <input class="form-control" type="password" id="pfNew2" autocomplete="new-password"
+                                    readonly>
+                                <div class="invalid-feedback">Repeat the new password.</div>
+                            </div>
+                        </div>
+                        <div class="text-danger small mt-3 d-none" id="profErr"></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="profileForm"
+                        class="btn btn-maroon">Save changes</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-admin" id="delAssetModal" tabindex="-1" aria-labelledby="delT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="delT">Remove this item?</h2><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3" id="delItem"></p>
+                    <div id="delChoices">
+                        <button type="button" class="choice" id="chArchive"><span class="choice-ic"><svg
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="4" width="18" height="4" rx="1" />
+                                    <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4" />
+                                </svg></span><span><b>Move to archive</b><small>Hide it from the list. You can restore
+                                    it anytime.</small></span></button>
+                        <button type="button" class="choice danger" id="chPurge"><span class="choice-ic"><svg
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path
+                                        d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6M10 11v6M14 11v6" />
+                                </svg></span><span><b>Delete permanently</b><small>Remove it for good. This can't be
+                                    undone.</small></span></button>
+                    </div>
+                    <div id="delConfirm" class="d-none">
+                        <div class="alert alert-danger small mb-2"><b>This can't be undone.</b> The item will be removed
+                            from the inventory for good. The activity log keeps a record that it was deleted.</div>
+                        <button type="button" class="btn btn-link btn-sm p-0" id="delBack">Back to the choices</button>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-danger d-none"
+                        id="delGo">Yes, delete permanently</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-admin" id="cleanModal" tabindex="-1" aria-labelledby="cleanModalT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                        </svg></span>
+                    <div>
+                        <h2 class="h5 mb-0" id="cleanModalT">Add facility</h2>
+                        <p class="small mb-0 opacity-75">A facility on the daily cleaning list.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cleanForm" novalidate>
+                        <input type="hidden" id="cleanId">
+                        <div class="form-section" style="margin-top:0">Facility</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6"><label class="form-label" for="cBuilding">Building</label>
+                                <input class="form-control" id="cBuilding" name="building"
+                                    placeholder="e.g. Main Building" required>
+                                <div class="invalid-feedback">Enter the building.</div>
+                            </div>
+                            <div class="col-sm-6"><label class="form-label" for="cArea">Area</label>
+                                <input class="form-control" id="cArea" name="area"
+                                    placeholder="e.g. Room 204, 2nd floor CR" required>
+                                <div class="invalid-feedback">Enter the area.</div>
+                            </div>
+                        </div>
+                        <div><label class="form-label" for="cAreaType">Area type</label>
+                            <select class="form-select" id="cAreaType" name="areaType">
+                                <option>Classroom</option>
+                                <option>Laboratory</option>
+                                <option>Restroom</option>
+                                <option>Hallway</option>
+                                <option>Outdoor area</option>
+                                <option>Office</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-section">Staff and schedule</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6"><label class="form-label" for="cWhen">Usual cleaning time <span
+                                        class="text-secondary">(optional)</span></label>
+                                <input class="form-control" type="time" id="cWhen" name="time">
+                            </div>
+                        </div>
+                        <div><label class="form-label" for="cNotes">Notes <span
+                                    class="text-secondary">(optional)</span></label>
+                            <textarea class="form-control" id="cNotes" name="notes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="cleanForm"
+                        class="btn btn-maroon" id="cleanSave">Save facility</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-admin" id="personnelModal" tabindex="-1" aria-labelledby="personnelModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="personnelModalT">Add personnel</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="personnelForm" novalidate>
+                        <input type="hidden" id="pId">
+                        <div class="mb-3">
+                            <label class="form-label" for="pName">Full name</label>
+                            <input class="form-control" id="pName" name="name" placeholder="e.g. Juan Dela Cruz"
+                                required>
+                            <div class="invalid-feedback">Enter the person's name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="pRole">Role</label>
+                            <input class="form-control" id="pRole" name="role" list="pRoleList"
+                                placeholder="e.g. Utility Foreman, Plumber 1" required>
+                            <div class="invalid-feedback">Enter the role.</div>
+                        </div>
+                        <div>
+                            <label class="form-label" for="pStatus">Status</label>
+                            <select class="form-select" id="pStatus" name="status">
+                                <option>Present</option>
+                                <option>On Leave</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="personnelForm" class="btn btn-maroon" id="personnelSave">Save
+                        personnel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-admin" id="confirmDelModal" tabindex="-1" aria-labelledby="cfmDelT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="cfmDelT">Confirm action</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2 fw-semibold" id="cfmDelItem"></p>
+                    <p class="small text-secondary mb-0" id="cfmDelDesc"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="cfmDelBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-wrap" id="toasts"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script>
+        (function () {
+            const CURRENT_ROLE = (document.body.dataset.role || document.body.dataset.page || "famo").toLowerCase();
+            function applyRoleVisibility(role) {
+                const activeRole = (role || CURRENT_ROLE).toLowerCase();
+                document.querySelectorAll("[data-role-only]").forEach((el) => {
+                    const allowed = el.dataset.roleOnly.toLowerCase().split(",").map((s) => s.trim());
+                    const canSee = allowed.includes(activeRole);
+                    el.classList.toggle("d-none", !canSee);
+                    if (!canSee && el.matches('[data-bs-target="#tabSupplies"].active')) {
+                        const fallback = document.querySelector('[data-main-nav][data-bs-target="#tabClean"]');
+                        if (fallback) fallback.click();
+                    }
+                });
+            }
+            window.CampusCareRole = { current: CURRENT_ROLE, apply: applyRoleVisibility };
+            document.addEventListener("DOMContentLoaded", () => {
+                applyRoleVisibility(CURRENT_ROLE);
+                const catFilter = document.getElementById("supplyCatFilter");
+                if (catFilter) {
+                    catFilter.addEventListener("change", () => {
+                        const val = catFilter.value.trim().toLowerCase();
+                        document.querySelectorAll("#assetRows tr").forEach((tr) => {
+                            const match = !val || tr.textContent.toLowerCase().includes(val);
+                            tr.classList.toggle("d-none", !match);
+                        });
+                    });
+                }
+            });
+        })();
+    </script>
+    <script src="../js/script.js"></script>
+</body>
+
+</html>

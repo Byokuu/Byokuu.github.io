@@ -811,3 +811,58 @@ textarea.form-control {
     max-height: 400px;
     padding-right: .2rem;
 }
+
+/* Client borrow & return cards */
+body[data-page="student"] #borrowRows tr,
+body[data-page="student"] #myLoanRows tr {
+    gap: .35rem .5rem;
+    padding: .85rem .9rem;
+}
+
+body[data-page="student"] #borrowRows tr td:nth-child(1),
+body[data-page="student"] #myLoanRows tr td:nth-child(1) {
+    order: 1;
+    font-weight: 700;
+    font-size: .82rem;
+}
+
+body[data-page="student"] #borrowRows tr td:nth-child(2),
+body[data-page="student"] #myLoanRows tr td:nth-child(2) {
+    order: 2;
+    flex: 1 1 100%;
+}
+
+body[data-page="student"] #borrowRows tr td:nth-child(3) {
+    order: 3;
+    font-weight: 600;
+    color: var(--maroon);
+}
+
+body[data-page="student"] #borrowRows tr td:nth-child(4) {
+    order: 4;
+    margin-left: auto;
+    font-size: .82rem;
+    color: var(--mute);
+}
+
+body[data-page="student"] #borrowRows tr td:nth-child(5) {
+    order: 5;
+    flex: 1 1 100%;
+    margin-top: .25rem;
+}
+
+body[data-page="student"] #myLoanRows tr td:nth-child(3) {
+    order: 3;
+    margin-left: auto;
+}
+
+body[data-page="student"] #myLoanRows tr td:nth-child(4),
+body[data-page="student"] #myLoanRows tr td:nth-child(5) {
+    order: 4;
+    font-size: .78rem;
+    color: var(--mute);
+}
+
+body[data-page="student"] #myLoanRows tr td.text-end {
+    order: 5;
+}

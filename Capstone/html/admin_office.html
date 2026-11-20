@@ -4,14 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>CampusCare - Admin</title>
+    <title>CampusCare Admin - Admin Office</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link href="style.css" rel="stylesheet">
-    <link href="mobile.css" rel="stylesheet" media="(max-width: 767.98px)">
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="../css/mobile.css" rel="stylesheet" media="(max-width: 767.98px)">
 </head>
 
-<body data-page="admin">
+<body data-page="admin_office">
     <header class="topbar shadow">
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-3">
             <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span
@@ -70,26 +70,25 @@
                 <h1 id="mTitle"></h1>
                 <p id="mSub"></p>
             </div>
+
             <ul class="nav nav-tabs mb-3 d-none d-md-flex" id="adminTabs" role="tablist">
                 <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabTickets" type="button" role="tab">Maintenance Tracking</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabClean" type="button" role="tab">Facility Cleaning</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                         data-bs-target="#tabAssets" type="button" role="tab">Assets</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                         data-bs-target="#tabReports" type="button" role="tab">Reports</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                         data-bs-target="#tabHistory" type="button" role="tab">History</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabPersonnel" type="button" role="tab">Personnel</button></li>
+                        data-bs-target="#tabTickets" type="button" role="tab">Damage Reports <span
+                            class="badge text-bg-light border ms-auto">Extra</span></button></li>
                 <li class="nav-item ms-auto d-flex align-items-center gap-2 pb-1">
-                    <button class="btn btn-gold" type="button" data-bs-toggle="modal" data-bs-target="#reportModal">+
-                        Log a damage</button>
+                    <button class="btn btn-gold" type="button" data-bs-toggle="modal" data-bs-target="#assetModal">+ Add
+                        asset</button>
                 </li>
             </ul>
+
             <div class="tab-content">
-                <div class="tab-pane fade show active" id="tabTickets">
+                <div class="tab-pane fade" id="tabTickets">
                     <div class="row g-3 mb-4">
                         <div class="col-6 col-md-3">
                             <div class="panel stat">
@@ -156,66 +155,17 @@
                         </div>
                     </section>
                 </div>
-                <div class="tab-pane fade" id="tabClean">
-                    <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-2">
-                        <div class="small text-secondary">Today: <b id="cToday"></b></div>
-                        <div class="small text-secondary">Statuses reset every day. Totals keep counting.</div>
+
+                <div class="tab-pane fade show active" id="tabAssets">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                        <div>
+                            <h2 class="h4 mb-1">Assets Inventory</h2>
+                            <p class="text-secondary small mb-0">Track office assets, equipment stock, and storage
+                                locations (Admin Office).</p>
+                        </div>
+                        <span class="badge text-bg-dark rounded-pill px-3 py-2">Admin Office</span>
                     </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <div class="panel stat">
-                                <div class="n" id="cCDue">0</div>
-                                <div class="text-secondary">For cleaning today</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="panel stat fixed">
-                                <div class="n" id="cCDone">0</div>
-                                <div class="text-secondary">Cleaned today</div>
-                            </div>
-                        </div>
-                    </div>
-                    <section class="panel">
-                        <div class="row g-2 mb-3">
-                            <div class="col-md-5"><input id="cSearch" class="form-control" type="search"
-                                    placeholder="Search building, area, or staff" aria-label="Search facilities"></div>
-                            <div class="col-6 col-md-2"><select id="cStatus" class="form-select"
-                                    aria-label="Filter by today's status">
-                                    <option value="">All statuses</option>
-                                    <option>For Cleaning</option>
-                                    <option>Cleaned</option>
-                                </select></div>
-                            <div class="col-6 col-md-3"><select id="cType" class="form-select"
-                                    aria-label="Filter by area type">
-                                    <option value="">All area types</option>
-                                    <option>Classroom</option>
-                                    <option>Laboratory</option>
-                                    <option>Restroom</option>
-                                    <option>Hallway</option>
-                                    <option>Outdoor area</option>
-                                    <option>Office</option>
-                                    <option>Other</option>
-                                </select></div>
-                            <div class="col-md-2 d-grid"><button class="btn btn-maroon" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#cleanModal">+ Add facility</button></div>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Facility ID</th>
-                                        <th>Facility</th>
-                                        <th>Today</th>
-                                        <th>Total cleaned</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cleanRows"></tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
-                <div class="tab-pane fade" id="tabAssets">
+
                     <section class="panel">
                         <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
                             <div class="seg" id="assetView" role="group" aria-label="Show items"
@@ -225,11 +175,19 @@
                                 <button type="button" class="seg-btn" data-av="archived" aria-pressed="false">Archived
                                     <span class="text-secondary" id="cntArch">0</span></button>
                             </div>
-                            <div class="d-flex flex-wrap gap-2">
-                                <input id="sSearch" class="form-control w-auto" style="min-width:240px" type="search"
-                                    placeholder="Search name, ID, or location" aria-label="Search items">
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <input id="sSearch" class="form-control w-auto" style="min-width:220px" type="search"
+                                    placeholder="Search asset name, ID, or location" aria-label="Search assets">
+                                <select id="assetCatFilter" class="form-select w-auto" style="min-width:185px"
+                                    aria-label="Filter by asset category">
+                                    <option value="">All asset categories</option>
+                                    <option>Furniture</option>
+                                    <option>Equipment</option>
+                                    <option>Office supplies</option>
+                                    <option>Other</option>
+                                </select>
                                 <button class="btn btn-maroon" type="button" data-bs-toggle="modal"
-                                    data-bs-target="#assetModal">+ Add item</button>
+                                    data-bs-target="#assetModal">+ Add asset</button>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -240,6 +198,7 @@
                         </div>
                     </section>
                 </div>
+
                 <div class="tab-pane fade" id="tabReports">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="h5 mb-0">Reports &amp; analytics</h2>
@@ -248,6 +207,7 @@
                     </div>
                     <div id="reportBody"></div>
                 </div>
+
                 <div class="tab-pane fade" id="tabHistory">
                     <section class="panel mb-3">
                         <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
@@ -259,7 +219,6 @@
                                     <option value="">Everything</option>
                                     <option value="ticket">Tickets</option>
                                     <option value="asset">Assets</option>
-                                    <option value="cleaning">Cleaning</option>
                                 </select>
                             </div>
                         </div>
@@ -295,51 +254,12 @@
                         </div>
                     </section>
                 </div>
-                <div class="tab-pane fade" id="tabPersonnel">
-                    <section class="panel">
-                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-                            <h2 class="h5 mb-0">Personnel</h2>
-                            <div class="d-flex flex-wrap gap-2">
-                                <input id="pSearch" class="form-control w-auto" style="min-width:220px" type="search"
-                                    placeholder="Search name or role" aria-label="Search personnel">
-                                <button class="btn btn-maroon" type="button" data-bs-toggle="modal"
-                                    data-bs-target="#personnelModal">+ Add personnel</button>
-                            </div>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Role / Specialty</th>
-                                        <th>Status</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="personnelRows"></tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
             </div>
         </div>
+
         <nav class="bnav nav d-md-none" id="adminBottomNav" aria-label="Main navigation">
             <button class="bnav-item active" type="button" role="tab" data-main-nav data-bs-toggle="tab"
-                data-bs-target="#tabTickets" aria-selected="true"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-                    <rect x="9" y="3" width="6" height="4" rx="1" />
-                    <path d="M9 12h6M9 16h4" />
-                </svg><span>Tickets</span></button>
-            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
-                data-bs-target="#tabClean" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-                </svg><span>Cleaning</span></button>
-            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
-                data-bs-target="#tabAssets" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                data-bs-target="#tabAssets" aria-selected="true"><svg viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     aria-hidden="true">
                     <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
@@ -359,14 +279,15 @@
                     <path d="M12 7v5l3 2" />
                 </svg><span>History</span></button>
             <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
-                data-bs-target="#tabPersonnel" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                data-bs-target="#tabTickets" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     aria-hidden="true">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg><span>Personnel</span></button>
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                    <rect x="9" y="3" width="6" height="4" rx="1" />
+                    <path d="M9 12h6M9 16h4" />
+                </svg><span>Damage</span></button>
         </nav>
+
         <button class="fab" type="button" aria-label="Log a damage" data-bs-toggle="modal"
             data-bs-target="#reportModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -524,13 +445,14 @@
                         <circle class="ring" cx="36" cy="36" r="32"></circle>
                         <path class="tick" d="M22 37.5l10 10 18-21"></path>
                     </svg>
-                    <h2 class="h4 mb-1" id="doneTitle">Ticket created</h2>
-                    <p class="mb-0 done-sub"><span id="lastName" class="d-none"></span>It is now in the ticket list.</p>
+                    <h2 class="h4 mb-1" id="doneTitle">Damage report logged</h2>
+                    <p class="mb-0 done-sub"><span id="lastName" class="d-none"></span>It is now in the extra damage
+                        reports list.</p>
                 </div>
                 <div class="modal-body px-4 pb-4 pt-4">
                     <div class="stub">
                         <div class="stub-main">
-                            <div class="stub-label">Ticket number</div>
+                            <div class="stub-label">Report number</div>
                             <div class="d-flex align-items-center justify-content-between gap-2">
                                 <div class="stub-id" id="lastId"></div>
                                 <button type="button" class="btn btn-sm btn-outline-secondary" id="copyId">Copy</button>
@@ -554,39 +476,12 @@
                     </div>
                     <p class="text-secondary small text-center mt-3 mb-3">Change its status anytime from the Actions
                         column.</p>
-                    <button class="btn btn-maroon w-100 py-2" data-bs-dismiss="modal">Back to tickets</button>
+                    <button class="btn btn-maroon w-100 py-2" data-bs-dismiss="modal">Back to damage reports</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade modal-admin" id="assignModal" tabindex="-1" aria-labelledby="assignModalT"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="h5 mb-0" id="assignModalT">Assign maintenance personnel</h2><button type="button"
-                        class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-secondary" id="aTitle"></p>
-                    <form id="assignForm"><input type="hidden" id="aId"><label class="form-label" for="aName">Assigned
-                            to</label>
-                        <input class="form-control" id="aName" list="aList" placeholder="Name of the technician or team"
-                            required><datalist id="aList"></datalist>
-                    </form>
-                    <div class="mt-3">
-                        <div class="small text-secondary mb-1">Saved personnel (click a name to use it, x to remove)
-                        </div>
-                        <div id="aChips" class="d-flex flex-wrap gap-2"></div>
-                    </div>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
-                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="assignForm"
-                        class="btn btn-maroon">Assign</button></div>
-            </div>
-        </div>
-    </div>
     <div class="modal fade modal-admin" id="assetModal" tabindex="-1" aria-labelledby="assetModalT" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
@@ -598,8 +493,7 @@
                         </svg></span>
                     <div>
                         <h2 class="h5 mb-0" id="assetModalT">Add item</h2>
-                        <p class="small mb-0 opacity-75">Cleaning supplies and other items the office keeps in stock.
-                        </p>
+                        <p class="small mb-0 opacity-75">Items and equipment the office keeps in stock.</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -610,20 +504,19 @@
                         <div class="row g-3 mb-3">
                             <div class="col-sm-8"><label class="form-label" for="nName">Item name</label>
                                 <input class="form-control" id="nName" name="name"
-                                    placeholder="e.g. Liquid hand soap, Floor mop" required>
+                                    placeholder="e.g. Office chair, Desk lamp" required>
                                 <div class="invalid-feedback">Enter the item name.</div>
                             </div>
                             <div class="col-sm-4"><label class="form-label" for="nTag">ID number</label>
-                                <input class="form-control" id="nTag" name="tag" placeholder="e.g. SOAP-001" required>
+                                <input class="form-control" id="nTag" name="tag" placeholder="e.g. AST-001" required>
                                 <div class="invalid-feedback">Enter a unique ID number.</div>
                             </div>
                         </div>
                         <div class="mb-1"><label class="form-label" for="nCat">Category</label>
                             <select class="form-select" id="nCat" name="category">
-                                <option>Cleaning supplies</option>
-                                <option>Cleaning tools</option>
-                                <option>Paper goods</option>
+                                <option>Furniture</option>
                                 <option>Equipment</option>
+                                <option>Office supplies</option>
                                 <option>Other</option>
                             </select>
                         </div>
@@ -636,16 +529,13 @@
                             </div>
                             <div class="col-sm-6"><label class="form-label" for="nUnit">Unit</label>
                                 <input class="form-control" id="nUnit" name="unit" list="unitList"
-                                    placeholder="e.g. bottles, boxes, pcs" required>
+                                    placeholder="e.g. pcs, sets, boxes" required>
                                 <datalist id="unitList">
                                     <option>pcs</option>
-                                    <option>bottles</option>
+                                    <option>sets</option>
                                     <option>boxes</option>
                                     <option>packs</option>
-                                    <option>rolls</option>
-                                    <option>liters</option>
-                                    <option>gallons</option>
-                                    <option>sets</option>
+                                    <option>units</option>
                                 </datalist>
                                 <div class="invalid-feedback">Enter the unit.</div>
                             </div>
@@ -654,12 +544,12 @@
                         <div class="row g-3">
                             <div class="col-sm-6"><label class="form-label" for="nLoc">Location</label>
                                 <input class="form-control" id="nLoc" name="location"
-                                    placeholder="e.g. Janitor's stockroom" required>
+                                    placeholder="e.g. Admin Office storage" required>
                                 <div class="invalid-feedback">Enter the location.</div>
                             </div>
                             <div class="col-sm-6"><label class="form-label" for="nDept">Assigned department</label>
                                 <input class="form-control" id="nDept" name="dept"
-                                    placeholder="e.g. Facility Management Office" required>
+                                    placeholder="e.g. Administrative Office" required>
                                 <div class="invalid-feedback">Enter the department.</div>
                             </div>
                         </div>
@@ -671,6 +561,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade modal-admin" id="historyModal" tabindex="-1" aria-labelledby="historyModalT"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -804,107 +695,6 @@
         </div>
     </div>
 
-    <div class="modal fade modal-admin" id="cleanModal" tabindex="-1" aria-labelledby="cleanModalT" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            aria-hidden="true">
-                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-                        </svg></span>
-                    <div>
-                        <h2 class="h5 mb-0" id="cleanModalT">Add facility</h2>
-                        <p class="small mb-0 opacity-75">A facility on the daily cleaning list.</p>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="cleanForm" novalidate>
-                        <input type="hidden" id="cleanId">
-                        <div class="form-section" style="margin-top:0">Facility</div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-sm-6"><label class="form-label" for="cBuilding">Building</label>
-                                <input class="form-control" id="cBuilding" name="building"
-                                    placeholder="e.g. Main Building" required>
-                                <div class="invalid-feedback">Enter the building.</div>
-                            </div>
-                            <div class="col-sm-6"><label class="form-label" for="cArea">Area</label>
-                                <input class="form-control" id="cArea" name="area"
-                                    placeholder="e.g. Room 204, 2nd floor CR" required>
-                                <div class="invalid-feedback">Enter the area.</div>
-                            </div>
-                        </div>
-                        <div><label class="form-label" for="cAreaType">Area type</label>
-                            <select class="form-select" id="cAreaType" name="areaType">
-                                <option>Classroom</option>
-                                <option>Laboratory</option>
-                                <option>Restroom</option>
-                                <option>Hallway</option>
-                                <option>Outdoor area</option>
-                                <option>Office</option>
-                                <option>Other</option>
-                            </select>
-                        </div>
-                        <div class="form-section">Staff and schedule</div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-sm-6"><label class="form-label" for="cWhen">Usual cleaning time <span
-                                        class="text-secondary">(optional)</span></label>
-                                <input class="form-control" type="time" id="cWhen" name="time">
-                            </div>
-                        </div>
-                        <div><label class="form-label" for="cNotes">Notes <span
-                                    class="text-secondary">(optional)</span></label>
-                            <textarea class="form-control" id="cNotes" name="notes" rows="2"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
-                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="cleanForm"
-                        class="btn btn-maroon" id="cleanSave">Save facility</button></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade modal-admin" id="personnelModal" tabindex="-1" aria-labelledby="personnelModalT"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="h5 mb-0" id="personnelModalT">Add personnel</h2>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="personnelForm" novalidate>
-                        <input type="hidden" id="pId">
-                        <div class="mb-3">
-                            <label class="form-label" for="pName">Full name</label>
-                            <input class="form-control" id="pName" name="name" placeholder="e.g. Juan Dela Cruz"
-                                required>
-                            <div class="invalid-feedback">Enter the person's name.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="pRole">Role</label>
-                            <input class="form-control" id="pRole" name="role" list="pRoleList"
-                                placeholder="e.g. Utility Foreman, Plumber 1" required>
-                            <div class="invalid-feedback">Enter the role.</div>
-                        </div>
-                        <div>
-                            <label class="form-label" for="pStatus">Status</label>
-                            <select class="form-select" id="pStatus" name="status">
-                                <option>Present</option>
-                                <option>On Leave</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="personnelForm" class="btn btn-maroon" id="personnelSave">Save
-                        personnel</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="modal fade modal-admin" id="confirmDelModal" tabindex="-1" aria-labelledby="cfmDelT" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -929,7 +719,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
-    <script src="script.js"></script>
+    <script src="../js/script.js"></script>
 </body>
 
 </html>

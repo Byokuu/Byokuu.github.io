@@ -1,6 +1,6 @@
 const $ = id => document.getElementById(id);
 const fmtT = ms => new Date(ms).toLocaleString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
-const labelOf = o => o.title || o.name || o.area || "";
+const labelOf = o => o.title || o.name || o.area || o.itemName || "";
 const coll = (key, prefix, pad, kind) => ({
     all() { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } },
     save(l) { localStorage.setItem(key, JSON.stringify(l)); },
@@ -29,7 +29,7 @@ const coll = (key, prefix, pad, kind) => ({
         this.save(this.all().filter(x => x.id !== id));
     }
 });
-const Tickets = coll("fixit_tickets", "FX", 4, "ticket"), Assets = coll("fixit_assets", "AS", 3, "asset"), Cleanings = coll("fixit_cleanings", "CL", 4, "cleaning"), Log = coll("fixit_log", "LG", 5);
+const Tickets = coll("fixit_tickets", "FX", 4, "ticket"), Assets = coll("fixit_assets", "AS", 3, "asset"), Cleanings = coll("fixit_cleanings", "CL", 4, "cleaning"), Loans = coll("fixit_loans", "LN", 4, "loan"), Log = coll("fixit_log", "LG", 5);
 Tickets.setStatus = (id, s) => {
     const msg = { Fixed: "Marked as fixed", "In progress": "Work started", Pending: "Reopened (back to pending)" }[s];
     Tickets.patch(id, { status: s, fixedAt: s === "Fixed" ? Date.now() : null }, msg);
@@ -45,6 +45,7 @@ function showTimeline(c, id) {
     const bits = [`Added ${fmtT(o.createdAt)}`];
     if (o.fixedAt) bits.push(`Fixed ${fmtT(o.fixedAt)} (after ${spanTxt(o.fixedAt - o.createdAt)})`);
     if (o.cleanedAt) bits.push(`Cleaned ${fmtT(o.cleanedAt)}`);
+    if (o.returnedAt) bits.push(`Returned ${fmtT(o.returnedAt)}`);
     $("tlSummary").innerHTML = bits.map(esc).join("<br>") + (o.photos && o.photos.length ? '<div class="mt-2">' + photoStrip(o) + "</div>" : "");
     $("tlBody").innerHTML = tlItems(o);
     bootstrap.Modal.getOrCreateInstance("#timelineModal").show();
@@ -74,6 +75,7 @@ const badge = s => `<span class="badge-status st-${s.replace(" ", "-")}">${s}</s
 
 function toast(msg) {
     const wrap = document.getElementById("toasts");
+    if (!wrap) return;
     const el = document.createElement("div");
     el.className = "toast align-items-center text-bg-dark border-0 show mb-2";
     el.innerHTML = `<div class="d-flex"><div class="toast-body">${esc(msg)}</div></div>`;
@@ -133,6 +135,7 @@ async function hydratePhotos(root) {
 const Photos = {
     pending: [],
     render() {
+        if (!$("photoPreview")) return;
         $("photoPreview").innerHTML = this.pending.map((p, i) => `<div class="photo-prev"><img src="${p.url}" alt="Photo ${i + 1}"><button type="button" data-rm="${i}" aria-label="Remove photo ${i + 1}">&times;</button></div>`).join("");
     },
     async add(files) {
@@ -187,10 +190,10 @@ function initPhotoViewer() {
         lb.ids = [...t.parentElement.querySelectorAll(".photo-thumb")].map(x => x.dataset.photo); lb.i = lb.ids.indexOf(t.dataset.photo);
         const go = () => { show(); bootstrap.Modal.getOrCreateInstance("#photoModal").show(); };
         const open = document.querySelector(".modal.show");
-        if (open) { open.addEventListener("hidden.bs.modal", go, { once: true }); bootstrap.Modal.getInstance(open).hide(); } else go();
+        if (open) { open.addEventListener("hidden.bs.modal", go, { once: true }); bootstrap.Modal.getOrCreateInstance(open).hide(); } else go();
     });
-    $("phPrev").addEventListener("click", () => { lb.i = (lb.i - 1 + lb.ids.length) % lb.ids.length; show(); });
-    $("phNext").addEventListener("click", () => { lb.i = (lb.i + 1) % lb.ids.length; show(); });
+    if ($("phPrev")) $("phPrev").addEventListener("click", () => { lb.i = (lb.i - 1 + lb.ids.length) % lb.ids.length; show(); });
+    if ($("phNext")) $("phNext").addEventListener("click", () => { lb.i = (lb.i + 1) % lb.ids.length; show(); });
     hydratePhotos(document);
 }
 
@@ -275,6 +278,7 @@ function populateAssigneeSelect() {
 function initReportForm(afterSave) {
     const form = document.getElementById("ticketForm");
     const rm = document.getElementById("reportModal");
+    if (!form || !rm) return;
     form.addEventListener("submit", async e => {
         e.preventDefault();
         if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
@@ -293,12 +297,12 @@ function initReportForm(afterSave) {
             idNo: (d.idNo || "").trim(), via: d.via || "", status, assignee, fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim()
         }, note);
         if (d.role) localStorage.setItem("fixit_me", JSON.stringify({ name: (d.reporter || "").trim(), idNo: (d.idNo || "").trim() }));
-        document.getElementById("lastId").textContent = t.id;
-        document.getElementById("lastName").textContent = t.reporter.split(" ")[0];
-        document.getElementById("lastTitle").textContent = t.title;
-        document.getElementById("lastPlace").textContent = t.building + " - " + t.location;
-        document.getElementById("lastStatus").innerHTML = badge(t.status);
-        document.getElementById("copyId").textContent = "Copy";
+        if ($("lastId")) $("lastId").textContent = t.id;
+        if ($("lastName")) $("lastName").textContent = t.reporter.split(" ")[0];
+        if ($("lastTitle")) $("lastTitle").textContent = t.title;
+        if ($("lastPlace")) $("lastPlace").textContent = t.building + " - " + t.location;
+        if ($("lastStatus")) $("lastStatus").innerHTML = badge(t.status);
+        if ($("copyId")) $("copyId").textContent = "Copy";
         afterSave();
         rm.addEventListener("hidden.bs.modal", () => bootstrap.Modal.getOrCreateInstance("#doneModal").show(), { once: true });
         bootstrap.Modal.getOrCreateInstance(rm).hide();
@@ -320,18 +324,21 @@ function initReportForm(afterSave) {
     });
     Photos.init();
     rm.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); syncId(); Photos.clear(); });
-    document.getElementById("copyId").addEventListener("click", async e => {
-        const id = document.getElementById("lastId").textContent;
-        try { await navigator.clipboard.writeText(id); e.target.textContent = "Copied"; }
-        catch { e.target.textContent = "Press Ctrl+C"; }
-    });
-    rm.addEventListener("shown.bs.modal", () => $("title").focus());
+    if ($("copyId")) {
+        $("copyId").addEventListener("click", async e => {
+            const id = $("lastId") ? $("lastId").textContent : "";
+            try { await navigator.clipboard.writeText(id); e.target.textContent = "Copied"; }
+            catch { e.target.textContent = "Press Ctrl+C"; }
+        });
+    }
+    rm.addEventListener("shown.bs.modal", () => { if ($("title")) $("title").focus(); });
 }
 
 /* ---------- Student page ---------- */
 function initStudent() {
     const body = document.getElementById("rows");
     const search = document.getElementById("search");
+    if (!body || !search) return;
 
     function render() {
         const q = search.value.trim().toLowerCase();
@@ -344,7 +351,7 @@ function initStudent() {
         <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
         <td class="small text-secondary">${fmt(t.createdAt)}</td>
       </tr>`).join("")
-            : `<tr><td colspan="5" class="empty">No reports yet. Be the first to report a damage.</td></tr>`;
+            : `<tr><td colspan="5" class="empty">No extra damage reports submitted yet.</td></tr>`;
     }
 
     initReportForm(render);
@@ -352,17 +359,159 @@ function initStudent() {
     render();
 }
 
+/* ---------- Client: borrow & return assets ---------- */
+function initBorrowClient() {
+    const borrowBody = $("borrowRows"), myLoanBody = $("myLoanRows"), bSearch = $("bSearch");
+    if (!borrowBody || !myLoanBody) return;
+
+    const loansForUser = u => Loans.all().filter(l => u && (l.borrowerId === u.idNo || (!l.borrowerId && l.borrowerName === u.name)));
+
+    const renderBorrowable = () => {
+        const q = (bSearch ? bSearch.value : "").trim().toLowerCase();
+        const list = Assets.all().filter(a => !a.archived && (Number(a.qty) || 0) > 0 &&
+            (!q || (a.id + " " + a.name + " " + a.tag + " " + a.location + " " + a.category).toLowerCase().includes(q)));
+        borrowBody.innerHTML = list.length ? list.map(a => `
+          <tr>
+            <td><span class="tid">${esc(a.id)}</span><div class="small text-secondary">${esc(a.tag || "")}</div></td>
+            <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category || "")}</div></td>
+            <td class="fw-semibold">${Number(a.qty) || 0} <span class="small text-secondary fw-normal">${esc(a.unit || "pcs")}</span></td>
+            <td class="small">${esc(a.location || "-")}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2" style="max-width:210px">
+                <input type="number" class="form-control form-control-sm" min="1" max="${Number(a.qty) || 1}" value="1" data-qty-for="${a.id}" aria-label="Quantity to borrow for ${esc(a.name)}" style="width:72px">
+                <button type="button" class="btn btn-sm btn-maroon flex-shrink-0" data-borrow="${a.id}">Borrow</button>
+              </div>
+            </td>
+          </tr>`).join("")
+            : `<tr><td colspan="5" class="empty">No available assets match right now.</td></tr>`;
+    };
+
+    const renderMyLoans = () => {
+        const u = currentUser();
+        const list = loansForUser(u);
+        myLoanBody.innerHTML = list.length ? list.map(l => `
+          <tr>
+            <td>${tlBtn("l", l.id)}</td>
+            <td><div class="fw-semibold">${esc(l.itemName)}</div><div class="small text-secondary">${Number(l.qty) || 1} ${esc(l.unit || "pcs")} &bull; ${esc(l.assetId)}</div></td>
+            <td>${badge(l.status)}</td>
+            <td class="small">${fmt(l.createdAt)}</td>
+            <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td>
+            <td class="text-end text-nowrap">${l.status === "Borrowed" ? `<button type="button" class="btn btn-sm btn-success" data-return="${l.id}">Return</button>` : ""}</td>
+          </tr>`).join("")
+            : `<tr><td colspan="6" class="empty">You haven't borrowed any assets yet.</td></tr>`;
+    };
+
+    const renderAll = () => { renderBorrowable(); renderMyLoans(); };
+
+    borrowBody.addEventListener("click", e => {
+        const btn = e.target.closest("button[data-borrow]");
+        if (!btn) return;
+        const u = currentUser();
+        if (!u) { toast("Please log in first."); return; }
+        const assetId = btn.dataset.borrow;
+        const asset = assetOf(assetId);
+        if (!asset || asset.archived) { toast("This item is no longer available."); renderAll(); return; }
+        const avail = Number(asset.qty) || 0;
+        const inp = borrowBody.querySelector(`input[data-qty-for="${assetId}"]`);
+        const qty = Math.max(1, Math.min(avail, parseInt(inp && inp.value, 10) || 1));
+        if (qty > avail) { toast("Not enough stock available."); return; }
+
+        Assets.patch(assetId, { qty: avail - qty }, `Borrowed ${qty} ${asset.unit || "pcs"} by ${u.name} (${u.idNo})`);
+        Loans.add({
+            assetId: asset.id,
+            itemName: asset.name,
+            unit: asset.unit || "pcs",
+            qty,
+            borrowerName: u.name,
+            borrowerId: u.idNo,
+            borrowerRole: u.role,
+            status: "Borrowed",
+            returnedAt: null
+        }, `Borrowed ${qty} ${asset.unit || "pcs"} by ${u.name} (${u.idNo})`);
+        toast(`Borrowed ${qty} ${asset.unit || "pcs"} of ${asset.name}`);
+        renderAll();
+        window.dispatchEvent(new Event("loanschange"));
+    });
+
+    myLoanBody.addEventListener("click", e => {
+        const btn = e.target.closest("button[data-return]");
+        if (!btn) return;
+        const loanId = btn.dataset.return;
+        const loan = Loans.all().find(x => x.id === loanId);
+        if (!loan || loan.status !== "Borrowed") return;
+        const u = currentUser();
+        const whoTxt = u ? `${u.name} (${u.idNo})` : (loan.borrowerName || "Borrower");
+        const qty = Number(loan.qty) || 1;
+        const asset = assetOf(loan.assetId);
+        if (asset) {
+            Assets.patch(asset.id, { qty: (Number(asset.qty) || 0) + qty }, `Returned ${qty} ${loan.unit || "pcs"} by ${whoTxt}`);
+        }
+        Loans.patch(loanId, { status: "Returned", returnedAt: Date.now() }, `Returned ${qty} ${loan.unit || "pcs"} by ${whoTxt}`);
+        toast(`Returned ${loan.itemName}`);
+        renderAll();
+        window.dispatchEvent(new Event("loanschange"));
+    });
+
+    if (bSearch) bSearch.addEventListener("input", renderBorrowable);
+    document.addEventListener("shown.bs.tab", e => {
+        if (e.target.getAttribute("data-bs-target") === "#tabBorrow") renderAll();
+    });
+    window.addEventListener("storage", renderAll);
+    window.addEventListener("authchange", renderAll);
+    renderAll();
+}
+
+const ADMIN_TABS = {
+    famo: ["#tabClean", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"],
+    admin_office: ["#tabAssets", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"]
+};
+
+function applyAdminTabVisibility() {
+    const page = document.body.dataset.page;
+    const allowed = ADMIN_TABS[page];
+    if (!allowed) return;
+
+    const allTargets = ["#tabClean", "#tabAssets", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"];
+    allTargets.forEach(target => {
+        const show = allowed.includes(target);
+        document.querySelectorAll(`#adminTabs [data-bs-target="${target}"]`).forEach(el => {
+            el.closest(".nav-item")?.classList.toggle("d-none", !show);
+        });
+        document.querySelectorAll(`#adminBottomNav [data-bs-target="${target}"]`).forEach(el => {
+            el.classList.toggle("d-none", !show);
+        });
+    });
+
+    const activeDesktop = document.querySelector("#adminTabs .nav-link.active");
+    const activeTarget = activeDesktop?.getAttribute("data-bs-target");
+    if (!activeTarget || !allowed.includes(activeTarget)) {
+        const firstBtn = document.querySelector(`#adminTabs [data-bs-target="${allowed[0]}"]`);
+        if (firstBtn) bootstrap.Tab.getOrCreateInstance(firstBtn).show();
+
+        document.querySelectorAll("#adminBottomNav [data-main-nav]").forEach(btn => {
+            const isFirst = btn.getAttribute("data-bs-target") === allowed[0];
+            btn.classList.toggle("active", isFirst);
+            btn.setAttribute("aria-selected", isFirst);
+        });
+        updateMobileHead(allowed[0]);
+    }
+}
+
 /* ---------- Admin page ---------- */
 function initAdmin() {
     const body = document.getElementById("rows");
     const fStatus = document.getElementById("fStatus"), fUrg = document.getElementById("fUrg"), search = document.getElementById("search");
+    if (!body || !fStatus || !fUrg || !search) {
+        window.renderTickets = () => { };
+        return;
+    }
 
     function render() {
         const all = Store.all().filter(t => !t.archived);
-        document.getElementById("cTotal").textContent = all.length;
-        document.getElementById("cPending").textContent = all.filter(t => t.status === "Pending").length;
-        document.getElementById("cProg").textContent = all.filter(t => t.status === "In progress").length;
-        document.getElementById("cFixed").textContent = all.filter(t => t.status === "Fixed").length;
+        if ($("cTotal")) $("cTotal").textContent = all.length;
+        if ($("cPending")) $("cPending").textContent = all.filter(t => t.status === "Pending").length;
+        if ($("cProg")) $("cProg").textContent = all.filter(t => t.status === "In progress").length;
+        if ($("cFixed")) $("cFixed").textContent = all.filter(t => t.status === "Fixed").length;
 
         const q = search.value.trim().toLowerCase();
         const list = all.filter(t =>
@@ -388,7 +537,7 @@ function initAdmin() {
           <button class="btn btn-sm btn-outline-danger" data-act="delete" data-id="${t.id}" aria-label="Archive ${t.id}">Archive</button>
         </td>
       </tr>`).join("")
-            : `<tr><td colspan="7" class="empty">No tickets match these filters.</td></tr>`;
+            : `<tr><td colspan="7" class="empty">No damage reports match these filters.</td></tr>`;
     }
 
     body.addEventListener("click", e => {
@@ -397,10 +546,10 @@ function initAdmin() {
         if (act === "assign") { openAssign(id); return; }
         if (act === "delete") {
             openConfirmDelete({
-                title: `Archive ticket ${id}?`,
+                title: `Archive report ${id}?`,
                 item: `${id}`,
                 desc: "You can restore it anytime from the History tab.",
-                btnText: "Archive ticket",
+                btnText: "Archive report",
                 onConfirm: () => {
                     Store.patch(id, { archived: true, archivedAt: Date.now() }, "Archived");
                     toast(`${id} archived`);
@@ -438,8 +587,9 @@ function renderChips() {
 }
 function openAssign(id) {
     const t = Tickets.all().find(x => x.id === id);
+    if (!t || !$("aId") || !$("aName")) return;
     $("aId").value = id; $("aTitle").textContent = t.id + " - " + t.title; $("aName").value = t.assignee || "";
-    $("aList").innerHTML = [...new Set([...Staff.all(), ...Tickets.all().map(x => x.assignee).filter(Boolean)])].map(n => `<option value="${esc(n)}">`).join("");
+    if ($("aList")) $("aList").innerHTML = [...new Set([...Staff.all(), ...Tickets.all().map(x => x.assignee).filter(Boolean)])].map(n => `<option value="${esc(n)}">`).join("");
     renderChips();
     bootstrap.Modal.getOrCreateInstance("#assignModal").show();
 }
@@ -453,6 +603,7 @@ const tbl = (h, rows) => rows.length ? `<div class="table-responsive"><table cla
 
 let pendingConfirmAction = null;
 function openConfirmDelete({ title, item, desc, btnText, onConfirm }) {
+    if (!$("confirmDelModal")) { if (typeof onConfirm === "function") onConfirm(); return; }
     $("cfmDelT").textContent = title;
     $("cfmDelItem").textContent = item;
     $("cfmDelDesc").textContent = desc || "";
@@ -518,14 +669,15 @@ function initAdminExtras() {
     if ($("personnelModal")) {
         $("personnelModal").addEventListener("show.bs.modal", () => {
             const f = $("personnelForm"), p = personnelEdit; personnelEdit = null;
+            if (!f) return;
             f.reset(); f.classList.remove("was-validated");
-            $("pId").value = p ? p.id : "";
-            $("personnelModalT").textContent = p ? "Edit personnel" : "Add personnel";
-            $("personnelSave").textContent = p ? "Save changes" : "Save personnel";
+            if ($("pId")) $("pId").value = p ? p.id : "";
+            if ($("personnelModalT")) $("personnelModalT").textContent = p ? "Edit personnel" : "Add personnel";
+            if ($("personnelSave")) $("personnelSave").textContent = p ? "Save changes" : "Save personnel";
             if (p) {
-                $("pName").value = p.name || "";
-                $("pRole").value = p.role || "";
-                $("pStatus").value = p.status || "Present";
+                if ($("pName")) $("pName").value = p.name || "";
+                if ($("pRole")) $("pRole").value = p.role || "";
+                if ($("pStatus")) $("pStatus").value = p.status || "Present";
             }
         });
     }
@@ -534,7 +686,7 @@ function initAdminExtras() {
             e.preventDefault(); const f = e.target;
             if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
             const d = Object.fromEntries(new FormData(f));
-            const id = $("pId").value;
+            const id = $("pId") ? $("pId").value : "";
             const payload = {
                 name: (d.name || "").trim(),
                 role: (d.role || "").trim() || "Maintenance Staff",
@@ -552,16 +704,14 @@ function initAdminExtras() {
         });
     }
 
-    /* saved personnel chips */
     if ($("aChips")) {
         $("aChips").addEventListener("click", e => {
             const p = e.target.closest("[data-pick]"), x = e.target.closest("[data-del]");
-            if (p) $("aName").value = p.dataset.pick;
+            if (p && $("aName")) $("aName").value = p.dataset.pick;
             if (x) { Staff.remove(x.dataset.del); renderAll(); }
         });
     }
 
-    /* CSV export */
     const csvBtn = (paneId, fn) => {
         const panel = document.querySelector(`#${paneId} section.panel`);
         if (!panel) return;
@@ -572,19 +722,21 @@ function initAdminExtras() {
         Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.onBehalf || t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
     csvBtn("tabClean", () => downloadCSV("facility-cleaning", ["Facility ID", "Building", "Area", "Area type", "Status today", "Cleaned today at", "Total cleaned", "Last cleaned", "Notes"],
         Cleanings.all().map(c => { const log = logOf(c), d = doneToday(c), last = log.slice(-1)[0]; return [c.id, c.building, c.area, c.areaType, d ? "Cleaned" : "For Cleaning", d ? clock(d.ts) : "", log.length, last ? last.date : "", c.notes || ""]; })));
-    csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Item", "ID no.", "Category", "Quantity", "Unit", "Location", "Department", "Archived"],
+    csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Asset", "ID no.", "Category", "Quantity", "Unit", "Location", "Department", "Archived"],
         Assets.all().map(a => [a.id, a.name, a.tag, a.category, a.qty ?? "", a.unit || "", a.location, a.dept, a.archived ? "Yes" : ""])));
 
-    /* assign personnel */
-    $("assignForm").addEventListener("submit", e => {
-        e.preventDefault();
-        const id = $("aId").value, name = $("aName").value.trim(), t = Tickets.all().find(x => x.id === id);
-        Staff.add(name);
-        Tickets.patch(id, { assignee: name, status: t.status === "Pending" ? "In progress" : t.status }, "Assigned to " + name + (t.status === "Pending" ? " (work started)" : ""));
-        modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets(); renderPersonnel();
-    });
+    if ($("assignForm")) {
+        $("assignForm").addEventListener("submit", e => {
+            e.preventDefault();
+            const id = $("aId").value, name = $("aName").value.trim(), t = Tickets.all().find(x => x.id === id);
+            if (!t) return;
+            Staff.add(name);
+            Tickets.patch(id, { assignee: name, status: t.status === "Pending" ? "In progress" : t.status }, "Assigned to " + name + (t.status === "Pending" ? " (work started)" : ""));
+            modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets(); renderPersonnel();
+        });
+    }
 
-    /* facility cleaning: a daily list. Each day starts as "For Cleaning"; totals keep counting. */
+    /* facility cleaning: safely guarded if #cleanRows is absent */
     let cleanEdit = null, shownDay = today();
     const dayOf = ts => { const d = new Date(ts); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
     const logOf = c => c.cleanLog || (c.cleanedAt ? [{ date: dayOf(c.cleanedAt), ts: c.cleanedAt }] : []);
@@ -592,15 +744,21 @@ function initAdminExtras() {
     const clock = ts => new Date(ts).toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
     const fmtClock = hhmm => hhmm ? clock("2000-01-01T" + hhmm) : "";
     function renderCleanings() {
+        const cleanRows = $("cleanRows");
+        if (!cleanRows) return;
         shownDay = today();
-        const all = Cleanings.all(), q = $("cSearch").value.trim().toLowerCase(), st = $("cStatus").value, ty = $("cType").value;
+        const all = Cleanings.all();
+        const q = ($("cSearch") ? $("cSearch").value : "").trim().toLowerCase();
+        const st = $("cStatus") ? $("cStatus").value : "";
+        const ty = $("cType") ? $("cType").value : "";
         const stat = c => doneToday(c) ? "Cleaned" : "For Cleaning", dueN = all.filter(c => !doneToday(c)).length;
-        $("cCDue").textContent = dueN; $("cCDone").textContent = all.length - dueN;
-        $("cToday").textContent = new Date().toLocaleDateString("en-PH", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+        if ($("cCDue")) $("cCDue").textContent = dueN;
+        if ($("cCDone")) $("cCDone").textContent = all.length - dueN;
+        if ($("cToday")) $("cToday").textContent = new Date().toLocaleDateString("en-PH", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
         const list = all.filter(c => (!st || stat(c) === st) && (!ty || c.areaType === ty) && (!q || (c.id + c.building + c.area).toLowerCase().includes(q)))
             .sort((x, y) => stat(x) !== stat(y) ? (stat(x) === "For Cleaning" ? -1 : 1)
                 : stat(x) === "For Cleaning" ? (x.time || "99").localeCompare(y.time || "99") : doneToday(y).ts - doneToday(x).ts);
-        $("cleanRows").innerHTML = list.length ? list.map(c => {
+        cleanRows.innerHTML = list.length ? list.map(c => {
             const d = doneToday(c), n = logOf(c).length, last = logOf(c).slice(-1)[0];
             return `<tr>
           <td>${tlBtn("c", c.id)}</td>
@@ -614,65 +772,88 @@ function initAdminExtras() {
             <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${c.id}">Delete</button></td></tr>`;
         }).join("") : `<tr><td colspan="5" class="empty">${all.length ? "No facilities match." : 'No facilities yet. Use "+ Add facility" to list one.'}</td></tr>`;
     }
-    $("cleanRows").addEventListener("click", e => {
-        const b = e.target.closest("button[data-act]"); if (!b) return;
-        const { act, id } = b.dataset, c = Cleanings.all().find(x => x.id === id); if (!c) return;
-        if (act === "done") {
-            const log = logOf(c).concat({ date: today(), ts: Date.now() });
-            Cleanings.patch(id, { cleanLog: log, cleanedAt: Date.now() }, `Marked as cleaned (total ${log.length})`); toast(`${c.area} marked as cleaned`);
-        } else if (act === "undo") {
-            const log = logOf(c).filter(x => x.date !== today()), last = log.slice(-1)[0];
-            Cleanings.patch(id, { cleanLog: log, cleanedAt: last ? last.ts : null }, "Today's cleaning undone"); toast(`${c.area} is back to For Cleaning`);
-        } else if (act === "edit") { cleanEdit = c; modal("#cleanModal").show(); return; }
-        else {
-            openConfirmDelete({
-                title: "Delete facility?",
-                item: `${c.building} - ${c.area}`,
-                desc: "Its cleaning totals will be lost.",
-                btnText: "Delete facility",
-                onConfirm: () => {
-                    Cleanings.remove(id, "Deleted");
-                    toast(`${c.area} removed from the list`);
-                    renderAll();
-                }
-            });
-        }
-        renderAll();
-    });
-    $("cleanModal").addEventListener("show.bs.modal", () => {
-        const f = $("cleanForm"), c = cleanEdit; cleanEdit = null;
-        f.reset(); f.classList.remove("was-validated");
-        $("cleanId").value = c ? c.id : "";
-        $("cleanModalT").textContent = c ? "Edit facility" : "Add facility";
-        $("cleanSave").textContent = c ? "Save changes" : "Save facility";
-        if (c) { $("cBuilding").value = c.building; $("cArea").value = c.area; $("cAreaType").value = c.areaType; $("cWhen").value = c.time || ""; $("cNotes").value = c.notes || ""; }
-    });
-    $("cleanForm").addEventListener("submit", e => {
-        e.preventDefault(); const f = e.target;
-        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
-        const d = Object.fromEntries(new FormData(f)), id = $("cleanId").value;
-        const data = { building: d.building.trim(), area: d.area.trim(), areaType: d.areaType, time: d.time || "", notes: d.notes.trim() };
-        if (id) { Cleanings.patch(id, data, "Facility details updated"); toast(`${data.area} updated`); }
-        else { Cleanings.add({ ...data, cleanLog: [], cleanedAt: null }, "Added to the cleaning list"); toast(`${data.area} added to the list`); }
-        modal("#cleanModal").hide(); renderAll();
-    });
-    setInterval(() => { if (today() !== shownDay) renderAll(); }, 60000);
+    if ($("cleanRows")) {
+        $("cleanRows").addEventListener("click", e => {
+            const b = e.target.closest("button[data-act]"); if (!b) return;
+            const { act, id } = b.dataset, c = Cleanings.all().find(x => x.id === id); if (!c) return;
+            if (act === "done") {
+                const log = logOf(c).concat({ date: today(), ts: Date.now() });
+                Cleanings.patch(id, { cleanLog: log, cleanedAt: Date.now() }, `Marked as cleaned (total ${log.length})`); toast(`${c.area} marked as cleaned`);
+            } else if (act === "undo") {
+                const log = logOf(c).filter(x => x.date !== today()), last = log.slice(-1)[0];
+                Cleanings.patch(id, { cleanLog: log, cleanedAt: last ? last.ts : null }, "Today's cleaning undone"); toast(`${c.area} is back to For Cleaning`);
+            } else if (act === "edit") { cleanEdit = c; modal("#cleanModal").show(); return; }
+            else {
+                openConfirmDelete({
+                    title: "Delete facility?",
+                    item: `${c.building} - ${c.area}`,
+                    desc: "Its cleaning totals will be lost.",
+                    btnText: "Delete facility",
+                    onConfirm: () => {
+                        Cleanings.remove(id, "Deleted");
+                        toast(`${c.area} removed from the list`);
+                        renderAll();
+                    }
+                });
+            }
+            renderAll();
+        });
+    }
+    if ($("cleanModal")) {
+        $("cleanModal").addEventListener("show.bs.modal", () => {
+            const f = $("cleanForm"), c = cleanEdit; cleanEdit = null;
+            if (!f) return;
+            f.reset(); f.classList.remove("was-validated");
+            if ($("cleanId")) $("cleanId").value = c ? c.id : "";
+            if ($("cleanModalT")) $("cleanModalT").textContent = c ? "Edit facility" : "Add facility";
+            if ($("cleanSave")) $("cleanSave").textContent = c ? "Save changes" : "Save facility";
+            if (c) {
+                if ($("cBuilding")) $("cBuilding").value = c.building;
+                if ($("cArea")) $("cArea").value = c.area;
+                if ($("cAreaType")) $("cAreaType").value = c.areaType;
+                if ($("cWhen")) $("cWhen").value = c.time || "";
+                if ($("cNotes")) $("cNotes").value = c.notes || "";
+            }
+        });
+    }
+    if ($("cleanForm")) {
+        $("cleanForm").addEventListener("submit", e => {
+            e.preventDefault(); const f = e.target;
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f)), id = $("cleanId") ? $("cleanId").value : "";
+            const data = { building: d.building.trim(), area: d.area.trim(), areaType: d.areaType, time: d.time || "", notes: d.notes.trim() };
+            if (id) { Cleanings.patch(id, data, "Facility details updated"); toast(`${data.area} updated`); }
+            else { Cleanings.add({ ...data, cleanLog: [], cleanedAt: null }, "Added to the cleaning list"); toast(`${data.area} added to the list`); }
+            modal("#cleanModal").hide(); renderAll();
+        });
+    }
+    setInterval(() => { if ($("cleanRows") && today() !== shownDay) renderAll(); }, 60000);
 
-    /* assets (cleaning supplies): add, edit, archive, delete */
+    /* assets: add, edit, archive, delete + category filter */
     let assetView = "active", delId = null, pendingEdit = null;
     const assetHead = {
-        active: "<tr><th>ID no.</th><th>Item</th><th>Quantity</th><th>Location</th><th>Department</th><th>Updated</th><th></th></tr>",
-        archived: "<tr><th>ID no.</th><th>Item</th><th>Quantity</th><th>Location</th><th>Archived on</th><th></th></tr>"
+        active: "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Department</th><th>Updated</th><th></th></tr>",
+        archived: "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Archived on</th><th></th></tr>"
     };
     function renderAssets() {
-        const all = Assets.all(), q = $("sSearch").value.trim().toLowerCase(), arch = assetView === "archived";
-        $("cntActive").textContent = all.filter(a => !a.archived).length; $("cntArch").textContent = all.filter(a => a.archived).length;
-        $("assetHead").innerHTML = assetHead[assetView];
-        const list = all.filter(a => !!a.archived === arch && (!q || (a.id + a.name + a.tag + a.location + a.dept + a.category).toLowerCase().includes(q)));
+        const assetRows = $("assetRows");
+        if (!assetRows) return;
+        const all = Assets.all();
+        const q = ($("sSearch") ? $("sSearch").value : "").trim().toLowerCase();
+        const cat = ($("assetCatFilter") ? $("assetCatFilter").value : "").trim().toLowerCase();
+        const arch = assetView === "archived";
+        if ($("cntActive")) $("cntActive").textContent = all.filter(a => !a.archived).length;
+        if ($("cntArch")) $("cntArch").textContent = all.filter(a => a.archived).length;
+        if ($("assetHead")) $("assetHead").innerHTML = assetHead[assetView];
+        const list = all.filter(a =>
+            !!a.archived === arch &&
+            (!cat || String(a.category || "").toLowerCase() === cat) &&
+            (!q || (a.id + a.name + a.tag + a.location + a.dept + a.category).toLowerCase().includes(q))
+        );
         const btns = a => arch
             ? `<button class="btn btn-sm btn-success" data-act="restore" data-id="${a.id}">Restore</button> <button class="btn btn-sm btn-outline-danger" data-act="purge" data-id="${a.id}">Delete permanently</button>`
             : `<button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${a.id}">Edit</button> <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${a.id}">Delete</button>`;
-        $("assetRows").innerHTML = list.length ? list.map(a => `<tr>
+        assetRows.innerHTML = list.length ? list.map(a => `<tr>
           <td><span class="tid">${a.id}</span><div class="small text-secondary">${esc(a.tag)}</div></td>
           <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category)}</div></td>
           <td class="fw-semibold">${a.qty ?? "-"} <span class="small text-secondary fw-normal">${esc(a.unit || "")}</span></td>
@@ -680,125 +861,157 @@ function initAdminExtras() {
           ${arch ? "" : `<td class="small">${esc(a.dept)}</td>`}
           <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
           <td class="text-end text-nowrap">${btns(a)}</td></tr>`).join("")
-            : `<tr><td colspan="${arch ? 6 : 7}" class="empty">${arch ? "Nothing in the archive." : 'No items yet. Use "+ Add item" to record one.'}</td></tr>`;
+            : `<tr><td colspan="${arch ? 6 : 7}" class="empty">${arch ? "Nothing in the archive." : 'No items yet. Use "+ Add asset" to record one.'}</td></tr>`;
     }
-    $("assetView").addEventListener("click", e => {
-        const b = e.target.closest("[data-av]"); if (!b) return;
-        assetView = b.dataset.av;
-        $("assetView").querySelectorAll("[data-av]").forEach(x => { const on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-pressed", on); });
-        renderAssets();
-    });
+    if ($("assetView")) {
+        $("assetView").addEventListener("click", e => {
+            const b = e.target.closest("[data-av]"); if (!b) return;
+            assetView = b.dataset.av;
+            $("assetView").querySelectorAll("[data-av]").forEach(x => { const on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-pressed", on); });
+            renderAssets();
+        });
+    }
     const setAssetForm = a => {
-        const f = $("assetForm"); f.reset(); f.classList.remove("was-validated");
-        $("assetId2").value = a ? a.id : "";
-        $("assetModalT").textContent = a ? "Edit item" : "Add item";
-        $("assetSave").textContent = a ? "Save changes" : "Save item";
-        if (a) { $("nName").value = a.name; $("nTag").value = a.tag; $("nCat").value = a.category; $("nQty").value = a.qty ?? ""; $("nUnit").value = a.unit || ""; $("nLoc").value = a.location; $("nDept").value = a.dept; }
-    };
-    $("assetModal").addEventListener("show.bs.modal", () => { setAssetForm(pendingEdit); pendingEdit = null; });
-    $("assetForm").addEventListener("submit", e => {
-        e.preventDefault();
-        const f = e.target, tag = $("nTag"), eid = $("assetId2").value;
-        tag.setCustomValidity(Assets.all().some(a => a.id !== eid && a.tag.toLowerCase() === tag.value.trim().toLowerCase()) ? "dup" : "");
-        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
-        const d = Object.fromEntries(new FormData(f));
-        const data = { name: d.name.trim(), tag: d.tag.trim(), category: d.category, qty: Number(d.qty), unit: d.unit.trim(), location: d.location.trim(), dept: d.dept.trim() };
-        if (eid) {
-            const old = assetOf(eid);
-            Assets.patch(eid, data, "Item details updated" + (old && old.qty !== data.qty ? ` (quantity ${old.qty ?? 0} to ${data.qty})` : ""));
-            toast(`${data.name} updated`);
-        } else {
-            Assets.add({ ...data, condition: "Good" }, `Added to inventory (${data.qty} ${data.unit})`);
-            toast(`${data.name} added to the inventory`);
+        const f = $("assetForm"); if (!f) return;
+        f.reset(); f.classList.remove("was-validated");
+        if ($("assetId2")) $("assetId2").value = a ? a.id : "";
+        if ($("assetModalT")) $("assetModalT").textContent = a ? "Edit asset" : "Add asset";
+        if ($("assetSave")) $("assetSave").textContent = a ? "Save changes" : "Save asset";
+        if (a) {
+            if ($("nName")) $("nName").value = a.name;
+            if ($("nTag")) $("nTag").value = a.tag;
+            if ($("nCat")) $("nCat").value = a.category;
+            if ($("nQty")) $("nQty").value = a.qty ?? "";
+            if ($("nUnit")) $("nUnit").value = a.unit || "";
+            if ($("nLoc")) $("nLoc").value = a.location;
+            if ($("nDept")) $("nDept").value = a.dept;
         }
-        modal("#assetModal").hide(); renderAll();
-    });
-    /* delete: choose archive or permanent delete */
+    };
+    if ($("assetModal")) {
+        $("assetModal").addEventListener("show.bs.modal", () => { setAssetForm(pendingEdit); pendingEdit = null; });
+    }
+    if ($("assetForm")) {
+        $("assetForm").addEventListener("submit", e => {
+            e.preventDefault();
+            const f = e.target, tag = $("nTag"), eid = $("assetId2") ? $("assetId2").value : "";
+            if (tag) {
+                tag.setCustomValidity(Assets.all().some(a => a.id !== eid && a.tag.toLowerCase() === tag.value.trim().toLowerCase()) ? "dup" : "");
+            }
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f));
+            const data = { name: d.name.trim(), tag: d.tag.trim(), category: d.category, qty: Number(d.qty), unit: d.unit.trim(), location: d.location.trim(), dept: d.dept.trim() };
+            if (eid) {
+                const old = assetOf(eid);
+                Assets.patch(eid, data, "Asset details updated" + (old && old.qty !== data.qty ? ` (quantity ${old.qty ?? 0} to ${data.qty})` : ""));
+                toast(`${data.name} updated`);
+            } else {
+                Assets.add({ ...data, condition: "Good" }, `Added to inventory (${data.qty} ${data.unit})`);
+                toast(`${data.name} added to the inventory`);
+            }
+            modal("#assetModal").hide(); renderAll();
+        });
+    }
     const showStep = confirmStep => {
-        $("delChoices").classList.toggle("d-none", confirmStep); $("delConfirm").classList.toggle("d-none", !confirmStep); $("delGo").classList.toggle("d-none", !confirmStep);
-        $("delT").textContent = confirmStep ? "Delete permanently?" : "Remove this item?";
+        if ($("delChoices")) $("delChoices").classList.toggle("d-none", confirmStep);
+        if ($("delConfirm")) $("delConfirm").classList.toggle("d-none", !confirmStep);
+        if ($("delGo")) $("delGo").classList.toggle("d-none", !confirmStep);
+        if ($("delT")) $("delT").textContent = confirmStep ? "Delete permanently?" : "Remove this item?";
     };
     function openDelete(a, permanentOnly) {
-        delId = a.id; $("delItem").innerHTML = `<b>${esc(a.name)}</b> <span class="text-secondary">(${esc(a.tag)})</span>`;
-        $("delBack").classList.toggle("d-none", permanentOnly); showStep(permanentOnly); modal("#delAssetModal").show();
+        delId = a.id;
+        if ($("delItem")) $("delItem").innerHTML = `<b>${esc(a.name)}</b> <span class="text-secondary">(${esc(a.tag)})</span>`;
+        if ($("delBack")) $("delBack").classList.toggle("d-none", permanentOnly);
+        showStep(permanentOnly);
+        modal("#delAssetModal").show();
     }
-    $("assetRows").addEventListener("click", e => {
-        const b = e.target.closest("button[data-act]"); if (!b) return;
-        const { act, id } = b.dataset, a = assetOf(id); if (!a) return;
-        if (act === "edit") { pendingEdit = a; modal("#assetModal").show(); }
-        else if (act === "restore") { Assets.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${a.name} restored`); renderAll(); }
-        else openDelete(a, act === "purge");
-    });
-    $("chArchive").addEventListener("click", () => {
-        const a = assetOf(delId); if (!a) return;
-        Assets.patch(delId, { archived: true, archivedAt: Date.now() }, "Moved to archive");
-        modal("#delAssetModal").hide(); toast(`${a.name} moved to the archive`); renderAll();
-    });
-    $("chPurge").addEventListener("click", () => showStep(true));
-    $("delBack").addEventListener("click", () => showStep(false));
-    $("delGo").addEventListener("click", () => {
-        const a = assetOf(delId); if (!a) return;
-        Assets.remove(delId, "Deleted permanently");
-        modal("#delAssetModal").hide(); toast(`${a.name} deleted permanently`); renderAll(); window.renderTickets();
-    });
+    if ($("assetRows")) {
+        $("assetRows").addEventListener("click", e => {
+            const b = e.target.closest("button[data-act]"); if (!b) return;
+            const { act, id } = b.dataset, a = assetOf(id); if (!a) return;
+            if (act === "edit") { pendingEdit = a; modal("#assetModal").show(); }
+            else if (act === "restore") { Assets.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${a.name} restored`); renderAll(); }
+            else openDelete(a, act === "purge");
+        });
+    }
+    if ($("chArchive")) {
+        $("chArchive").addEventListener("click", () => {
+            const a = assetOf(delId); if (!a) return;
+            Assets.patch(delId, { archived: true, archivedAt: Date.now() }, "Moved to archive");
+            modal("#delAssetModal").hide(); toast(`${a.name} moved to the archive`); renderAll();
+        });
+    }
+    if ($("chPurge")) $("chPurge").addEventListener("click", () => showStep(true));
+    if ($("delBack")) $("delBack").addEventListener("click", () => showStep(false));
+    if ($("delGo")) {
+        $("delGo").addEventListener("click", () => {
+            const a = assetOf(delId); if (!a) return;
+            Assets.remove(delId, "Deleted permanently");
+            modal("#delAssetModal").hide(); toast(`${a.name} deleted permanently`); renderAll(); window.renderTickets();
+        });
+    }
 
     /* reports */
     function renderReports() {
+        if (!$("reportBody")) return;
         const T = Tickets.all().filter(t => !t.archived), A = Assets.all().filter(a => !a.archived), C = Cleanings.all(), fixed = T.filter(t => t.status === "Fixed");
         const times = fixed.filter(t => t.fixedAt).map(t => t.fixedAt - t.createdAt);
         const avg = times.length ? times.reduce((x, y) => x + y, 0) / times.length / 36e5 : null;
-        const stats = [[T.length, "Issues reported"], [T.length ? Math.round(fixed.length / T.length * 100) + "%" : "-", "Issues fixed"],
-        [avg === null ? "-" : avg < 48 ? avg.toFixed(1) + " h" : (avg / 24).toFixed(1) + " days", "Avg. repair time"],
-        [A.length, "Items in inventory"], [C.length, "Facilities listed"], [C.filter(doneToday).length, "Cleaned today"]];
+        const stats = [[A.length, "Items in inventory"], [C.length, "Facilities listed"], [C.filter(doneToday).length, "Cleaned today"],
+        [T.length, "Extra reports"], [T.length ? Math.round(fixed.length / T.length * 100) + "%" : "-", "Issues fixed"],
+        [avg === null ? "-" : avg < 48 ? avg.toFixed(1) + " h" : (avg / 24).toFixed(1) + " days", "Avg. repair time"]];
         const panel = (title, data) => `<div class="col-md-6"><div class="panel h-100"><h3 class="h6 mb-3">${title}</h3>${bars(data)}</div></div>`;
         const totals = C.reduce((o, c) => { o[c.areaType] = (o[c.areaType] || 0) + logOf(c).length; return o; }, {});
         $("reportBody").innerHTML = `<p class="text-secondary small">Generated ${fmt(Date.now())}</p>
           <div class="row g-3 mb-3">${stats.map(([n, l]) => `<div class="col-6 col-md-4 col-lg-2"><div class="panel stat"><div class="n fs-4">${n}</div><div class="text-secondary small">${l}</div></div></div>`).join("")}</div>
-          <div class="row g-3">${panel("Repair progress (by status)", tally(T, t => t.status))}${panel("Issues by type", tally(T, t => t.category))}${panel("Facility cleaning today", tally(C, c => doneToday(c) ? "Cleaned" : "For Cleaning"))}${panel("Total times cleaned, by area type", totals)}${panel("Inventory by category", tally(A, a => a.category))}</div>`;
+          <div class="row g-3">${panel("Facility cleaning today", tally(C, c => doneToday(c) ? "Cleaned" : "For Cleaning"))}${panel("Inventory by category", tally(A, a => a.category))}${panel("Total times cleaned, by area type", totals)}${panel("Repair progress (by status)", tally(T, t => t.status))}${panel("Extra issues by type", tally(T, t => t.category))}</div>`;
     }
 
     /* history: activity log + archive */
     function renderHistory() {
-        const q = $("gSearch").value.trim().toLowerCase(), k = $("gKind").value;
+        if (!$("logRows") || !$("archRows")) return;
+        const q = ($("gSearch") ? $("gSearch").value : "").trim().toLowerCase(), k = $("gKind") ? $("gKind").value : "";
         const logs = Log.all().filter(g => (!k || g.kind === k) && (!q || g.text.toLowerCase().includes(q))).slice(0, 200);
-        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Ticket", asset: "Asset", cleaning: "Cleaning", loan: "Borrowing" }[g.kind]}</span></td><td>${esc(g.text)}</td></tr>`).join("")
+        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Report", asset: "Asset", cleaning: "Cleaning", loan: "Borrowing" }[g.kind] || g.kind}</span></td><td>${esc(g.text)}</td></tr>`).join("")
             : `<tr><td colspan="3" class="empty">No activity yet.</td></tr>`;
         const arch = [...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", o: t, name: t.title })), ...Assets.all().filter(a => a.archived).map(a => ({ k: "asset", o: a, name: `${a.name} (${a.tag})` }))].sort((x, y) => y.o.archivedAt - x.o.archivedAt);
-        $("archRows").innerHTML = arch.length ? arch.map(x => `<tr><td><span class="badge text-bg-light border">${x.k === "ticket" ? "Ticket" : "Asset"}</span></td>
+        $("archRows").innerHTML = arch.length ? arch.map(x => `<tr><td><span class="badge text-bg-light border">${x.k === "ticket" ? "Report" : "Asset"}</span></td>
           <td><span class="tid">${x.o.id}</span><div class="fw-semibold">${esc(x.name)}</div></td><td class="small">${fmtT(x.o.archivedAt)}</td>
           <td class="text-end text-nowrap"><button class="btn btn-sm btn-success" data-act="restore" data-k="${x.k}" data-id="${x.o.id}">Restore</button>
           <button class="btn btn-sm btn-outline-danger" data-act="purge" data-k="${x.k}" data-id="${x.o.id}">Delete forever</button></td></tr>`).join("")
             : `<tr><td colspan="4" class="empty">Nothing archived.</td></tr>`;
     }
-    $("archRows").addEventListener("click", e => {
-        const b = e.target.closest("button[data-act]"); if (!b) return;
-        const { act, k, id } = b.dataset, c = k === "ticket" ? Tickets : Assets;
-        if (act === "restore") {
-            c.patch(id, { archived: false, archivedAt: null }, "Restored from archive");
-            toast(`${id} restored`);
-            renderAll();
-            window.renderTickets();
-        } else {
-            openConfirmDelete({
-                title: `Delete ${id} forever?`,
-                item: id,
-                desc: "This can't be undone. The activity log keeps a record of it.",
-                btnText: "Delete forever",
-                onConfirm: () => {
-                    (c === Tickets ? (Tickets.all().find(t => t.id === id) || {}).photos || [] : []).forEach(p => PhotoDB.remove(p).catch(() => { }));
-                    c.remove(id, "Deleted forever");
-                    toast(`${id} deleted forever`);
-                    renderAll();
-                    window.renderTickets();
-                }
-            });
-        }
-        renderAll(); window.renderTickets();
-    });
-    ["gSearch", "gKind"].forEach(id => $(id).addEventListener("input", renderHistory));
+    if ($("archRows")) {
+        $("archRows").addEventListener("click", e => {
+            const b = e.target.closest("button[data-act]"); if (!b) return;
+            const { act, k, id } = b.dataset, c = k === "ticket" ? Tickets : Assets;
+            if (act === "restore") {
+                c.patch(id, { archived: false, archivedAt: null }, "Restored from archive");
+                toast(`${id} restored`);
+                renderAll();
+                window.renderTickets();
+            } else {
+                openConfirmDelete({
+                    title: `Delete ${id} forever?`,
+                    item: id,
+                    desc: "This can't be undone. The activity log keeps a record of it.",
+                    btnText: "Delete forever",
+                    onConfirm: () => {
+                        (c === Tickets ? (Tickets.all().find(t => t.id === id) || {}).photos || [] : []).forEach(p => PhotoDB.remove(p).catch(() => { }));
+                        c.remove(id, "Deleted forever");
+                        toast(`${id} deleted forever`);
+                        renderAll();
+                        window.renderTickets();
+                    }
+                });
+            }
+            renderAll(); window.renderTickets();
+        });
+    }
+    ["gSearch", "gKind"].forEach(id => { if ($(id)) $(id).addEventListener("input", renderHistory); });
     const renderAll = () => { renderPersonnel(); renderCleanings(); renderAssets(); renderReports(); renderHistory(); };
-    ["cSearch", "cStatus", "cType"].forEach(id => $(id).addEventListener("input", renderCleanings));
-    $("sSearch").addEventListener("input", renderAssets);
+    ["cSearch", "cStatus", "cType"].forEach(id => { if ($(id)) $(id).addEventListener("input", renderCleanings); });
+    if ($("sSearch")) $("sSearch").addEventListener("input", renderAssets);
+    if ($("assetCatFilter")) $("assetCatFilter").addEventListener("change", renderAssets);
     document.addEventListener("shown.bs.tab", e => { if (e.target.closest("#adminTabs, #adminBottomNav")) renderAll(); });
     window.addEventListener("storage", renderAll);
     renderAll();
@@ -838,6 +1051,7 @@ function closeEverything() {
 }
 function initProfile(cfg) {
     const form = $("profileForm"), modalEl = $("profileModal"), err = $("profErr");
+    if (!form || !modalEl || !err) return;
     const pwIds = ["pfCur", "pfNew", "pfNew2"];
     addEyes(modalEl);
     let mode = "name";
@@ -846,16 +1060,19 @@ function initProfile(cfg) {
     const setMode = m => {
         mode = m; err.classList.add("d-none"); form.classList.remove("was-validated");
         modalEl.querySelectorAll("[data-pf]").forEach(b => { const on = b.dataset.pf === m; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on); });
-        $("pfPaneName").classList.toggle("d-none", m !== "name"); $("pfPanePw").classList.toggle("d-none", m !== "pw");
-        $("pfName").required = m === "name";
-        pwIds.forEach(id => { $(id).required = m === "pw"; $(id).value = ""; $(id).readOnly = true; });
+        if ($("pfPaneName")) $("pfPaneName").classList.toggle("d-none", m !== "name");
+        if ($("pfPanePw")) $("pfPanePw").classList.toggle("d-none", m !== "pw");
+        if ($("pfName")) $("pfName").required = m === "name";
+        pwIds.forEach(id => { if ($(id)) { $(id).required = m === "pw"; $(id).value = ""; $(id).readOnly = true; } });
         modalEl.querySelectorAll(".pw-eye").forEach(b => b.reset());
     };
-    pwIds.forEach(id => $(id).addEventListener("focus", e => { e.target.readOnly = false; }));
+    pwIds.forEach(id => { if ($(id)) $(id).addEventListener("focus", e => { e.target.readOnly = false; }); });
     modalEl.querySelectorAll("[data-pf]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.pf)));
     window.openProfile = () => {
         const u = cfg.get(); if (!u) return;
-        $("pfName").value = u.name; $("pfId").value = cfg.idText(u); setMode("name");
+        if ($("pfName")) $("pfName").value = u.name;
+        if ($("pfId")) $("pfId").value = cfg.idText(u);
+        setMode("name");
         bootstrap.Modal.getOrCreateInstance(modalEl).show();
     };
     modalEl.addEventListener("hidden.bs.modal", () => setMode("name"));
@@ -864,12 +1081,12 @@ function initProfile(cfg) {
         if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
         const u = cfg.get();
         if (mode === "name") {
-            const name = $("pfName").value.trim();
+            const name = $("pfName") ? $("pfName").value.trim() : "";
             if (!name) return fail("Enter your name.");
             if (name === u.name) return fail("That is already your name.");
             cfg.save(u, { name }); done("Name updated");
         } else {
-            const cur = $("pfCur").value, n1 = $("pfNew").value, n2 = $("pfNew2").value;
+            const cur = $("pfCur") ? $("pfCur").value : "", n1 = $("pfNew") ? $("pfNew").value : "", n2 = $("pfNew2") ? $("pfNew2").value : "";
             if (u.pw !== await hashPw(cur, cfg.salt(u))) return fail("Your current password is wrong.");
             if (n1.length < 6) return fail("Use a new password with at least 6 characters.");
             if (n1 === cur) return fail("The new password must be different from the current one.");
@@ -880,6 +1097,7 @@ function initProfile(cfg) {
 }
 
 function buildUserMenu(nav) {
+    if (!nav) return { tag: document.createElement("button"), prof: document.createElement("button"), out: document.createElement("button"), hdr: null };
     const wrap = document.createElement("div"); wrap.className = "dropdown user-menu";
     const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
     wrap.innerHTML = `<button type="button" class="user-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
@@ -901,18 +1119,20 @@ function fillChip(id, name, meta) {
     c.querySelector(".who-name").textContent = name; c.querySelector(".who-meta").textContent = meta;
 }
 function fillUserMenu(tag, name, meta) {
-    const w = tag.closest(".user-menu"), ini = (name.trim().charAt(0) || "?").toUpperCase();
+    const w = tag ? tag.closest(".user-menu") : null; if (!w) return;
+    const ini = (name.trim().charAt(0) || "?").toUpperCase();
     w.querySelectorAll(".user-avatar").forEach(a => a.textContent = ini);
     w.querySelector(".user-name").textContent = name;
     w.querySelector(".user-card-name").textContent = name;
     w.querySelector(".user-card-meta").textContent = meta;
 }
 function addEyes(gate) {
-    /* show / hide password (closed eye = hidden, open eye = shown) */
+    if (!gate) return;
     const svg = p => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
     const eyeOpen = svg('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>');
     const eyeShut = svg('<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>');
     gate.querySelectorAll('input[type="password"]').forEach(inp => {
+        if (inp.parentElement && inp.parentElement.classList.contains("pw-wrap")) return;
         const wrap = document.createElement("div"); wrap.className = "pw-wrap";
         inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
         const fb = wrap.nextElementSibling; if (fb && fb.classList.contains("invalid-feedback")) wrap.appendChild(fb);
@@ -924,7 +1144,8 @@ function addEyes(gate) {
 }
 function initAuth() {
     const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
-    const { tag, prof, out, hdr } = buildUserMenu(nav);
+    if (!gate || !app || !nav) return;
+    const { tag, prof, out } = buildUserMenu(nav);
     addEyes(gate);
     window.doLogout = () => out.click();
     const apply = () => {
@@ -937,29 +1158,34 @@ function initAuth() {
         gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
         window.dispatchEvent(new Event("authchange"));
     };
-    const fail = (id, m) => { $(id).textContent = m; $(id).classList.remove("d-none"); };
-    $("loginForm").addEventListener("submit", async e => {
-        e.preventDefault(); const f = e.target; $("loginErr").classList.add("d-none"); $("loginOk").classList.add("d-none");
-        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
-        const d = Object.fromEntries(new FormData(f)), id = d.idNo.trim().toLowerCase();
-        const u = Users.all().find(x => x.idNo.toLowerCase() === id);
-        if (!u || u.pw !== await hashPw(d.password, id)) return fail("loginErr", "Wrong ID number or password.");
-        localStorage.setItem("fixit_session", u.idNo); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome back, " + u.name);
-    });
-    $("regForm").addEventListener("submit", async e => {
-        e.preventDefault(); const f = e.target; $("regErr").classList.add("d-none");
-        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
-        const d = Object.fromEntries(new FormData(f)), idNo = d.idNo.trim(), users = Users.all();
-        if (users.some(u => u.idNo.toLowerCase() === idNo.toLowerCase())) return fail("regErr", "This ID number already has an account. Try logging in.");
-        if (d.password.length < 6) return fail("regErr", "Use a password with at least 6 characters.");
-        if (d.password !== d.confirm) return fail("regErr", "The two passwords do not match.");
-        users.push({ idNo, name: d.name.trim(), role: d.role, pw: await hashPw(d.password, idNo.toLowerCase()), createdAt: Date.now() });
-        Users.save(users); f.reset(); f.classList.remove("was-validated");
-        gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
-        bootstrap.Tab.getOrCreateInstance('[data-bs-target="#paneLogin"]').show();
-        $("lgId").value = idNo; $("loginOk").textContent = "Account created for " + d.name.trim() + ". Please log in."; $("loginOk").classList.remove("d-none");
-        $("lgPw").focus();
-    });
+    const fail = (id, m) => { if ($(id)) { $(id).textContent = m; $(id).classList.remove("d-none"); } };
+    if ($("loginForm")) {
+        $("loginForm").addEventListener("submit", async e => {
+            e.preventDefault(); const f = e.target; if ($("loginErr")) $("loginErr").classList.add("d-none"); if ($("loginOk")) $("loginOk").classList.add("d-none");
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f)), id = (d.idNo || "").trim().toLowerCase();
+            const u = Users.all().find(x => x.idNo.toLowerCase() === id);
+            if (!u || u.pw !== await hashPw(d.password, id)) return fail("loginErr", "Wrong ID number or password.");
+            localStorage.setItem("fixit_session", u.idNo); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome back, " + u.name);
+        });
+    }
+    if ($("regForm")) {
+        $("regForm").addEventListener("submit", async e => {
+            e.preventDefault(); const f = e.target; if ($("regErr")) $("regErr").classList.add("d-none");
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f)), idNo = d.idNo.trim(), users = Users.all();
+            if (users.some(u => u.idNo.toLowerCase() === idNo.toLowerCase())) return fail("regErr", "This ID number already has an account. Try logging in.");
+            if (d.password.length < 6) return fail("regErr", "Use a password with at least 6 characters.");
+            if (d.password !== d.confirm) return fail("regErr", "The two passwords do not match.");
+            users.push({ idNo, name: d.name.trim(), role: d.role, pw: await hashPw(d.password, idNo.toLowerCase()), createdAt: Date.now() });
+            Users.save(users); f.reset(); f.classList.remove("was-validated");
+            gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
+            bootstrap.Tab.getOrCreateInstance('[data-bs-target="#paneLogin"]').show();
+            if ($("lgId")) $("lgId").value = idNo;
+            if ($("loginOk")) { $("loginOk").textContent = "Account created for " + d.name.trim() + ". Please log in."; $("loginOk").classList.remove("d-none"); }
+            if ($("lgPw")) $("lgPw").focus();
+        });
+    }
     out.addEventListener("click", () => { localStorage.removeItem("fixit_session"); apply(); toast("You have been logged out"); });
     prof.addEventListener("click", () => window.openProfile());
     initProfile({
@@ -973,11 +1199,12 @@ function initAuth() {
 /* ---------- Admin login (account is kept in this browser) ---------- */
 function initAdminAuth() {
     const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
-    const { tag, prof, out, hdr } = buildUserMenu(nav);
+    if (!gate || !app || !nav) return;
+    const { tag, prof, out } = buildUserMenu(nav);
     addEyes(gate);
     const admins = () => { try { return JSON.parse(localStorage.getItem("fixit_admins")) || []; } catch { return []; } };
     const current = () => { const u = sessionStorage.getItem("fixit_admin_session"); return admins().find(a => a.username === u) || null; };
-    const fail = (id, m) => { $(id).textContent = m; $(id).classList.remove("d-none"); };
+    const fail = (id, m) => { if ($(id)) { $(id).textContent = m; $(id).classList.remove("d-none"); } };
     const apply = () => {
         const u = current(), setup = admins().length === 0;
         gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
@@ -985,36 +1212,43 @@ function initAdminAuth() {
         tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u); prof.classList.toggle("d-none", !u);
         fillUserMenu(tag, u ? u.name : "", u ? "Admin - " + u.username : "");
         if (u) Idle.start(() => { closeEverything(); sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You were logged out after 15 minutes of inactivity."); }); else Idle.stop();
-        $("loginForm").classList.toggle("d-none", setup); $("setupForm").classList.toggle("d-none", !setup);
-        $("gateTitle").textContent = setup ? "Set up the admin account" : "Admin sign in";
-        $("gateHint").textContent = setup ? "No admin account exists yet. Create the first one." : "Log in to manage tickets, assets, and borrowing.";
+        if ($("loginForm")) $("loginForm").classList.toggle("d-none", setup);
+        if ($("setupForm")) $("setupForm").classList.toggle("d-none", !setup);
+        if ($("gateTitle")) $("gateTitle").textContent = setup ? "Set up the admin account" : "Admin sign in";
+        if ($("gateHint")) $("gateHint").textContent = setup ? "No admin account exists yet. Create the first one." : "Log in to manage assets, reports, history, personnel, and damage reports.";
         if (u) sessionStorage.setItem("fixit_admin_name", u.name); else sessionStorage.removeItem("fixit_admin_name");
         gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
     };
-    $("loginForm").addEventListener("submit", async e => {
-        e.preventDefault(); const f = e.target; $("loginErr").classList.add("d-none"); $("loginOk").classList.add("d-none");
-        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
-        const d = Object.fromEntries(new FormData(f)), id = d.username.trim().toLowerCase();
-        const a = admins().find(x => x.username.toLowerCase() === id);
-        if (!a || a.pw !== await hashPw(d.password, "admin:" + id)) return fail("loginErr", "Wrong username or password.");
-        sessionStorage.setItem("fixit_admin_session", a.username); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome, " + a.name);
-    });
-    $("setupForm").addEventListener("submit", async e => {
-        e.preventDefault(); const f = e.target; $("setupErr").classList.add("d-none");
-        if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
-        const d = Object.fromEntries(new FormData(f)), username = d.username.trim();
-        if (d.password.length < 6) return fail("setupErr", "Use a password with at least 6 characters.");
-        if (d.password !== d.confirm) return fail("setupErr", "The two passwords do not match.");
-        localStorage.setItem("fixit_admins", JSON.stringify([{
-            username,
-            name: d.name.trim(),
-            pw: await hashPw(d.password, "admin:" + username.toLowerCase()),
-            createdAt: Date.now(),
-            personnel: []
-        }]));
-        f.reset(); f.classList.remove("was-validated"); apply();
-        $("lgId").value = username; $("loginOk").textContent = "Admin account created. Please log in."; $("loginOk").classList.remove("d-none"); $("lgPw").focus();
-    });
+    if ($("loginForm")) {
+        $("loginForm").addEventListener("submit", async e => {
+            e.preventDefault(); const f = e.target; if ($("loginErr")) $("loginErr").classList.add("d-none"); if ($("loginOk")) $("loginOk").classList.add("d-none");
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f)), id = (d.username || "").trim().toLowerCase();
+            const a = admins().find(x => x.username.toLowerCase() === id);
+            if (!a || a.pw !== await hashPw(d.password, "admin:" + id)) return fail("loginErr", "Wrong username or password.");
+            sessionStorage.setItem("fixit_admin_session", a.username); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome, " + a.name);
+        });
+    }
+    if ($("setupForm")) {
+        $("setupForm").addEventListener("submit", async e => {
+            e.preventDefault(); const f = e.target; if ($("setupErr")) $("setupErr").classList.add("d-none");
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f)), username = d.username.trim();
+            if (d.password.length < 6) return fail("setupErr", "Use a password with at least 6 characters.");
+            if (d.password !== d.confirm) return fail("setupErr", "The two passwords do not match.");
+            localStorage.setItem("fixit_admins", JSON.stringify([{
+                username,
+                name: d.name.trim(),
+                pw: await hashPw(d.password, "admin:" + username.toLowerCase()),
+                createdAt: Date.now(),
+                personnel: []
+            }]));
+            f.reset(); f.classList.remove("was-validated"); apply();
+            if ($("lgId")) $("lgId").value = username;
+            if ($("loginOk")) { $("loginOk").textContent = "Admin account created. Please log in."; $("loginOk").classList.remove("d-none"); }
+            if ($("lgPw")) $("lgPw").focus();
+        });
+    }
     out.addEventListener("click", () => { sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You have been logged out"); });
     prof.addEventListener("click", () => window.openProfile());
     initProfile({
@@ -1027,38 +1261,67 @@ function initAdminAuth() {
 
 /* ---------- Mobile bottom sheets (client) ---------- */
 function initSheets() {
+    if (!$("accountSheet")) return;
     $("accountSheet").addEventListener("show.bs.offcanvas", () => {
         const u = currentUser(); if (!u) return;
-        $("shAvatar").textContent = u.name.trim().charAt(0).toUpperCase();
-        $("shName").textContent = u.name; $("shMeta").textContent = u.role + " - " + u.idNo;
+        if ($("shAvatar")) $("shAvatar").textContent = u.name.trim().charAt(0).toUpperCase();
+        if ($("shName")) $("shName").textContent = u.name;
+        if ($("shMeta")) $("shMeta").textContent = u.role + " - " + u.idNo;
     });
-    $("sheetProfile").addEventListener("click", () => {
-        const el = $("accountSheet");
-        el.addEventListener("hidden.bs.offcanvas", () => window.openProfile(), { once: true });
-        bootstrap.Offcanvas.getOrCreateInstance(el).hide();
-    });
-    $("sheetLogout").addEventListener("click", () => { bootstrap.Offcanvas.getOrCreateInstance("#accountSheet").hide(); window.doLogout(); });
+    if ($("sheetProfile")) {
+        $("sheetProfile").addEventListener("click", () => {
+            const el = $("accountSheet");
+            el.addEventListener("hidden.bs.offcanvas", () => window.openProfile(), { once: true });
+            bootstrap.Offcanvas.getOrCreateInstance(el).hide();
+        });
+    }
+    if ($("sheetLogout")) {
+        $("sheetLogout").addEventListener("click", () => { bootstrap.Offcanvas.getOrCreateInstance("#accountSheet").hide(); window.doLogout(); });
+    }
 }
 
 /* ---------- My history (client) ---------- */
 function initHistoryClient() {
-    const input = $("hSearch");
+    const input = $("hSearch"), hlBody = $("hlRows"), htBody = $("htRows");
+    if (!input || !htBody) return;
     const me = () => { try { return JSON.parse(localStorage.getItem("fixit_me")) || {}; } catch { return {}; } };
-    const none = t => `<tr><td colspan="5" class="empty">${t}</td></tr>`;
+    const none = (t, cols = 5) => `<tr><td colspan="${cols}" class="empty">${t}</td></tr>`;
     const render = () => {
         const u = currentUser();
         input.classList.toggle("d-none", !!u);
         const q = input.value.trim().toLowerCase();
         if (!u && q.length < 3) {
-            $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your damage reports.";
-            $("htRows").innerHTML = none("Nothing to show yet."); return;
+            if ($("hSummary")) $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your borrowing records and extra damage reports.";
+            if (hlBody) hlBody.innerHTML = none("Nothing to show yet.");
+            htBody.innerHTML = none("Nothing to show yet."); return;
         }
-        const T = Tickets.all().filter(t => !t.archived && (u ? (t.idNo ? t.idNo === u.idNo : t.reporter === u.name) : ((t.reporter || "") + " " + (t.idNo || t.studentNo || "")).toLowerCase().includes(q)));
-        $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") + `${T.length} damage report${T.length === 1 ? "" : "s"}, ${T.filter(t => t.status === "Fixed").length} fixed.`;
-        $("htRows").innerHTML = T.length ? T.map(t => `<tr><td>${tlBtn("t", t.id)}</td>
+        const L = Loans.all().filter(l => u
+            ? (l.borrowerId ? l.borrowerId === u.idNo : l.borrowerName === u.name)
+            : ((l.borrowerName || "") + " " + (l.borrowerId || "")).toLowerCase().includes(q));
+        const T = Tickets.all().filter(t => !t.archived && (u
+            ? (t.idNo ? t.idNo === u.idNo : t.reporter === u.name)
+            : ((t.reporter || "") + " " + (t.idNo || t.studentNo || "")).toLowerCase().includes(q)));
+
+        if ($("hSummary")) {
+            $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") +
+                `${L.length} borrowing record${L.length === 1 ? "" : "s"} (${L.filter(l => l.status === "Borrowed").length} active) · ` +
+                `${T.length} extra damage report${T.length === 1 ? "" : "s"} (${T.filter(t => t.status === "Fixed").length} fixed).`;
+        }
+
+        if (hlBody) {
+            hlBody.innerHTML = L.length ? L.map(l => `<tr>
+              <td>${tlBtn("l", l.id)}</td>
+              <td><div class="fw-semibold">${esc(l.itemName)}</div><div class="small text-secondary">${Number(l.qty) || 1} ${esc(l.unit || "pcs")} &bull; ${esc(l.assetId)}</div></td>
+              <td>${badge(l.status)}</td>
+              <td class="small">${fmt(l.createdAt)}</td>
+              <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td>
+            </tr>`).join("") : none("No borrowing or return records yet.");
+        }
+
+        htBody.innerHTML = T.length ? T.map(t => `<tr><td>${tlBtn("t", t.id)}</td>
           <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
           <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
-          <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No damage reports found.");
+          <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No extra damage reports found.");
     };
     input.addEventListener("input", render);
     document.addEventListener("shown.bs.tab", e => {
@@ -1068,48 +1331,55 @@ function initHistoryClient() {
     });
     window.addEventListener("storage", render);
     window.addEventListener("authchange", render);
+    window.addEventListener("loanschange", render);
     render();
 }
 
 /* ---------- Mobile page title + client summary ---------- */
+const ADMIN_TITLES = {
+    "#tabClean": ["Facilities", "Facility list, daily cleaning, and schedules"],
+    "#tabAssets": ["Assets inventory", "Office assets, equipment stock, and storage locations"],
+    "#tabReports": ["Reports and analytics", "Summaries of assets, reports, and activity"],
+    "#tabHistory": ["History and archive", "Activity log and archived items"],
+    "#tabPersonnel": ["Personnel", "Saved office staff and coordinators"],
+    "#tabTickets": ["Damage reports (extra)", "Secondary damage reports and tracking"]
+};
+
 const M_TITLES = {
     student: {
-        "#tabReports": ["Damage reports", "Track what has been reported on campus"],
-        "#tabHist": ["My history", "Your damage reports"]
+        "#tabCatalog": ["Facilities & assets", "Campus spaces, services, and equipment"],
+        "#tabBorrow": ["Borrow & return", "Check out available assets or return borrowed items"],
+        "#tabHist": ["My history", "Your borrowing records and submitted reports"],
+        "#tabReports": ["Damage reports (extra)", "Secondary damage reporting on campus"]
     },
-    admin: {
-        "#tabTickets": ["Maintenance tracking", "Assign, update, and close tickets"],
-        "#tabClean": ["Facility cleaning", "Daily cleaning list and cleaning totals"],
-        "#tabAssets": ["Assets", "Cleaning supplies and other items"],
-        "#tabPersonnel": ["Personnel", "Saved maintenance and utility staff on your account"],
-        "#tabReports": ["Reports and analytics", "Summaries of tickets, assets, and borrowing"],
-        "#tabHistory": ["History and archive", "Activity log and archived items"]
-    }
+    admin: ADMIN_TITLES,
+    famo: ADMIN_TITLES,
+    admin_office: ADMIN_TITLES
 };
 function updateMobileHead(t) {
     const m = (M_TITLES[document.body.dataset.page] || {})[t];
-    if (m && $("mTitle")) { $("mTitle").textContent = m[0]; $("mSub").textContent = m[1]; }
+    if (m && $("mTitle")) { $("mTitle").textContent = m[0]; if ($("mSub")) $("mSub").textContent = m[1]; }
 }
 function initHero() {
     if (!$("heroName")) return;
     const render = () => {
         const u = currentUser(); if (!u) return;
         const T = Tickets.all().filter(t => !t.archived && (t.idNo ? t.idNo === u.idNo : t.reporter === u.name));
-        $("heroName").textContent = u.name.trim().split(" ")[0];
-        $("heroTotal").textContent = T.length;
-        $("heroOpen").textContent = T.filter(t => t.status !== "Fixed").length;
-        $("heroFixed").textContent = T.filter(t => t.status === "Fixed").length;
+        if ($("heroName")) $("heroName").textContent = u.name.trim().split(" ")[0];
+        if ($("heroTotal")) $("heroTotal").textContent = T.length;
+        if ($("heroOpen")) $("heroOpen").textContent = T.filter(t => t.status !== "Fixed").length;
+        if ($("heroFixed")) $("heroFixed").textContent = T.filter(t => t.status === "Fixed").length;
     };
     window.addEventListener("authchange", render); window.addEventListener("storage", render);
     document.addEventListener("shown.bs.tab", render);
-    new MutationObserver(render).observe($("rows"), { childList: true });
+    if ($("rows")) new MutationObserver(render).observe($("rows"), { childList: true });
     render();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", e => {
         const b = e.target.closest("[data-tl]");
-        if (b) showTimeline({ t: Tickets, c: Cleanings }[b.dataset.tl], b.dataset.id);
+        if (b) showTimeline({ t: Tickets, c: Cleanings, l: Loans }[b.dataset.tl], b.dataset.id);
     });
     document.addEventListener("shown.bs.tab", e => {
         const t = e.target.getAttribute("data-bs-target");
@@ -1119,11 +1389,17 @@ document.addEventListener("DOMContentLoaded", () => {
             b.classList.toggle("active", on); b.setAttribute("aria-selected", on);
         });
     });
-    /* move focus out of a window before it is hidden (stops the aria-hidden warning) */
     ["hide.bs.modal", "hide.bs.offcanvas"].forEach(ev => document.addEventListener(ev, () => { if (document.activeElement) document.activeElement.blur(); }));
     initPhotoViewer();
     const p = document.body.dataset.page;
-    updateMobileHead(p === "student" ? "#tabReports" : "#tabTickets");
-    if (p === "student") { initAuth(); initStudent(); initHistoryClient(); initSheets(); initHero(); }
-    if (p === "admin") { initAdminAuth(); initAdmin(); initAdminExtras(); }
+    const isAdminPage = p === "admin" || p === "famo" || p === "admin_office";
+    const defaultTab = p === "student" ? "#tabCatalog" : (p === "admin_office" ? "#tabAssets" : "#tabClean");
+    updateMobileHead(defaultTab);
+    if (p === "student") { initAuth(); initStudent(); initBorrowClient(); initHistoryClient(); initSheets(); initHero(); }
+    if (isAdminPage) {
+        initAdminAuth();
+        initAdmin();
+        initAdminExtras();
+        applyAdminTabVisibility();
+    }
 });
