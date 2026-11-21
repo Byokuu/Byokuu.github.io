@@ -634,11 +634,15 @@ body {
 }
 
 .tab-pane .panel h1.h4,
-body[data-page="admin"] #tabReports h2.h5 {
+body[data-page="admin"] #tabReports h2.h5,
+body[data-page="famo"] #tabReports h2.h5,
+body[data-page="admin_office"] #tabReports h2.h5 {
     display: none;
 }
 
-body[data-page="admin"] #tabReports>.d-flex {
+body[data-page="admin"] #tabReports>.d-flex,
+body[data-page="famo"] #tabReports>.d-flex,
+body[data-page="admin_office"] #tabReports>.d-flex {
     justify-content: flex-end !important;
 }
 
@@ -737,6 +741,71 @@ textarea.form-control {
 
 .form-section {
     margin-top: 1.25rem
+}
+
+.damage-subtabs {
+    display: flex;
+    width: 100%;
+}
+
+.damage-subtabs .nav-item {
+    flex: 1 1 0;
+}
+
+.damage-subtabs .nav-link {
+    width: 100%;
+    text-align: center;
+    padding: .45rem .5rem;
+    font-size: .82rem;
+}
+
+/* Admin office history cards */
+body[data-page="admin_office"] #officeFixedRows tr {
+    position: relative;
+    gap: .3rem .5rem;
+    padding: .8rem .9rem;
+}
+
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(1) {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 6.5rem !important;
+}
+
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) {
+    position: static;
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: left;
+    padding-top: .1rem !important;
+}
+
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) .badge-status {
+    position: absolute;
+    top: .8rem;
+    right: .9rem;
+}
+
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) > div {
+    text-align: left;
+    margin-top: 0 !important;
+    font-size: .82rem;
+}
+
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(2) {
+    order: 2;
+    flex: 1 1 100%;
+    padding-top: .15rem !important;
+}
+
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(4),
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(5) {
+    order: 4;
+    font-size: .78rem;
+    color: var(--mute);
+    padding-top: .1rem !important;
 }
 
 /* Activity log */

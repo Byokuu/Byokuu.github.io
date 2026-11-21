@@ -84,13 +84,7 @@
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                         data-bs-target="#tabPersonnel" type="button" role="tab">Personnel</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabTickets" type="button" role="tab">Damage Reports <span
-                            class="badge text-bg-light border ms-auto">Extra</span></button></li>
-                <li class="nav-item ms-auto d-flex align-items-center gap-2 pb-1">
-                    <button class="btn btn-gold" type="button" data-bs-toggle="modal" data-bs-target="#assetModal"
-                        data-role-only="famo">+ Add
-                        supply</button>
-                </li>
+                        data-bs-target="#tabTickets" type="button" role="tab">Damage Reports</button></li>
             </ul>
 
             <div class="tab-content">
@@ -547,7 +541,7 @@
                         <path class="tick" d="M22 37.5l10 10 18-21"></path>
                     </svg>
                     <h2 class="h4 mb-1" id="doneTitle">Damage report logged</h2>
-                    <p class="mb-0 done-sub"><span id="lastName" class="d-none"></span>It is now in the extra damage
+                    <p class="mb-0 done-sub"><span id="lastName" class="d-none"></span>It is now in the damage
                         reports list.</p>
                 </div>
                 <div class="modal-body px-4 pb-4 pt-4">
@@ -970,16 +964,6 @@
             window.CampusCareRole = { current: CURRENT_ROLE, apply: applyRoleVisibility };
             document.addEventListener("DOMContentLoaded", () => {
                 applyRoleVisibility(CURRENT_ROLE);
-                const catFilter = document.getElementById("supplyCatFilter");
-                if (catFilter) {
-                    catFilter.addEventListener("change", () => {
-                        const val = catFilter.value.trim().toLowerCase();
-                        document.querySelectorAll("#assetRows tr").forEach((tr) => {
-                            const match = !val || tr.textContent.toLowerCase().includes(val);
-                            tr.classList.toggle("d-none", !match);
-                        });
-                    });
-                }
             });
         })();
     </script>

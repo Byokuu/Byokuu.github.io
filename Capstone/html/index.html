@@ -24,7 +24,7 @@
         <div class="panel">
             <h1 class="h4 mb-1">Welcome to CampusCare</h1>
             <p class="text-secondary small">Log in to browse facilities and assets, borrow or return equipment, view
-                your history, or submit an extra damage report.</p>
+                your history, or submit a damage report.</p>
             <ul class="nav nav-tabs mb-3" role="tablist">
                 <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#paneLogin"
                         type="button" role="tab">Log in</button></li>
@@ -93,64 +93,101 @@
         </div>
         <ul class="nav nav-tabs mb-3 d-none d-md-flex" role="tablist">
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
-                    data-bs-target="#tabCatalog" type="button" role="tab">Facilities &amp; Assets</button></li>
+                    data-bs-target="#tabCatalog" type="button" role="tab">Dashboard</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav data-bs-target="#tabBorrow"
                     type="button" role="tab">Borrow &amp; Return</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav data-bs-target="#tabHist"
                     type="button" role="tab">My History</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                    data-bs-target="#tabReports" type="button" role="tab">Damage Reports <span
-                        class="badge text-bg-light border ms-auto">Extra</span></button></li>
-            <li class="nav-item ms-auto d-flex align-items-center gap-2 pb-1">
-                <button class="btn btn-gold" type="button" data-bs-toggle="modal" data-bs-target="#reportModal">+ Extra
-                    damage report</button>
-            </li>
+                    data-bs-target="#tabReports" type="button" role="tab">Damage Reports</button></li>
         </ul>
+
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tabCatalog">
                 <div class="m-hero d-md-none">
                     <div class="m-hero-hi">Hello, <b id="heroName"></b></div>
-                    <div class="m-hero-sub">Campus facilities and equipment overview.</div>
+                    <div class="m-hero-sub">Campus facilities, borrowing, and damage reporting hub.</div>
                     <div class="m-hero-stats">
                         <div><b id="heroTotal">0</b><span>My reports</span></div>
                         <div><b id="heroOpen">0</b><span>Open</span></div>
                         <div><b id="heroFixed">0</b><span>Fixed</span></div>
                     </div>
                 </div>
-                <section class="panel">
-                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-                        <h1 class="h4 mb-0">Facilities &amp; Assets</h1>
-                    </div>
-                    <p class="text-secondary mb-3">Facility reservations, repair/service reservations with FAMO, and
-                        equipment borrowing/returns with the Asset Office are connected to your live records here.</p>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="panel h-100">
-                                <h2 class="h6 mb-1">Facilities &amp; Service Reservations (FAMO)</h2>
-                                <p class="small text-secondary mb-0">Book campus spaces or schedule repair and
-                                    maintenance
-                                    services with FAMO.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="panel h-100">
-                                <h2 class="h6 mb-1">Equipment &amp; Borrowing (Asset Office)</h2>
-                                <p class="small text-secondary mb-0">Browse available equipment, borrow items in the
-                                    <strong>Borrow &amp; Return</strong> tab, and track returns.
-                                </p>
-                            </div>
+
+                <section class="panel mb-4">
+                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-start mb-2">
+                        <div>
+                            <h1 class="h4 mb-1">CampusCare Dashboard</h1>
+                            <p class="text-secondary mb-0">Centralized campus management portal for PUP Sto. Tomas—built
+                                to help you check out equipment, review your records, and report facility or equipment
+                                damage in one place.</p>
                         </div>
                     </div>
                 </section>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="panel h-100">
+                            <h2 class="h6 mb-2">What It Is For</h2>
+                            <p class="small text-secondary mb-0">Streamlines day-to-day coordination between campus
+                                users, the Facility Management Office (FAMO), and the Asset Office so requests,
+                                equipment loans, and repair updates stay organized and traceable.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel h-100">
+                            <h2 class="h6 mb-2">What's in the App</h2>
+                            <ul class="small text-secondary mb-0 ps-3">
+                                <li><strong>Borrow &amp; Return:</strong> Browse available items from the Asset Office,
+                                    check out equipment, and return borrowed items.</li>
+                                <li><strong>My History:</strong> Look up your borrowing and return records alongside
+                                    damage reports you submitted.</li>
+                                <li><strong>Damage Reports:</strong> Log campus issues with urgency levels and photos,
+                                    and track active vs. fixed repair status.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="panel">
+                            <h2 class="h6 mb-2">What It Offers</h2>
+                            <div class="row g-3 small text-secondary">
+                                <div class="col-sm-4">
+                                    <div class="fw-semibold text-dark mb-1">Live Stock &amp; Loan Tracking</div>
+                                    <div>See real-time available quantities when borrowing and mark items returned when
+                                        done.</div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="fw-semibold text-dark mb-1">Step-by-Step Timelines</div>
+                                    <div>Click any ticket or loan ID to inspect timestamps, status changes, and
+                                        assignments.</div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="fw-semibold text-dark mb-1">Quick Damage Reporting</div>
+                                    <div>Submit building, room, urgency details, and up to 3 photos with a tracking
+                                        report number.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="tabBorrow">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div>
+                        <h2 class="h4 mb-1">Borrow &amp; Return</h2>
+                        <p class="text-secondary small mb-0">Borrow available items from the Asset Office or return
+                            items currently checked out.</p>
+                    </div>
+                    <button class="btn btn-gold" type="button" data-bs-toggle="modal" data-bs-target="#borrowModal">+
+                        Borrow an asset</button>
+                </div>
+
                 <section class="panel mb-4">
                     <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
                         <div>
-                            <h1 class="h4 mb-0">Borrow &amp; Return Assets</h1>
-                            <div class="small text-secondary">Borrow available items from the Asset Office or return
-                                items currently checked out.</div>
+                            <h3 class="h6 mb-0">Available Assets</h3>
+                            <div class="small text-secondary">Equipment currently in stock at the Asset Office.</div>
                         </div>
                         <input id="bSearch" class="form-control w-auto" style="min-width:240px" type="search"
                             placeholder="Search item, ID, or location" aria-label="Search borrowable assets">
@@ -163,7 +200,6 @@
                                     <th>Item</th>
                                     <th>Available</th>
                                     <th>Location</th>
-                                    <th>Borrow</th>
                                 </tr>
                             </thead>
                             <tbody id="borrowRows"></tbody>
@@ -171,8 +207,8 @@
                     </div>
                 </section>
 
-                <section class="panel">
-                    <h2 class="h6 mb-3">My Borrowed &amp; Returned Items</h2>
+                <section class="panel" id="myBorrowedSection">
+                    <h3 class="h6 mb-3">My Borrowed &amp; Returned Items</h3>
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead>
@@ -216,7 +252,7 @@
                         </table>
                     </div>
 
-                    <h2 class="h6">Extra damage reports I submitted</h2>
+                    <h2 class="h6">Damage reports I submitted</h2>
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead>
@@ -235,30 +271,123 @@
             </div>
 
             <div class="tab-pane fade" id="tabReports">
-                <section class="panel">
-                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-                        <div>
-                            <h1 class="h4 mb-0">Extra: Damage Reports</h1>
-                            <div class="small text-secondary">Secondary reporting feature for campus damages.</div>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div>
+                        <h2 class="h4 mb-1">Damage Reports</h2>
+                        <p class="text-secondary small mb-0">Monitor damages you reported and review your completed
+                            repair history.</p>
+                    </div>
+                    <button class="btn btn-gold" type="button" data-bs-toggle="modal" data-bs-target="#reportModal">+
+                        Report a damage</button>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-4">
+                        <div class="panel stat">
+                            <div class="n" id="clTotal">0</div>
+                            <div class="text-secondary">Reported</div>
                         </div>
-                        <input id="search" class="form-control w-auto" type="search"
-                            placeholder="Search ticket or place" aria-label="Search reports">
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Ticket</th>
-                                    <th>Damage</th>
-                                    <th>Urgency</th>
-                                    <th>Status</th>
-                                    <th>Reported</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rows"></tbody>
-                        </table>
+                    <div class="col-6 col-md-4">
+                        <div class="panel stat prog">
+                            <div class="n" id="clOpen">0</div>
+                            <div class="text-secondary">Active / Open</div>
+                        </div>
                     </div>
-                </section>
+                    <div class="col-12 col-md-4">
+                        <div class="panel stat fixed">
+                            <div class="n" id="clFixed">0</div>
+                            <div class="text-secondary">History</div>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav damage-subtabs mb-3" id="clientDamageSubtabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="clientSubReportedTab" data-bs-toggle="tab"
+                            data-bs-target="#clientPaneReported" type="button" role="tab"
+                            aria-controls="clientPaneReported" aria-selected="true">Reported damages</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="clientSubHistoryTab" data-bs-toggle="tab"
+                            data-bs-target="#clientPaneHistory" type="button" role="tab"
+                            aria-controls="clientPaneHistory" aria-selected="false">Fixed history</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="clientDamageSubtabContent">
+                    <div class="tab-pane fade show active" id="clientPaneReported" role="tabpanel"
+                        aria-labelledby="clientSubReportedTab">
+                        <section class="panel">
+                            <h3 class="h6 mb-3">Reported damages</h3>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <input id="search" class="form-control" type="search"
+                                        placeholder="Search ticket, building, or room"
+                                        aria-label="Search reported damages">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <select id="clFStatus" class="form-select" aria-label="Filter by status">
+                                        <option value="">All active statuses</option>
+                                        <option>Pending</option>
+                                        <option>In progress</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <select id="clFUrg" class="form-select" aria-label="Filter by urgency">
+                                        <option value="">All urgency</option>
+                                        <option>High</option>
+                                        <option>Medium</option>
+                                        <option>Low</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticket</th>
+                                            <th>Damage</th>
+                                            <th>Urgency</th>
+                                            <th>Status</th>
+                                            <th>Reported</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rows"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="tab-pane fade" id="clientPaneHistory" role="tabpanel"
+                        aria-labelledby="clientSubHistoryTab">
+                        <section class="panel">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                <div>
+                                    <h3 class="h6 mb-0">Fixed damage history</h3>
+                                    <div class="small text-secondary">Damages that have been finished and marked as
+                                        fixed.</div>
+                                </div>
+                                <input id="clientHistSearch" class="form-control w-auto" type="search"
+                                    placeholder="Search fixed ticket or place" aria-label="Search damage history">
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticket</th>
+                                            <th>Damage</th>
+                                            <th>Status</th>
+                                            <th>Reported</th>
+                                            <th>Fixed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="clientDamageHistRows"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -298,7 +427,7 @@
                     <path d="M4 21a8 8 0 0 1 16 0" />
                 </svg><span>Account</span></button>
         </nav>
-        <button class="fab" type="button" aria-label="Extra damage report" data-bs-toggle="modal"
+        <button class="fab" type="button" aria-label="Damage report" data-bs-toggle="modal"
             data-bs-target="#reportModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 5v14M5 12h14" />
@@ -315,7 +444,7 @@
                                 d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" />
                         </svg></span>
                     <div>
-                        <h2 class="h4 mb-0" id="reportTitle">Report a damage (extra)</h2>
+                        <h2 class="h4 mb-0" id="reportTitle">Report a damage</h2>
                         <p class="text-secondary small mb-0">Tell us where it is and we'll send it to the maintenance
                             team.</p>
                     </div>
@@ -477,7 +606,7 @@
                             </div>
                         </dl>
                     </div>
-                    <p class="text-secondary small text-center mt-3 mb-3">Keep this number to track your extra damage
+                    <p class="text-secondary small text-center mt-3 mb-3">Keep this number to track your damage
                         report.</p>
                     <button class="btn btn-maroon w-100 py-2" data-bs-dismiss="modal">Done</button>
                 </div>
@@ -527,6 +656,40 @@
                 <div class="modal-footer border-0 justify-content-between"><button type="button"
                         class="btn btn-outline-light btn-sm" id="phPrev">Previous</button><button type="button"
                         class="btn btn-outline-light btn-sm" id="phNext">Next</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade slide-up" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalT" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="h5 mb-0" id="borrowModalT">Borrow an asset</h2>
+                        <p class="text-secondary small mb-0">Choose an available item and quantity to check out.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="borrowForm" novalidate>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="bAssetSelect">Asset</label>
+                            <select class="form-select" id="bAssetSelect" name="assetId" required></select>
+                            <div class="invalid-feedback">Select an available asset.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="bQtyInput">Quantity</label>
+                            <input type="number" class="form-control" id="bQtyInput" name="qty" min="1" value="1"
+                                required>
+                            <div class="form-text" id="bAvailHint"></div>
+                            <div class="invalid-feedback">Enter a valid quantity within available stock.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-maroon">Confirm borrow</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -71,7 +71,11 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 const fmt = ms => new Date(ms).toLocaleString("en-PH", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 const who = t => t.role === "Office" ? "Office - " + (t.via || "logged") :
     (t.role || "Student") + ((t.idNo || t.studentNo) ? " - " + (t.idNo || t.studentNo) : "");
-const badge = s => `<span class="badge-status st-${s.replace(" ", "-")}">${s}</span>`;
+const badge = s => {
+    const raw = String(s ?? "");
+    const cls = esc(raw.trim().replace(/\s+/g, "-"));
+    return `<span class="badge-status st-${cls}">${esc(raw)}</span>`;
+};
 
 function toast(msg) {
     const wrap = document.getElementById("toasts");
@@ -109,6 +113,12 @@ const photoCache = {};
 async function photoUrl(id) {
     if (!(id in photoCache)) { try { const b = await PhotoDB.get(id); photoCache[id] = b ? URL.createObjectURL(b) : ""; } catch { photoCache[id] = ""; } }
     return photoCache[id];
+}
+function revokePhotoUrl(id) {
+    if (id in photoCache && photoCache[id]) {
+        URL.revokeObjectURL(photoCache[id]);
+    }
+    delete photoCache[id];
 }
 function resizeImage(file, max = 1280) {
     return new Promise((res, rej) => {
@@ -294,7 +304,8 @@ function initReportForm(afterSave) {
             title: d.title.trim(), building: d.building, location: d.location.trim(),
             category: d.category, urgency: d.urgency, description: d.description.trim(),
             role: d.role || "Office", reporter: (d.reporter || "").trim() || "Maintenance office",
-            idNo: (d.idNo || "").trim(), via: d.via || "", status, assignee, fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim()
+            idNo: (d.idNo || "").trim(), via: d.via || "", status, assignee, fixedAt: null, photos: photoIds, onBehalf: (d.onBehalf || "").trim(),
+            reporterUser: sessionStorage.getItem("fixit_admin_session") || ""
         }, note);
         if (d.role) localStorage.setItem("fixit_me", JSON.stringify({ name: (d.reporter || "").trim(), idNo: (d.idNo || "").trim() }));
         if ($("lastId")) $("lastId").textContent = t.id;
@@ -337,12 +348,15 @@ function initReportForm(afterSave) {
 /* ---------- Student page ---------- */
 function initStudent() {
     const body = document.getElementById("rows");
+    const histBody = document.getElementById("clientDamageHistRows");
     const search = document.getElementById("search");
+    const histSearch = document.getElementById("clientHistSearch");
     if (!body || !search) return;
 
     function render() {
         const q = search.value.trim().toLowerCase();
-        const list = Store.all().filter(t => !t.archived && (!q || (t.id + t.title + t.building + t.location).toLowerCase().includes(q)));
+        const allActive = Store.all().filter(t => !t.archived);
+        const list = allActive.filter(t => !q || (t.id + t.title + t.building + t.location).toLowerCase().includes(q));
         body.innerHTML = list.length ? list.map(t => `
       <tr>
         <td>${tlBtn("t", t.id)}</td>
@@ -351,39 +365,52 @@ function initStudent() {
         <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
         <td class="small text-secondary">${fmt(t.createdAt)}</td>
       </tr>`).join("")
-            : `<tr><td colspan="5" class="empty">No extra damage reports submitted yet.</td></tr>`;
+            : `<tr><td colspan="5" class="empty">No damage reports submitted yet.</td></tr>`;
+
+        if (histBody) {
+            const hq = (histSearch ? histSearch.value : "").trim().toLowerCase();
+            const fixedList = allActive.filter(t => t.status === "Fixed" &&
+                (!hq || (t.id + t.title + t.building + t.location).toLowerCase().includes(hq)));
+            histBody.innerHTML = fixedList.length ? fixedList.map(t => `
+      <tr>
+        <td>${tlBtn("t", t.id)}</td>
+        <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
+        <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
+        <td class="small text-secondary">${fmt(t.createdAt)}</td>
+        <td class="small text-secondary">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td>
+      </tr>`).join("")
+                : `<tr><td colspan="5" class="empty">No fixed damage reports in history yet.</td></tr>`;
+        }
     }
 
     initReportForm(render);
     search.addEventListener("input", render);
+    if (histSearch) histSearch.addEventListener("input", render);
+    window.addEventListener("storage", render);
     render();
 }
 
 /* ---------- Client: borrow & return assets ---------- */
 function initBorrowClient() {
     const borrowBody = $("borrowRows"), myLoanBody = $("myLoanRows"), bSearch = $("bSearch");
+    const bModalEl = $("borrowModal"), bForm = $("borrowForm"), bSelect = $("bAssetSelect"), bQty = $("bQtyInput"), bHint = $("bAvailHint");
     if (!borrowBody || !myLoanBody) return;
 
     const loansForUser = u => Loans.all().filter(l => u && (l.borrowerId === u.idNo || (!l.borrowerId && l.borrowerName === u.name)));
+    const availableAssets = () => Assets.all().filter(a => !a.archived && (Number(a.qty) || 0) > 0);
 
     const renderBorrowable = () => {
         const q = (bSearch ? bSearch.value : "").trim().toLowerCase();
-        const list = Assets.all().filter(a => !a.archived && (Number(a.qty) || 0) > 0 &&
-            (!q || (a.id + " " + a.name + " " + a.tag + " " + a.location + " " + a.category).toLowerCase().includes(q)));
+        const list = availableAssets().filter(a =>
+            !q || (a.id + " " + a.name + " " + a.tag + " " + a.location + " " + a.category).toLowerCase().includes(q));
         borrowBody.innerHTML = list.length ? list.map(a => `
           <tr>
             <td><span class="tid">${esc(a.id)}</span><div class="small text-secondary">${esc(a.tag || "")}</div></td>
             <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category || "")}</div></td>
             <td class="fw-semibold">${Number(a.qty) || 0} <span class="small text-secondary fw-normal">${esc(a.unit || "pcs")}</span></td>
             <td class="small">${esc(a.location || "-")}</td>
-            <td>
-              <div class="d-flex align-items-center gap-2" style="max-width:210px">
-                <input type="number" class="form-control form-control-sm" min="1" max="${Number(a.qty) || 1}" value="1" data-qty-for="${a.id}" aria-label="Quantity to borrow for ${esc(a.name)}" style="width:72px">
-                <button type="button" class="btn btn-sm btn-maroon flex-shrink-0" data-borrow="${a.id}">Borrow</button>
-              </div>
-            </td>
           </tr>`).join("")
-            : `<tr><td colspan="5" class="empty">No available assets match right now.</td></tr>`;
+            : `<tr><td colspan="4" class="empty">No available assets match right now.</td></tr>`;
     };
 
     const renderMyLoans = () => {
@@ -401,37 +428,76 @@ function initBorrowClient() {
             : `<tr><td colspan="6" class="empty">You haven't borrowed any assets yet.</td></tr>`;
     };
 
+    const syncBorrowModalStock = () => {
+        if (!bSelect || !bQty) return;
+        const chosen = assetOf(bSelect.value);
+        const maxQty = chosen ? Math.max(1, Number(chosen.qty) || 1) : 1;
+        bQty.max = String(maxQty);
+        if ((parseInt(bQty.value, 10) || 1) > maxQty) bQty.value = String(maxQty);
+        if ((parseInt(bQty.value, 10) || 0) < 1) bQty.value = "1";
+        if (bHint) {
+            bHint.textContent = chosen
+                ? `${Number(chosen.qty) || 0} ${chosen.unit || "pcs"} available (${chosen.location || "Asset Office"})`
+                : "No assets available to borrow.";
+        }
+    };
+
+    const populateBorrowModal = () => {
+        if (!bSelect || !bQty) return;
+        const items = availableAssets();
+        bSelect.innerHTML = items.length
+            ? items.map(a => `<option value="${esc(a.id)}">${esc(a.id)} - ${esc(a.name)} (${Number(a.qty) || 0} ${esc(a.unit || "pcs")})</option>`).join("")
+            : `<option value="">No available assets</option>`;
+        bSelect.disabled = items.length === 0;
+        bQty.disabled = items.length === 0;
+        bQty.value = "1";
+        if (bForm) bForm.classList.remove("was-validated");
+        syncBorrowModalStock();
+    };
+
     const renderAll = () => { renderBorrowable(); renderMyLoans(); };
 
-    borrowBody.addEventListener("click", e => {
-        const btn = e.target.closest("button[data-borrow]");
-        if (!btn) return;
-        const u = currentUser();
-        if (!u) { toast("Please log in first."); return; }
-        const assetId = btn.dataset.borrow;
-        const asset = assetOf(assetId);
-        if (!asset || asset.archived) { toast("This item is no longer available."); renderAll(); return; }
-        const avail = Number(asset.qty) || 0;
-        const inp = borrowBody.querySelector(`input[data-qty-for="${assetId}"]`);
-        const qty = Math.max(1, Math.min(avail, parseInt(inp && inp.value, 10) || 1));
-        if (qty > avail) { toast("Not enough stock available."); return; }
+    if (bModalEl) {
+        bModalEl.addEventListener("show.bs.modal", populateBorrowModal);
+    }
+    if (bSelect) {
+        bSelect.addEventListener("change", syncBorrowModalStock);
+    }
+    if (bForm) {
+        bForm.addEventListener("submit", e => {
+            e.preventDefault();
+            const u = currentUser();
+            if (!u) { toast("Please log in first."); return; }
+            const assetId = bSelect ? bSelect.value : "";
+            const asset = assetOf(assetId);
+            const avail = asset && !asset.archived ? (Number(asset.qty) || 0) : 0;
+            const qty = parseInt(bQty ? bQty.value : "0", 10) || 0;
 
-        Assets.patch(assetId, { qty: avail - qty }, `Borrowed ${qty} ${asset.unit || "pcs"} by ${u.name} (${u.idNo})`);
-        Loans.add({
-            assetId: asset.id,
-            itemName: asset.name,
-            unit: asset.unit || "pcs",
-            qty,
-            borrowerName: u.name,
-            borrowerId: u.idNo,
-            borrowerRole: u.role,
-            status: "Borrowed",
-            returnedAt: null
-        }, `Borrowed ${qty} ${asset.unit || "pcs"} by ${u.name} (${u.idNo})`);
-        toast(`Borrowed ${qty} ${asset.unit || "pcs"} of ${asset.name}`);
-        renderAll();
-        window.dispatchEvent(new Event("loanschange"));
-    });
+            if (bQty) bQty.setCustomValidity(qty < 1 || qty > avail ? "range" : "");
+            if (!bForm.checkValidity() || !asset || avail < 1) {
+                bForm.classList.add("was-validated");
+                return;
+            }
+
+            Assets.patch(assetId, { qty: avail - qty }, `Borrowed ${qty} ${asset.unit || "pcs"} by ${u.name} (${u.idNo})`);
+            Loans.add({
+                assetId: asset.id,
+                itemName: asset.name,
+                unit: asset.unit || "pcs",
+                qty,
+                borrowerName: u.name,
+                borrowerId: u.idNo,
+                borrowerRole: u.role,
+                status: "Borrowed",
+                returnedAt: null
+            }, `Borrowed ${qty} ${asset.unit || "pcs"} by ${u.name} (${u.idNo})`);
+
+            bootstrap.Modal.getOrCreateInstance(bModalEl).hide();
+            toast(`Borrowed ${qty} ${asset.unit || "pcs"} of ${asset.name}`);
+            renderAll();
+            window.dispatchEvent(new Event("loanschange"));
+        });
+    }
 
     myLoanBody.addEventListener("click", e => {
         const btn = e.target.closest("button[data-return]");
@@ -462,7 +528,7 @@ function initBorrowClient() {
 }
 
 const ADMIN_TABS = {
-    famo: ["#tabClean", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"],
+    famo: ["#tabClean", "#tabSupplies", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"],
     admin_office: ["#tabAssets", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"]
 };
 
@@ -500,47 +566,109 @@ function applyAdminTabVisibility() {
 /* ---------- Admin page ---------- */
 function initAdmin() {
     const body = document.getElementById("rows");
+    const fixedBody = document.getElementById("officeFixedRows");
     const fStatus = document.getElementById("fStatus"), fUrg = document.getElementById("fUrg"), search = document.getElementById("search");
     if (!body || !fStatus || !fUrg || !search) {
         window.renderTickets = () => { };
         return;
     }
 
-    function render() {
-        const all = Store.all().filter(t => !t.archived);
-        if ($("cTotal")) $("cTotal").textContent = all.length;
-        if ($("cPending")) $("cPending").textContent = all.filter(t => t.status === "Pending").length;
-        if ($("cProg")) $("cProg").textContent = all.filter(t => t.status === "In progress").length;
-        if ($("cFixed")) $("cFixed").textContent = all.filter(t => t.status === "Fixed").length;
+    const isOffice = document.body.dataset.page === "admin_office";
 
+    function mineForOffice(list) {
+        const sessUser = (sessionStorage.getItem("fixit_admin_session") || "").toLowerCase();
+        const sessName = (sessionStorage.getItem("fixit_admin_name") || "").toLowerCase();
+        const own = list.filter(t =>
+            (sessUser && (t.reporterUser || "").toLowerCase() === sessUser) ||
+            (sessName && (t.reporter || "").toLowerCase() === sessName)
+        );
+        if (own.length) return own;
+        return list.filter(t => t.role === "Office");
+    }
+
+    function render() {
+        const baseAll = Store.all().filter(t => !t.archived);
         const q = search.value.trim().toLowerCase();
-        const list = all.filter(t =>
+
+        if (isOffice) {
+            const mine = mineForOffice(baseAll);
+            const openList = mine.filter(t => t.status !== "Fixed");
+            const fixedList = mine.filter(t => t.status === "Fixed");
+
+            if ($("cTotal")) $("cTotal").textContent = mine.length;
+            if ($("cOpen")) $("cOpen").textContent = openList.length;
+            if ($("cFixed")) $("cFixed").textContent = fixedList.length;
+
+            const filteredOpen = openList.filter(t =>
+                (!fStatus.value || t.status === fStatus.value) &&
+                (!fUrg.value || t.urgency === fUrg.value) &&
+                (!q || (t.id + t.title + t.building + t.location + t.category).toLowerCase().includes(q))
+            );
+
+            body.innerHTML = filteredOpen.length ? filteredOpen.map(t => `
+              <tr>
+                <td>${tlBtn("t", t.id)}</td>
+                <td><div class="fw-semibold">${esc(t.title)}</div>
+                    <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}</div>
+                    ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}${photoStrip(t)}</td>
+                <td class="urg-${t.urgency}">${t.urgency}</td>
+                <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
+                <td class="small text-secondary">${fmt(t.createdAt)}</td>
+              </tr>`).join("")
+                : `<tr><td colspan="5" class="empty">No active damage reports match your filters.</td></tr>`;
+
+            if (fixedBody) {
+                const filteredFixed = fixedList.filter(t =>
+                    !q || (t.id + t.title + t.building + t.location + t.category).toLowerCase().includes(q)
+                );
+                fixedBody.innerHTML = filteredFixed.length ? filteredFixed.map(t => `
+                  <tr>
+                    <td>${tlBtn("t", t.id)}</td>
+                    <td><div class="fw-semibold">${esc(t.title)}</div>
+                        <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}</div>
+                        ${photoStrip(t)}</td>
+                    <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Fixed by ${esc(t.assignee)}</div>` : ""}</td>
+                    <td class="small text-secondary">${fmt(t.createdAt)}</td>
+                    <td class="small text-secondary">${t.fixedAt ? fmt(t.fixedAt) : fmt(t.updatedAt)}</td>
+                  </tr>`).join("")
+                    : `<tr><td colspan="5" class="empty">No fixed damage reports in your history yet.</td></tr>`;
+            }
+            return;
+        }
+
+        if ($("cTotal")) $("cTotal").textContent = baseAll.length;
+        if ($("cPending")) $("cPending").textContent = baseAll.filter(t => t.status === "Pending").length;
+        if ($("cProg")) $("cProg").textContent = baseAll.filter(t => t.status === "In progress").length;
+        if ($("cFixed")) $("cFixed").textContent = baseAll.filter(t => t.status === "Fixed").length;
+
+        const list = baseAll.filter(t =>
             (!fStatus.value || t.status === fStatus.value) &&
             (!fUrg.value || t.urgency === fUrg.value) &&
             (!q || (t.id + t.title + t.building + t.location + t.reporter).toLowerCase().includes(q)));
 
         body.innerHTML = list.length ? list.map(t => `
-      <tr>
-        <td>${tlBtn("t", t.id)}</td>
-        <td><div class="fw-semibold">${esc(t.title)}</div>
-            <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}</div>
-            ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}${photoStrip(t)}</td>
-        <td class="small">${esc(t.onBehalf || t.reporter)}<br><span class="text-secondary">${t.onBehalf ? "Logged by " + esc(t.reporter) : esc(who(t))}</span></td>
-        <td class="urg-${t.urgency}">${t.urgency}</td>
-        <td>${badge(t.status)}<div class="small text-secondary mt-1">${fmt(t.updatedAt)}</div></td>
-        <td class="small">${t.assignee ? esc(t.assignee) : '<span class="text-secondary">Unassigned</span>'}</td>
-        <td class="text-end text-nowrap">
-          ${t.status !== "Fixed" ? `<button class="btn btn-sm btn-outline-secondary" data-act="assign" data-id="${t.id}">${t.assignee ? "Reassign" : "Assign"}</button>` : ""}
-          ${t.status === "Pending" ? `<button class="btn btn-sm btn-outline-primary" data-act="In progress" data-id="${t.id}">Start work</button>` : ""}
-          ${t.status !== "Fixed" ? `<button class="btn btn-sm btn-success" data-act="Fixed" data-id="${t.id}">Mark as fixed</button>`
+          <tr>
+            <td>${tlBtn("t", t.id)}</td>
+            <td><div class="fw-semibold">${esc(t.title)}</div>
+                <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}</div>
+                ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}${photoStrip(t)}</td>
+            <td class="small">${esc(t.onBehalf || t.reporter)}<br><span class="text-secondary">${t.onBehalf ? "Logged by " + esc(t.reporter) : esc(who(t))}</span></td>
+            <td class="urg-${t.urgency}">${t.urgency}</td>
+            <td>${badge(t.status)}<div class="small text-secondary mt-1">${fmt(t.updatedAt)}</div></td>
+            <td class="small">${t.assignee ? esc(t.assignee) : '<span class="text-secondary">Unassigned</span>'}</td>
+            <td class="text-end text-nowrap">
+              ${t.status !== "Fixed" ? `<button class="btn btn-sm btn-outline-secondary" data-act="assign" data-id="${t.id}">${t.assignee ? "Reassign" : "Assign"}</button>` : ""}
+              ${t.status === "Pending" ? `<button class="btn btn-sm btn-outline-primary" data-act="In progress" data-id="${t.id}">Start work</button>` : ""}
+              ${t.status !== "Fixed" ? `<button class="btn btn-sm btn-success" data-act="Fixed" data-id="${t.id}">Mark as fixed</button>`
                 : `<button class="btn btn-sm btn-outline-secondary" data-act="Pending" data-id="${t.id}">Reopen</button>`}
-          <button class="btn btn-sm btn-outline-danger" data-act="delete" data-id="${t.id}" aria-label="Archive ${t.id}">Archive</button>
-        </td>
-      </tr>`).join("")
+              <button class="btn btn-sm btn-outline-danger" data-act="delete" data-id="${t.id}" aria-label="Archive ${t.id}">Archive</button>
+            </td>
+          </tr>`).join("")
             : `<tr><td colspan="7" class="empty">No damage reports match these filters.</td></tr>`;
     }
 
     body.addEventListener("click", e => {
+        if (isOffice) return;
         const b = e.target.closest("button[data-act]"); if (!b) return;
         const { act, id } = b.dataset;
         if (act === "assign") { openAssign(id); return; }
@@ -838,9 +966,18 @@ function initAdminExtras() {
     function renderAssets() {
         const assetRows = $("assetRows");
         if (!assetRows) return;
+        const page = document.body.dataset.page || document.body.dataset.role || "famo";
+        const hideDept = page === "admin_office";
+        const assetHead = {
+            active: hideDept
+                ? "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Updated</th><th></th></tr>"
+                : "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Department</th><th>Updated</th><th></th></tr>",
+            archived: "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Archived on</th><th></th></tr>"
+        };
         const all = Assets.all();
         const q = ($("sSearch") ? $("sSearch").value : "").trim().toLowerCase();
         const cat = ($("assetCatFilter") ? $("assetCatFilter").value : "").trim().toLowerCase();
+        const supCat = ($("supplyCatFilter") ? $("supplyCatFilter").value : "").trim().toLowerCase();
         const arch = assetView === "archived";
         if ($("cntActive")) $("cntActive").textContent = all.filter(a => !a.archived).length;
         if ($("cntArch")) $("cntArch").textContent = all.filter(a => a.archived).length;
@@ -848,20 +985,22 @@ function initAdminExtras() {
         const list = all.filter(a =>
             !!a.archived === arch &&
             (!cat || String(a.category || "").toLowerCase() === cat) &&
-            (!q || (a.id + a.name + a.tag + a.location + a.dept + a.category).toLowerCase().includes(q))
+            (!supCat || String(a.category || "").toLowerCase() === supCat) &&
+            (!q || (a.id + a.name + a.tag + a.location + (hideDept ? "" : a.dept) + a.category).toLowerCase().includes(q))
         );
         const btns = a => arch
             ? `<button class="btn btn-sm btn-success" data-act="restore" data-id="${a.id}">Restore</button> <button class="btn btn-sm btn-outline-danger" data-act="purge" data-id="${a.id}">Delete permanently</button>`
             : `<button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${a.id}">Edit</button> <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${a.id}">Delete</button>`;
+        const emptyColspan = arch || hideDept ? 6 : 7;
         assetRows.innerHTML = list.length ? list.map(a => `<tr>
           <td><span class="tid">${a.id}</span><div class="small text-secondary">${esc(a.tag)}</div></td>
           <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category)}</div></td>
           <td class="fw-semibold">${a.qty ?? "-"} <span class="small text-secondary fw-normal">${esc(a.unit || "")}</span></td>
           <td class="small">${esc(a.location)}</td>
-          ${arch ? "" : `<td class="small">${esc(a.dept)}</td>`}
+          ${arch || hideDept ? "" : `<td class="small">${esc(a.dept)}</td>`}
           <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
           <td class="text-end text-nowrap">${btns(a)}</td></tr>`).join("")
-            : `<tr><td colspan="${arch ? 6 : 7}" class="empty">${arch ? "Nothing in the archive." : 'No items yet. Use "+ Add asset" to record one.'}</td></tr>`;
+            : `<tr><td colspan="${emptyColspan}" class="empty">${arch ? "Nothing in the archive." : 'No items yet. Use "+ Add asset" to record one.'}</td></tr>`;
     }
     if ($("assetView")) {
         $("assetView").addEventListener("click", e => {
@@ -871,20 +1010,35 @@ function initAdminExtras() {
             renderAssets();
         });
     }
+    const nextAssetTag = (prefix = "AST") => {
+        const re = new RegExp(`^${prefix}-(\\d+)$`, "i");
+        let maxNum = 0;
+        let pad = 3;
+        Assets.all().forEach(a => {
+            const m = String(a.tag || "").trim().match(re);
+            if (!m) return;
+            const n = parseInt(m[1], 10);
+            if (!Number.isNaN(n) && n > maxNum) maxNum = n;
+            if (m[1].length > pad) pad = m[1].length;
+        });
+        return `${prefix}-${String(maxNum + 1).padStart(pad, "0")}`;
+    };
     const setAssetForm = a => {
         const f = $("assetForm"); if (!f) return;
         f.reset(); f.classList.remove("was-validated");
+        if ($("nTag")) {
+            $("nTag").setCustomValidity("");
+            $("nTag").value = a ? (a.tag || "") : "";
+        }
         if ($("assetId2")) $("assetId2").value = a ? a.id : "";
         if ($("assetModalT")) $("assetModalT").textContent = a ? "Edit asset" : "Add asset";
         if ($("assetSave")) $("assetSave").textContent = a ? "Save changes" : "Save asset";
         if (a) {
             if ($("nName")) $("nName").value = a.name;
-            if ($("nTag")) $("nTag").value = a.tag;
             if ($("nCat")) $("nCat").value = a.category;
             if ($("nQty")) $("nQty").value = a.qty ?? "";
             if ($("nUnit")) $("nUnit").value = a.unit || "";
-            if ($("nLoc")) $("nLoc").value = a.location;
-            if ($("nDept")) $("nDept").value = a.dept;
+            if ($("nLoc")) $("nLoc").value = a.location || "";
         }
     };
     if ($("assetModal")) {
@@ -894,15 +1048,27 @@ function initAdminExtras() {
         $("assetForm").addEventListener("submit", e => {
             e.preventDefault();
             const f = e.target, tag = $("nTag"), eid = $("assetId2") ? $("assetId2").value : "";
+            const page = document.body.dataset.page || document.body.dataset.role || "famo";
+            const defaultPrefix = page === "famo" ? "SUP" : "AST";
             if (tag) {
                 tag.setCustomValidity(Assets.all().some(a => a.id !== eid && a.tag.toLowerCase() === tag.value.trim().toLowerCase()) ? "dup" : "");
             }
             if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
             const d = Object.fromEntries(new FormData(f));
-            const data = { name: d.name.trim(), tag: d.tag.trim(), category: d.category, qty: Number(d.qty), unit: d.unit.trim(), location: d.location.trim(), dept: d.dept.trim() };
+            const existing = eid ? assetOf(eid) : null;
+            const resolvedTag = tag
+                ? (d.tag || "").trim()
+                : (existing ? existing.tag : nextAssetTag(defaultPrefix));
+            const data = {
+                name: (d.name || "").trim(),
+                tag: resolvedTag,
+                category: d.category,
+                qty: Number(d.qty),
+                unit: (d.unit || "").trim(),
+                location: $("nLoc") ? (d.location || "").trim() : (existing ? existing.location : "Admin Office")
+            };
             if (eid) {
-                const old = assetOf(eid);
-                Assets.patch(eid, data, "Asset details updated" + (old && old.qty !== data.qty ? ` (quantity ${old.qty ?? 0} to ${data.qty})` : ""));
+                Assets.patch(eid, data, "Asset details updated" + (existing && existing.qty !== data.qty ? ` (quantity ${existing.qty ?? 0} to ${data.qty})` : ""));
                 toast(`${data.name} updated`);
             } else {
                 Assets.add({ ...data, condition: "Good" }, `Added to inventory (${data.qty} ${data.unit})`);
@@ -953,17 +1119,70 @@ function initAdminExtras() {
     /* reports */
     function renderReports() {
         if (!$("reportBody")) return;
-        const T = Tickets.all().filter(t => !t.archived), A = Assets.all().filter(a => !a.archived), C = Cleanings.all(), fixed = T.filter(t => t.status === "Fixed");
+        const page = document.body.dataset.page || document.body.dataset.role || "famo";
+        const isOffice = page === "admin_office";
+
+        const T = Tickets.all().filter(t => !t.archived);
+        const A = Assets.all().filter(a => !a.archived);
+        const C = Cleanings.all();
+        const L = Loans.all();
+        const fixed = T.filter(t => t.status === "Fixed");
+
         const times = fixed.filter(t => t.fixedAt).map(t => t.fixedAt - t.createdAt);
         const avg = times.length ? times.reduce((x, y) => x + y, 0) / times.length / 36e5 : null;
-        const stats = [[A.length, "Items in inventory"], [C.length, "Facilities listed"], [C.filter(doneToday).length, "Cleaned today"],
-        [T.length, "Extra reports"], [T.length ? Math.round(fixed.length / T.length * 100) + "%" : "-", "Issues fixed"],
-        [avg === null ? "-" : avg < 48 ? avg.toFixed(1) + " h" : (avg / 24).toFixed(1) + " days", "Avg. repair time"]];
-        const panel = (title, data) => `<div class="col-md-6"><div class="panel h-100"><h3 class="h6 mb-3">${title}</h3>${bars(data)}</div></div>`;
-        const totals = C.reduce((o, c) => { o[c.areaType] = (o[c.areaType] || 0) + logOf(c).length; return o; }, {});
-        $("reportBody").innerHTML = `<p class="text-secondary small">Generated ${fmt(Date.now())}</p>
-          <div class="row g-3 mb-3">${stats.map(([n, l]) => `<div class="col-6 col-md-4 col-lg-2"><div class="panel stat"><div class="n fs-4">${n}</div><div class="text-secondary small">${l}</div></div></div>`).join("")}</div>
-          <div class="row g-3">${panel("Facility cleaning today", tally(C, c => doneToday(c) ? "Cleaned" : "For Cleaning"))}${panel("Inventory by category", tally(A, a => a.category))}${panel("Total times cleaned, by area type", totals)}${panel("Repair progress (by status)", tally(T, t => t.status))}${panel("Extra issues by type", tally(T, t => t.category))}</div>`;
+        const avgTxt = avg === null ? "-" : avg < 48 ? avg.toFixed(1) + " h" : (avg / 24).toFixed(1) + " days";
+        const fixedRate = T.length ? Math.round(fixed.length / T.length * 100) + "%" : "-";
+
+        const panel = (title, data) =>
+            `<div class="col-md-6"><div class="panel"><h3 class="h6 mb-3">${esc(title)}</h3>${bars(data)}</div></div>`;
+
+        const renderCards = (items, colClass = "col-6 col-md-4 col-lg") =>
+            `<div class="row g-3 mb-3 align-items-stretch">${items.map(([n, l]) =>
+                `<div class="${colClass}"><div class="panel stat h-100"><div class="n">${n}</div><div class="text-secondary small">${l}</div></div></div>`
+            ).join("")}</div>`;
+
+        if (isOffice) {
+            const totalUnits = A.reduce((sum, a) => sum + (Number(a.qty) || 0), 0);
+            const activeLoans = L.filter(x => x.status === "Borrowed").length;
+            const returnedLoans = L.filter(x => x.status === "Returned").length;
+            const stats = [
+                [A.length, "Active Assets"],
+                [totalUnits, "Total Units on Hand"],
+                [activeLoans, "Active Borrowed"],
+                [returnedLoans, "Returned Loans"]
+            ];
+
+            $("reportBody").innerHTML = `<p class="text-secondary small">Office report &bull; Generated ${fmt(Date.now())}</p>` +
+                renderCards(stats, "col-6 col-md-3") +
+                `<div class="row g-3">` +
+                panel("Inventory by category", tally(A, a => a.category || "Uncategorized")) +
+                panel("Assets by location", tally(A, a => a.location || "Unspecified")) +
+                panel("Borrowing records by status", tally(L, x => x.status || "Unknown")) +
+                `</div>`;
+            return;
+        }
+
+        const cleanedTodayCount = C.filter(doneToday).length;
+        const totalsByType = C.reduce((o, c) => {
+            o[c.areaType] = (o[c.areaType] || 0) + logOf(c).length;
+            return o;
+        }, {});
+        const stats = [
+            [C.length, "Facilities listed"],
+            [cleanedTodayCount, "Cleaned today"],
+            [T.length, "Damage reports"],
+            [fixedRate, "Issues fixed"],
+            [avgTxt, "Avg. repair time"]
+        ];
+
+        $("reportBody").innerHTML = `<p class="text-secondary small">FAMO report &bull; Generated ${fmt(Date.now())}</p>` +
+            renderCards(stats, "col-6 col-md-4 col-lg") +
+            `<div class="row g-3">` +
+            panel("Facility cleaning today", tally(C, c => doneToday(c) ? "Cleaned" : "For Cleaning")) +
+            panel("Total times cleaned, by area type", totalsByType) +
+            panel("Repair progress (by status)", tally(T, t => t.status)) +
+            panel("Damage issues by type", tally(T, t => t.category)) +
+            `</div>`;
     }
 
     /* history: activity log + archive */
@@ -973,7 +1192,7 @@ function initAdminExtras() {
         const logs = Log.all().filter(g => (!k || g.kind === k) && (!q || g.text.toLowerCase().includes(q))).slice(0, 200);
         $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Report", asset: "Asset", cleaning: "Cleaning", loan: "Borrowing" }[g.kind] || g.kind}</span></td><td>${esc(g.text)}</td></tr>`).join("")
             : `<tr><td colspan="3" class="empty">No activity yet.</td></tr>`;
-        const arch = [...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", o: t, name: t.title })), ...Assets.all().filter(a => a.archived).map(a => ({ k: "asset", o: a, name: `${a.name} (${a.tag})` }))].sort((x, y) => y.o.archivedAt - x.o.archivedAt);
+        const arch = [...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", o: t, name: t.title })), ...Assets.all().filter(a => a.archived).map(a => ({ k: "asset", o: a, name: `${a.name} (${a.tag})` }))].sort((x, y) => (Number(y.o?.archivedAt) || 0) - (Number(x.o?.archivedAt) || 0));
         $("archRows").innerHTML = arch.length ? arch.map(x => `<tr><td><span class="badge text-bg-light border">${x.k === "ticket" ? "Report" : "Asset"}</span></td>
           <td><span class="tid">${x.o.id}</span><div class="fw-semibold">${esc(x.name)}</div></td><td class="small">${fmtT(x.o.archivedAt)}</td>
           <td class="text-end text-nowrap"><button class="btn btn-sm btn-success" data-act="restore" data-k="${x.k}" data-id="${x.o.id}">Restore</button>
@@ -996,7 +1215,10 @@ function initAdminExtras() {
                     desc: "This can't be undone. The activity log keeps a record of it.",
                     btnText: "Delete forever",
                     onConfirm: () => {
-                        (c === Tickets ? (Tickets.all().find(t => t.id === id) || {}).photos || [] : []).forEach(p => PhotoDB.remove(p).catch(() => { }));
+                        (c === Tickets ? (Tickets.all().find(t => t.id === id) || {}).photos || [] : []).forEach(p => {
+                            revokePhotoUrl(p);
+                            PhotoDB.remove(p).catch(() => { });
+                        });
                         c.remove(id, "Deleted forever");
                         toast(`${id} deleted forever`);
                         renderAll();
@@ -1012,6 +1234,7 @@ function initAdminExtras() {
     ["cSearch", "cStatus", "cType"].forEach(id => { if ($(id)) $(id).addEventListener("input", renderCleanings); });
     if ($("sSearch")) $("sSearch").addEventListener("input", renderAssets);
     if ($("assetCatFilter")) $("assetCatFilter").addEventListener("change", renderAssets);
+    if ($("supplyCatFilter")) $("supplyCatFilter").addEventListener("change", renderAssets);
     document.addEventListener("shown.bs.tab", e => { if (e.target.closest("#adminTabs, #adminBottomNav")) renderAll(); });
     window.addEventListener("storage", renderAll);
     renderAll();
@@ -1291,7 +1514,7 @@ function initHistoryClient() {
         input.classList.toggle("d-none", !!u);
         const q = input.value.trim().toLowerCase();
         if (!u && q.length < 3) {
-            if ($("hSummary")) $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your borrowing records and extra damage reports.";
+            if ($("hSummary")) $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your borrowing records and damage reports.";
             if (hlBody) hlBody.innerHTML = none("Nothing to show yet.");
             htBody.innerHTML = none("Nothing to show yet."); return;
         }
@@ -1305,7 +1528,7 @@ function initHistoryClient() {
         if ($("hSummary")) {
             $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") +
                 `${L.length} borrowing record${L.length === 1 ? "" : "s"} (${L.filter(l => l.status === "Borrowed").length} active) · ` +
-                `${T.length} extra damage report${T.length === 1 ? "" : "s"} (${T.filter(t => t.status === "Fixed").length} fixed).`;
+                `${T.length} damage report${T.length === 1 ? "" : "s"} (${T.filter(t => t.status === "Fixed").length} fixed).`;
         }
 
         if (hlBody) {
@@ -1321,7 +1544,7 @@ function initHistoryClient() {
         htBody.innerHTML = T.length ? T.map(t => `<tr><td>${tlBtn("t", t.id)}</td>
           <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
           <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
-          <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No extra damage reports found.");
+          <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No damage reports found.");
     };
     input.addEventListener("input", render);
     document.addEventListener("shown.bs.tab", e => {
@@ -1338,19 +1561,20 @@ function initHistoryClient() {
 /* ---------- Mobile page title + client summary ---------- */
 const ADMIN_TITLES = {
     "#tabClean": ["Facilities", "Facility list, daily cleaning, and schedules"],
+    "#tabSupplies": ["Cleaning supplies", "Cleaning supplies, sanitation stock, and storage levels"],
     "#tabAssets": ["Assets inventory", "Office assets, equipment stock, and storage locations"],
     "#tabReports": ["Reports and analytics", "Summaries of assets, reports, and activity"],
     "#tabHistory": ["History and archive", "Activity log and archived items"],
     "#tabPersonnel": ["Personnel", "Saved office staff and coordinators"],
-    "#tabTickets": ["Damage reports (extra)", "Secondary damage reports and tracking"]
+    "#tabTickets": ["Damage reports", "Secondary damage reports and tracking"]
 };
 
 const M_TITLES = {
     student: {
-        "#tabCatalog": ["Facilities & assets", "Campus spaces, services, and equipment"],
+        "#tabCatalog": ["Dashboard", "What CampusCare is for, what's inside, and what it offers"],
         "#tabBorrow": ["Borrow & return", "Check out available assets or return borrowed items"],
         "#tabHist": ["My history", "Your borrowing records and submitted reports"],
-        "#tabReports": ["Damage reports (extra)", "Secondary damage reporting on campus"]
+        "#tabReports": ["Damage reports", "Secondary damage reporting on campus"]
     },
     admin: ADMIN_TITLES,
     famo: ADMIN_TITLES,
@@ -1382,6 +1606,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (b) showTimeline({ t: Tickets, c: Cleanings, l: Loans }[b.dataset.tl], b.dataset.id);
     });
     document.addEventListener("shown.bs.tab", e => {
+        if (e.target.closest(".damage-subtabs")) return;
         const t = e.target.getAttribute("data-bs-target");
         updateMobileHead(t);
         document.querySelectorAll("[data-main-nav]").forEach(b => {

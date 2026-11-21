@@ -476,6 +476,32 @@ body {
     }
 }
 
+/* Uniform KPI stat cards in reports*/
+#reportBody .panel.stat {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .25rem;
+}
+
+#reportBody .panel.stat .n {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--maroon);
+    line-height: 1.1;
+}
+
+@media (max-width: 767.98px) {
+    #reportBody .panel.stat {
+        padding: .85rem;
+    }
+
+    #reportBody .panel.stat .n {
+        font-size: 1.5rem;
+    }
+}
+
 /* timeline + links */
 
 .tid-link {
@@ -742,14 +768,15 @@ body {
 }
 
 /* ===== professional look ===== */
-
 :root {
     --i-clip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2'/%3E%3Crect x='9' y='3' width='6' height='4' rx='1'/%3E%3Cpath d='M9 12h6M9 16h4'/%3E%3C/svg%3E");
     --i-swap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h13l-3-3M17 17H4l3 3'/%3E%3C/svg%3E");
     --i-box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 8l-9-5-9 5v8l9 5 9-5z'/%3E%3Cpath d='M3.3 7.5L12 12.5l8.7-5M12 22V12.5'/%3E%3C/svg%3E");
     --i-chart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20V10M10 20V4M16 20v-7M22 20H2'/%3E%3C/svg%3E");
     --i-clock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E");
-    --i-users: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E")
+    --i-users: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");
+    --i-building: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01'/%3E%3C/svg%3E");
+    --i-supplies: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 3h6l1 4h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2l1-4z'/%3E%3Cpath d='M8 13h8M12 10v6'/%3E%3C/svg%3E");
 }
 
 body {
@@ -987,13 +1014,23 @@ h3,
         --ic: var(--i-clock)
     }
 
-    body[data-page="admin"] [data-bs-target="#tabReports"] {
+    [data-bs-target="#tabCatalog"] {
+        --ic: var(--i-building)
+    }
+
+    [data-bs-target="#tabSupplies"] {
+        --ic: var(--i-supplies)
+    }
+
+    body[data-page="admin"] [data-bs-target="#tabReports"],
+    body[data-page="famo"] [data-bs-target="#tabReports"],
+    body[data-page="admin_office"] [data-bs-target="#tabReports"] {
         --ic: var(--i-chart)
     }
 
     [data-bs-target="#tabPersonnel"] {
-    --ic: var(--i-users);
-}
+        --ic: var(--i-users);
+    }
 
     /* client action buttons move to the top of the sidebar */
     ul.nav-tabs.d-md-flex li.ms-auto {
@@ -1368,6 +1405,36 @@ h3,
     --dot: #c4372d;
     --bgc: #fdecea;
     --tc: #8a1c14
+}
+
+/* Sub-tabs inside Damage Reports */
+.damage-subtabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    padding: .25rem;
+    background: #f1eced;
+    border-radius: 10px;
+}
+
+.damage-subtabs .nav-link {
+    border: 0;
+    border-radius: 8px;
+    padding: .45rem .85rem;
+    color: var(--mute);
+    font-weight: 500;
+    font-size: .88rem;
+}
+
+.damage-subtabs .nav-link:hover {
+    color: var(--maroon);
+}
+
+.damage-subtabs .nav-link.active {
+    background: #fff;
+    color: var(--maroon);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
 }
 
 /* delete-or-archive choices */
