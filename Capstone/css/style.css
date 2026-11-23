@@ -467,7 +467,8 @@ body {
     .nav-tabs,
     .no-print,
     .toast-wrap,
-    .btn {
+    .btn,
+    .admin-sidebar {
         display: none !important
     }
 
@@ -558,7 +559,7 @@ body {
     color: #555
 }
 
-/* show/hide password */
+/* show/hide password (vertically centered on desktop & mobile) */
 
 .pw-wrap {
     position: relative
@@ -571,18 +572,25 @@ body {
 
 .pw-eye {
     position: absolute;
-    top: 0;
+    top: 50%;
     right: 0;
+    transform: translateY(-50%);
     width: 2.75rem;
-    height: calc(1.5em + .75rem + 2px);
+    height: 100%;
     border: 0;
     background: none;
     color: var(--mute);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    line-height: 1;
+    padding: 0;
     cursor: pointer;
     border-radius: 0 .375rem .375rem 0
+}
+
+.pw-eye svg {
+    display: block
 }
 
 .pw-eye:hover {
@@ -658,8 +666,6 @@ body {
     width: 24px;
     height: 24px
 }
-
-/* mobile: full-width search bars and buttons, softer tab focus ring */
 
 /* auto-filled fields that come from the signed-in account */
 
@@ -928,8 +934,7 @@ h3,
 
 @media (min-width: 768px) {
 
-    body[data-page="student"] main.container,
-    #adminApp {
+    body[data-page="student"] main.container {
         display: grid;
         grid-template-columns: 250px minmax(0, 1fr);
         gap: 1.75rem;
@@ -1047,6 +1052,250 @@ h3,
         width: 100%;
         padding: .6rem .75rem
     }
+
+    /* ===== Admin Workspace Shell (Inventory Dashboard Layout in Maroon / White / Gold) ===== */
+
+    body[data-page="famo"] main.container,
+    body[data-page="admin_office"] main.container,
+    body[data-page="admin"] main.container {
+        max-width: 1440px;
+        padding-top: 1.5rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+
+    body[data-page="famo"] #adminApp,
+    body[data-page="admin_office"] #adminApp,
+    body[data-page="admin"] #adminApp {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(35, 32, 31, .07);
+        overflow: visible;
+        min-height: calc(100vh - 115px);
+        align-items: stretch;
+    }
+
+    /* Left Sidebar Rail */
+    .admin-sidebar {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #fbf8f8;
+        border-right: 1px solid var(--line);
+        border-radius: 16px 0 0 16px;
+        padding: 1.15rem .85rem;
+    }
+
+    .admin-sidebar-section {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--mute);
+        padding: .25rem .75rem .55rem;
+    }
+
+    .admin-sidebar ul.nav-tabs.d-md-flex {
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        position: static;
+        gap: .2rem;
+    }
+
+    .admin-sidebar ul.nav-tabs.d-md-flex .nav-link {
+        padding: .68rem .85rem;
+        border-radius: 10px;
+        font-size: .92rem;
+        color: #4f4849;
+        transition: background .15s, color .15s;
+    }
+
+    .admin-sidebar ul.nav-tabs.d-md-flex .nav-link:hover {
+        background: #f3e8e9;
+        color: var(--maroon);
+    }
+
+    .admin-sidebar ul.nav-tabs.d-md-flex .nav-link.active {
+        background: linear-gradient(90deg, rgba(122, 15, 26, .12) 0%, rgba(122, 15, 26, .04) 100%);
+        color: var(--maroon);
+        font-weight: 700;
+        box-shadow: inset 4px 0 0 var(--maroon);
+    }
+
+    .admin-sidebar-footer {
+        margin-top: 1.5rem;
+        padding-top: .85rem;
+        border-top: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: .25rem;
+    }
+
+    .admin-side-action {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        border-radius: 10px;
+        padding: .6rem .8rem;
+        font-size: .88rem;
+        font-weight: 500;
+        color: #4f4849;
+        text-align: left;
+        cursor: pointer;
+        transition: background .15s, color .15s;
+    }
+
+    .admin-side-action svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
+        opacity: .85;
+    }
+
+    .admin-side-action:hover {
+        background: #f3e8e9;
+        color: var(--maroon);
+    }
+
+    .admin-side-action.accent {
+        background: var(--maroon);
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: .35rem;
+        box-shadow: 0 2px 6px rgba(122, 15, 26, .22);
+    }
+
+    .admin-side-action.accent:hover {
+        background: var(--maroon-d);
+        color: #fff;
+    }
+
+    /* Right Workspace Area */
+    .admin-workspace {
+        padding: 1.5rem 1.75rem 2rem;
+        min-width: 0;
+        background: #fff;
+        border-radius: 0 16px 16px 0;
+    }
+
+    /* Action Header Bar */
+    .ws-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 1.15rem;
+        margin-bottom: 1.35rem;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .ws-title-group {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+    .ws-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .ws-role-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .3rem .75rem;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        background: #fdf6e6;
+        color: #6b4c00;
+        border: 1px solid rgba(217, 164, 65, .45);
+    }
+
+    .ws-role-pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--gold);
+    }
+
+    .ws-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .55rem;
+    }
+
+    /* Filter & Segmented Toolbar */
+    .ws-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        background: #faf7f7;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: .65rem .85rem;
+        margin-bottom: 1rem;
+    }
+
+    .ws-toolbar .form-control,
+    .ws-toolbar .form-select {
+        background-color: #fff;
+        font-size: .88rem;
+        padding: .48rem .75rem;
+    }
+
+    /* Clean Table Card Container inside Workspace */
+    .ws-table-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .ws-table-card .table {
+        margin-bottom: 0;
+    }
+
+    .ws-table-card .table thead th {
+        background: #f9f4f4;
+        color: #5a5253;
+        font-size: .74rem;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .ws-table-card .table tbody td {
+        padding: .9rem 1rem;
+        border-bottom: 1px solid #f0ecec;
+    }
+
+    .ws-table-card .table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .ws-table-card .table-hover>tbody>tr:hover>* {
+        background-color: #fdf8f8;
+    }
 }
 
 @media print {
@@ -1056,8 +1305,6 @@ h3,
         display: block
     }
 }
-
-/* ===== professional mobile layout ===== */
 
 /* ===== user menu ===== */
 
@@ -1523,4 +1770,89 @@ h3,
 body[data-page="famo"] #adminTabs [data-bs-target="#tabAssets"],
 body[data-page="famo"] #adminBottomNav [data-bs-target="#tabAssets"] {
     display: none !important;
+}
+
+
+/* ===== Refined Topbar Profile Pill & Dropdown ===== */
+.user-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .15) 0%, rgba(255, 255, 255, .07) 100%);
+    border: 1px solid rgba(217, 164, 65, .6);
+    color: #fff;
+    border-radius: 999px;
+    padding: .28rem .85rem .28rem .32rem;
+    font-weight: 600;
+    font-size: .88rem;
+    letter-spacing: .01em;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2), inset 0 1px 0 rgba(255, 255, 255, .16);
+    cursor: pointer;
+    transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.user-toggle:hover,
+.user-toggle:focus-visible {
+    background: rgba(255, 255, 255, .21);
+    border-color: var(--gold);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .26), 0 0 0 2px rgba(217, 164, 65, .28);
+}
+
+.user-toggle[aria-expanded="true"] {
+    background: rgba(255, 255, 255, .24);
+    border-color: var(--gold);
+}
+
+.user-toggle .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--maroon-d);
+    font-weight: 800;
+    font-size: .88rem;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .25);
+}
+
+.user-toggle .user-name {
+    max-width: 175px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-toggle svg {
+    width: 15px;
+    height: 15px;
+    opacity: .92;
+    transition: transform .18s ease;
+}
+
+.user-toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.user-dd {
+    min-width: 280px;
+    padding: .55rem;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    border-radius: 14px;
+    box-shadow: 0 16px 38px rgba(26, 5, 9, .22);
+    margin-top: .6rem !important;
+}
+
+.admin-side-action.logout-btn {
+    color: #9e1f18;
+    margin-top: .15rem;
+}
+
+.admin-side-action.logout-btn:hover {
+    background: #fdecea;
+    color: #b3261e;
+}
+
+.ws-toolbar .form-select.w-auto {
+    min-width: 148px;
+    padding-right: 2.1rem;
 }

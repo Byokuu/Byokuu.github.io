@@ -15,7 +15,7 @@
     <header class="topbar shadow">
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-3">
             <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span
-                    class="brand-text">CampusCare<small>Admin console</small></span></div>
+                    class="brand-text">CampusCare<small>Admin console &bull; Admin Office</small></span></div>
             <nav class="nav align-items-center"></nav>
         </div>
     </header>
@@ -71,82 +71,259 @@
                 <p id="mSub"></p>
             </div>
 
-            <ul class="nav nav-tabs mb-3 d-none d-md-flex" id="adminTabs" role="tablist">
-                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabAssets" type="button" role="tab">Assets</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabReports" type="button" role="tab">Reports</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabHistory" type="button" role="tab">History</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                        data-bs-target="#tabTickets" type="button" role="tab">Damage Reports</button></li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane fade" id="tabTickets">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                        <div>
-                            <h2 class="h4 mb-1">Damage Reports</h2>
-                            <p class="text-secondary small mb-0">Monitor damages you reported and review your completed
-                                repair history.</p>
-                        </div>
-                        <button class="btn btn-gold" type="button" data-bs-toggle="modal"
-                            data-bs-target="#reportModal">+ Report a damage</button>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-md-4">
-                            <div class="panel stat">
-                                <div class="n" id="cTotal">0</div>
-                                <div class="text-secondary">Reported</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <div class="panel stat prog">
-                                <div class="n" id="cOpen">0</div>
-                                <div class="text-secondary">Active / Open</div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="panel stat fixed">
-                                <div class="n" id="cFixed">0</div>
-                                <div class="text-secondary">History</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <ul class="nav damage-subtabs mb-3" id="officeDamageSubtabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="officeSubReportedTab" data-bs-toggle="tab"
-                                data-bs-target="#officePaneReported" type="button" role="tab"
-                                aria-controls="officePaneReported" aria-selected="true">Reported damages</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="officeSubHistoryTab" data-bs-toggle="tab"
-                                data-bs-target="#officePaneHistory" type="button" role="tab"
-                                aria-controls="officePaneHistory" aria-selected="false">Fixed history</button>
-                        </li>
+            <!-- Left Sidebar Rail -->
+            <aside class="admin-sidebar d-none d-md-flex" aria-label="Workspace navigation">
+                <div>
+                    <div class="admin-sidebar-section">Management</div>
+                    <ul class="nav nav-tabs d-none d-md-flex" id="adminTabs" role="tablist">
+                        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabAssets" type="button" role="tab">Assets</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabReports" type="button" role="tab">Reports</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabHistory" type="button" role="tab">History</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabTickets" type="button" role="tab">Damage Reports</button></li>
                     </ul>
+                </div>
 
-                    <div class="tab-content" id="officeDamageSubtabContent">
-                        <div class="tab-pane fade show active" id="officePaneReported" role="tabpanel"
-                            aria-labelledby="officeSubReportedTab">
-                            <section class="panel">
-                                <h3 class="h6 mb-3">Reported damages</h3>
-                                <div class="row g-2 mb-3">
-                                    <div class="col-md-6">
-                                        <input id="search" class="form-control" type="search"
-                                            placeholder="Search ticket, building, or room"
-                                            aria-label="Search reported damages">
-                                    </div>
-                                    <div class="col-6 col-md-3">
+                <div class="admin-sidebar-footer">
+                    <div class="admin-sidebar-section">Quick Actions</div>
+                    <button type="button" class="admin-side-action accent" data-bs-toggle="modal"
+                        data-bs-target="#assetModal">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        <span>Add New Asset</span>
+                    </button>
+                    <button type="button" class="admin-side-action" data-bs-toggle="modal"
+                        data-bs-target="#reportModal">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                            <rect x="9" y="3" width="6" height="4" rx="1" />
+                            <path d="M9 12h6M9 16h4" />
+                        </svg>
+                        <span>Report a Damage</span>
+                    </button>
+                    <button type="button" class="admin-side-action logout-btn" id="sideLogoutBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        <span>Log out</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Right Workspace Content -->
+            <div class="admin-workspace">
+                <div class="tab-content">
+                    <!-- ASSETS TAB -->
+                    <div class="tab-pane fade show active" id="tabAssets">
+                        <div class="ws-header">
+                            <div>
+                                <div class="ws-title-group">
+                                    <h2 class="ws-title">Assets Inventory</h2>
+                                    <span class="ws-role-pill">Admin Office</span>
+                                </div>
+                                <p class="text-secondary small mb-0 mt-1">Track office assets, equipment stock, and
+                                    storage locations.</p>
+                            </div>
+                            <div class="ws-actions">
+                                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#reportModal">Report Damage</button>
+                                <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#assetModal">+ Add New</button>
+                            </div>
+                        </div>
+
+                        <div class="ws-toolbar">
+                            <div class="seg" id="assetView" role="group" aria-label="Show items"
+                                style="min-width:240px">
+                                <button type="button" class="seg-btn active" data-av="active" aria-pressed="true">Active
+                                    <span class="text-secondary" id="cntActive">0</span></button>
+                                <button type="button" class="seg-btn" data-av="archived" aria-pressed="false">Archived
+                                    <span class="text-secondary" id="cntArch">0</span></button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center flex-grow-1 justify-content-md-end">
+                                <input id="sSearch" class="form-control w-auto" style="min-width:250px" type="search"
+                                    placeholder="Search asset name, ID, or location..." aria-label="Search assets">
+                                <select id="assetCatFilter" class="form-select w-auto" style="min-width:190px"
+                                    aria-label="Filter by asset category">
+                                    <option value="">All asset categories</option>
+                                    <option>Furniture</option>
+                                    <option>Equipment</option>
+                                    <option>Office supplies</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="ws-table-card">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead id="assetHead"></thead>
+                                    <tbody id="assetRows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REPORTS TAB -->
+                    <div class="tab-pane fade" id="tabReports">
+                        <div class="ws-header">
+                            <div>
+                                <div class="ws-title-group">
+                                    <h2 class="ws-title">Reports &amp; Analytics</h2>
+                                    <span class="ws-role-pill">Admin Office</span>
+                                </div>
+                                <p class="text-secondary small mb-0 mt-1">Summary metrics and breakdown across office
+                                    assets and damage logs.</p>
+                            </div>
+                            <div class="ws-actions">
+                                <button class="btn btn-outline-secondary btn-sm no-print" type="button"
+                                    onclick="window.print()">Print Report</button>
+                            </div>
+                        </div>
+                        <div id="reportBody"></div>
+                    </div>
+
+                    <!-- HISTORY TAB -->
+                    <div class="tab-pane fade" id="tabHistory">
+                        <div class="ws-header">
+                            <div>
+                                <div class="ws-title-group">
+                                    <h2 class="ws-title">History &amp; Activity Log</h2>
+                                    <span class="ws-role-pill">Admin Office</span>
+                                </div>
+                                <p class="text-secondary small mb-0 mt-1">Audit trail of asset updates, ticket actions,
+                                    and archived records.</p>
+                            </div>
+                        </div>
+
+                        <section class="panel mb-3">
+                            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                                <h3 class="h6 fw-bold mb-0">Activity Log</h3>
+                                <div class="d-flex gap-2">
+                                    <input id="gSearch" class="form-control form-control-sm" type="search"
+                                        placeholder="Search activity" aria-label="Search activity">
+                                    <select id="gKind" class="form-select form-select-sm w-auto"
+                                        aria-label="Filter activity">
+                                        <option value="">Everything</option>
+                                        <option value="ticket">Tickets</option>
+                                        <option value="asset">Assets</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="ws-table-card">
+                                <div class="table-responsive log-scroll">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>When</th>
+                                                <th>Type</th>
+                                                <th>What happened</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="logRows"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel">
+                            <h3 class="h6 fw-bold mb-1">Archived Items</h3>
+                            <p class="small text-secondary mb-3">Archived tickets and assets are hidden from the lists
+                                and reports. Restore them any time, or delete them forever.</p>
+                            <div class="ws-table-card">
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Item</th>
+                                                <th>Archived</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="archRows"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- DAMAGE REPORTS TAB -->
+                    <div class="tab-pane fade" id="tabTickets">
+                        <div class="ws-header">
+                            <div>
+                                <div class="ws-title-group">
+                                    <h2 class="ws-title">Damage Reports</h2>
+                                    <span class="ws-role-pill">Admin Office</span>
+                                </div>
+                                <p class="text-secondary small mb-0 mt-1">Monitor damages you reported and review your
+                                    completed repair history.</p>
+                            </div>
+                            <div class="ws-actions">
+                                <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#reportModal">+ Report a Damage</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6 col-md-4">
+                                <div class="panel stat">
+                                    <div class="n" id="cTotal">0</div>
+                                    <div class="text-secondary">Reported</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="panel stat prog">
+                                    <div class="n" id="cOpen">0</div>
+                                    <div class="text-secondary">Active / Open</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="panel stat fixed">
+                                    <div class="n" id="cFixed">0</div>
+                                    <div class="text-secondary">Fixed History</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                            <ul class="nav damage-subtabs" id="officeDamageSubtabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="officeSubReportedTab" data-bs-toggle="tab"
+                                        data-bs-target="#officePaneReported" type="button" role="tab"
+                                        aria-controls="officePaneReported" aria-selected="true">Reported
+                                        damages</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="officeSubHistoryTab" data-bs-toggle="tab"
+                                        data-bs-target="#officePaneHistory" type="button" role="tab"
+                                        aria-controls="officePaneHistory" aria-selected="false">Fixed history</button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-content" id="officeDamageSubtabContent">
+                            <div class="tab-pane fade show active" id="officePaneReported" role="tabpanel"
+                                aria-labelledby="officeSubReportedTab">
+                                <div class="ws-toolbar">
+                                    <input id="search" class="form-control flex-grow-1" style="min-width:220px"
+                                        type="search" placeholder="Search ticket, building, or room..."
+                                        aria-label="Search reported damages">
+                                    <div class="d-flex gap-2">
                                         <select id="fStatus" class="form-select" aria-label="Filter by status">
                                             <option value="">All active statuses</option>
                                             <option>Pending</option>
                                             <option>In progress</option>
                                         </select>
-                                    </div>
-                                    <div class="col-6 col-md-3">
                                         <select id="fUrg" class="form-select" aria-label="Filter by urgency">
                                             <option value="">All urgency</option>
                                             <option>High</option>
@@ -155,149 +332,45 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Ticket</th>
-                                                <th>Damage</th>
-                                                <th>Urgency</th>
-                                                <th>Status</th>
-                                                <th>Reported</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="rows"></tbody>
-                                    </table>
-                                </div>
-                            </section>
-                        </div>
-
-                        <div class="tab-pane fade" id="officePaneHistory" role="tabpanel"
-                            aria-labelledby="officeSubHistoryTab">
-                            <section class="panel">
-                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                                    <div>
-                                        <h3 class="h6 mb-0">Fixed damage history</h3>
-                                        <div class="small text-secondary">Damages you reported that have been finished
-                                            and marked as fixed.</div>
+                                <div class="ws-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticket</th>
+                                                    <th>Damage</th>
+                                                    <th>Urgency</th>
+                                                    <th>Status</th>
+                                                    <th>Reported</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="rows"></tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Ticket</th>
-                                                <th>Damage</th>
-                                                <th>Status</th>
-                                                <th>Reported</th>
-                                                <th>Fixed</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="officeFixedRows"></tbody>
-                                    </table>
+                            </div>
+
+                            <div class="tab-pane fade" id="officePaneHistory" role="tabpanel"
+                                aria-labelledby="officeSubHistoryTab">
+                                <div class="ws-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticket</th>
+                                                    <th>Damage</th>
+                                                    <th>Status</th>
+                                                    <th>Reported</th>
+                                                    <th>Fixed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="officeFixedRows"></tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </section>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-pane fade show active" id="tabAssets">
-                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
-                        <div>
-                            <h2 class="h4 mb-1">Assets Inventory</h2>
-                            <p class="text-secondary small mb-0">Track office assets, equipment stock, and storage
-                                locations (Admin Office).</p>
-                        </div>
-                        <span class="badge text-bg-dark rounded-pill px-3 py-2">Admin Office</span>
-                    </div>
-
-                    <section class="panel">
-                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-                            <div class="seg" id="assetView" role="group" aria-label="Show items"
-                                style="min-width:250px">
-                                <button type="button" class="seg-btn active" data-av="active" aria-pressed="true">Active
-                                    <span class="text-secondary" id="cntActive">0</span></button>
-                                <button type="button" class="seg-btn" data-av="archived" aria-pressed="false">Archived
-                                    <span class="text-secondary" id="cntArch">0</span></button>
-                            </div>
-                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <input id="sSearch" class="form-control w-auto" style="min-width:220px" type="search"
-                                    placeholder="Search asset name, ID, or location" aria-label="Search assets">
-                                <select id="assetCatFilter" class="form-select w-auto" style="min-width:185px"
-                                    aria-label="Filter by asset category">
-                                    <option value="">All asset categories</option>
-                                    <option>Furniture</option>
-                                    <option>Equipment</option>
-                                    <option>Office supplies</option>
-                                    <option>Other</option>
-                                </select>
-                                <button class="btn btn-maroon" type="button" data-bs-toggle="modal"
-                                    data-bs-target="#assetModal">+ Add asset</button>
                             </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead id="assetHead"></thead>
-                                <tbody id="assetRows"></tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
-
-                <div class="tab-pane fade" id="tabReports">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h5 mb-0">Reports &amp; analytics</h2>
-                        <button class="btn btn-outline-secondary btn-sm no-print" type="button"
-                            onclick="window.print()">Print report</button>
                     </div>
-                    <div id="reportBody"></div>
-                </div>
-
-                <div class="tab-pane fade" id="tabHistory">
-                    <section class="panel mb-3">
-                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-                            <h2 class="h5 mb-0">Activity log</h2>
-                            <div class="d-flex gap-2">
-                                <input id="gSearch" class="form-control" type="search" placeholder="Search activity"
-                                    aria-label="Search activity">
-                                <select id="gKind" class="form-select w-auto" aria-label="Filter activity">
-                                    <option value="">Everything</option>
-                                    <option value="ticket">Tickets</option>
-                                    <option value="asset">Assets</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="table-responsive log-scroll">
-                            <table class="table table-sm mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>When</th>
-                                        <th>Type</th>
-                                        <th>What happened</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="logRows"></tbody>
-                            </table>
-                        </div>
-                    </section>
-                    <section class="panel">
-                        <h2 class="h5 mb-1">Archived items</h2>
-                        <p class="small text-secondary">Archived tickets and assets are hidden from the lists and
-                            reports. Restore them any time, or delete them forever.</p>
-                        <div class="table-responsive">
-                            <table class="table table-sm mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Type</th>
-                                        <th>Item</th>
-                                        <th>Archived</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="archRows"></tbody>
-                            </table>
-                        </div>
-                    </section>
                 </div>
             </div>
         </div>
@@ -340,6 +413,7 @@
             </svg></button>
     </main>
 
+    <!-- Modals (unchanged IDs & behavior) -->
     <div class="modal fade slide-up modal-admin" id="reportModal" tabindex="-1" aria-labelledby="reportTitle"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -722,7 +796,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="modal fade modal-admin" id="confirmDelModal" tabindex="-1" aria-labelledby="cfmDelT" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
