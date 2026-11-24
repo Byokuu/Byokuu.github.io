@@ -16,7 +16,12 @@
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-3">
             <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span
                     class="brand-text">CampusCare<small>Admin console &bull; FAMO</small></span></div>
-            <nav class="nav align-items-center"></nav>
+            <nav class="nav align-items-center">
+                <button type="button" class="top-profile-pic-btn d-none" id="topProfilePicBtn" data-bs-toggle="modal"
+                    data-bs-target="#profileModal" aria-label="Profile picture">
+                    <span class="user-avatar"></span>
+                </button>
+            </nav>
         </div>
     </header>
 
@@ -118,6 +123,19 @@
                         </svg>
                         <span>Add Cleaning Supply</span>
                     </button>
+
+                    <hr class="my-2">
+
+                    <button type="button" class="admin-side-action" id="sideAccountSettingsBtn"
+                        onclick="window.openProfile && window.openProfile()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                        <span>Account Settings</span>
+                    </button>
                     <button type="button" class="admin-side-action logout-btn" id="sideLogoutBtn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -211,7 +229,7 @@
                             <div>
                                 <div class="ws-title-group">
                                     <h2 class="ws-title">Cleaning Supplies Inventory</h2>
-                                    <span class="ws-role-pill">FAMO Only</span>
+                                    <span class="ws-role-pill">FAMO</span>
                                 </div>
                                 <p class="text-secondary small mb-0 mt-1">Track cleaning supplies, sanitation stock,
                                     and storage levels.</p>

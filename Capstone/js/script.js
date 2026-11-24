@@ -1423,7 +1423,13 @@ function initAuth() {
 function initAdminAuth() {
     const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
     if (!gate || !app || !nav) return;
-    const { tag, prof, out } = buildUserMenu(nav);
+    const isAdminPage = ["admin", "famo", "admin_office"].includes((document.body.dataset.page || document.body.dataset.role || "").toLowerCase());
+    const menu = isAdminPage ? null : buildUserMenu(nav);
+    const tag = menu ? menu.tag : null;
+    const prof = menu ? menu.prof : null;
+    const out = menu ? menu.out : null;
+    const picBtn = $("topProfilePicBtn");
+    const picAvatar = picBtn ? picBtn.querySelector(".user-avatar") : null;
     addEyes(gate);
     const admins = () => { try { return JSON.parse(localStorage.getItem("fixit_admins")) || []; } catch { return []; } };
     const current = () => { const u = sessionStorage.getItem("fixit_admin_session"); return admins().find(a => a.username === u) || null; };
@@ -1431,9 +1437,16 @@ function initAdminAuth() {
     const apply = () => {
         const u = current(), setup = admins().length === 0;
         gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
-        nav.querySelectorAll("button[data-bs-toggle]").forEach(b => b.classList.toggle("d-none", !u));
-        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u); prof.classList.toggle("d-none", !u);
-        fillUserMenu(tag, u ? u.name : "", u ? "Admin - " + u.username : "");
+        if (tag) tag.classList.toggle("d-none", !u);
+        if (out) out.classList.toggle("d-none", !u);
+        if (prof) prof.classList.toggle("d-none", !u);
+        if (tag) fillUserMenu(tag, u ? u.name : "", u ? "Admin - " + u.username : "");
+        if (picBtn) {
+            picBtn.classList.toggle("d-none", !u);
+            if (picAvatar) {
+                picAvatar.textContent = u && u.name ? u.name.trim().charAt(0).toUpperCase() : "A";
+            }
+        }
         if (u) Idle.start(() => { closeEverything(); sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You were logged out after 15 minutes of inactivity."); }); else Idle.stop();
         if ($("loginForm")) $("loginForm").classList.toggle("d-none", setup);
         if ($("setupForm")) $("setupForm").classList.toggle("d-none", !setup);
@@ -1472,14 +1485,74 @@ function initAdminAuth() {
             if ($("lgPw")) $("lgPw").focus();
         });
     }
-    out.addEventListener("click", () => { sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You have been logged out"); });
-    prof.addEventListener("click", () => window.openProfile());
+    if (out) out.addEventListener("click", () => { sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You have been logged out"); });
+    if (prof) prof.addEventListener("click", () => window.openProfile());
     initProfile({
         get: current, salt: u => "admin:" + u.username.toLowerCase(), idText: u => u.username,
         save: (u, patch) => { const l = admins(); Object.assign(l.find(x => x.username === u.username), patch); localStorage.setItem("fixit_admins", JSON.stringify(l)); }
     });
     window.refreshAuth = apply;
     apply();
+}
+
+function performAdminLogout() {
+    sessionStorage.removeItem("fixit_admin_session");
+    sessionStorage.removeItem("fixit_admin_name");
+    if (typeof window.refreshAuth === "function") {
+        window.refreshAuth();
+    }
+    toast("You have been logged out");
+}
+
+function initAdminSidebarAndAvatars() {
+    const page = (document.body.dataset.page || document.body.dataset.role || "").toLowerCase();
+    const isAdminPage = page === "admin" || page === "famo" || page === "admin_office";
+    if (!isAdminPage) return;
+
+    // 1. Remove/hide the profile button at the top of FAMO
+    if (page === "famo") {
+        document.querySelectorAll(".topbar .user-menu").forEach(el => el.remove());
+    }
+
+    // 2. Connect unconnected logout & account buttons inside aside / sidebar / quick actions
+    document.addEventListener("click", e => {
+        const logoutEl = e.target.closest("aside button, aside a, .sidebar button, .sidebar a, [data-logout], #logoutBtn, #asideLogout");
+        if (logoutEl) {
+            const txt = (logoutEl.textContent || "").trim().toLowerCase();
+            if (logoutEl.matches("[data-logout], #logoutBtn, #asideLogout") || txt === "log out" || txt === "logout") {
+                e.preventDefault();
+                performAdminLogout();
+                return;
+            }
+        }
+
+        const acctEl = e.target.closest("aside button, aside a, .sidebar button, .sidebar a, [data-account-settings], #accountSettingsBtn");
+        if (acctEl) {
+            const txt = (acctEl.textContent || "").trim().toLowerCase();
+            if (acctEl.matches("[data-account-settings], #accountSettingsBtn") || txt === "account settings" || txt === "edit profile") {
+                e.preventDefault();
+                if (typeof window.openProfile === "function") window.openProfile();
+            }
+        }
+    });
+
+    // 3. Sync picture circle for Admin Office
+    const syncOfficeCircle = () => {
+        const circle = $("adminOfficeAvatar") || document.querySelector(".office-avatar-circle");
+        if (!circle) return;
+        const name = sessionStorage.getItem("fixit_admin_name") || "Admin Office";
+        const ini = (name.trim().charAt(0) || "A").toUpperCase();
+        const savedPic = localStorage.getItem("fixit_office_avatar") || "";
+        if (savedPic) {
+            circle.innerHTML = `<img src="${esc(savedPic)}" alt="${esc(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+            circle.textContent = ini;
+        }
+    };
+
+    syncOfficeCircle();
+    window.addEventListener("authchange", syncOfficeCircle);
+    window.addEventListener("storage", syncOfficeCircle);
 }
 
 /* ---------- Mobile bottom sheets (client) ---------- */
@@ -1626,5 +1699,6 @@ document.addEventListener("DOMContentLoaded", () => {
         initAdmin();
         initAdminExtras();
         applyAdminTabVisibility();
+        initAdminSidebarAndAvatars();
     }
 });
