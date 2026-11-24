@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>CampusCare Admin - FAMO</title>
+    <link rel="icon" type="image/png" href="../assets/pictures/puplogo.jpg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link href="../css/style.css" rel="stylesheet">
@@ -17,8 +18,7 @@
             <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span
                     class="brand-text">CampusCare<small>Admin console &bull; FAMO</small></span></div>
             <nav class="nav align-items-center">
-                <button type="button" class="top-profile-pic-btn d-none" id="topProfilePicBtn" data-bs-toggle="modal"
-                    data-bs-target="#profileModal" aria-label="Profile picture">
+                <button type="button" class="top-profile-pic-btn d-none" id="topProfilePicBtn" aria-label="Profile picture">
                     <span class="user-avatar"></span>
                 </button>
             </nav>
@@ -88,13 +88,13 @@
                                 data-role-only="famo">Cleaning
                                 Supplies</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                                data-bs-target="#tabReports" type="button" role="tab">Reports</button></li>
-                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
-                                data-bs-target="#tabHistory" type="button" role="tab">History</button></li>
-                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                                 data-bs-target="#tabPersonnel" type="button" role="tab">Personnel</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                                 data-bs-target="#tabTickets" type="button" role="tab">Damage Reports</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabReports" type="button" role="tab">Reports</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabHistory" type="button" role="tab">History</button></li>
                     </ul>
                 </div>
 
@@ -498,19 +498,6 @@
                     <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
                 </svg><span>Supplies</span></button>
             <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
-                data-bs-target="#tabReports" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
-                </svg><span>Reports</span></button>
-            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
-                data-bs-target="#tabHistory" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v5l3 2" />
-                </svg><span>History</span></button>
-            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
                 data-bs-target="#tabPersonnel" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     aria-hidden="true">
@@ -526,7 +513,21 @@
                     <rect x="9" y="3" width="6" height="4" rx="1" />
                     <path d="M9 12h6M9 16h4" />
                 </svg><span>Damage</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabReports" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+                </svg><span>Reports</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabHistory" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 2" />
+                </svg><span>History</span></button>
         </nav>
+
         <button class="fab" type="button" aria-label="Log a damage" data-bs-toggle="modal"
             data-bs-target="#reportModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

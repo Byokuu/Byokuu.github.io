@@ -934,13 +934,6 @@ h3,
 
 @media (min-width: 768px) {
 
-    body[data-page="student"] main.container {
-        display: grid;
-        grid-template-columns: 250px minmax(0, 1fr);
-        gap: 1.75rem;
-        align-items: start
-    }
-
     main.container {
         padding-top: 1.75rem !important
     }
@@ -1053,8 +1046,9 @@ h3,
         padding: .6rem .75rem
     }
 
-    /* ===== Admin Workspace Shell (Inventory Dashboard Layout in Maroon / White / Gold) ===== */
+    /* ===== Unified Workspace Shell (Client & Admin) ===== */
 
+    body[data-page="student"] main.container,
     body[data-page="famo"] main.container,
     body[data-page="admin_office"] main.container,
     body[data-page="admin"] main.container {
@@ -1063,6 +1057,7 @@ h3,
         padding-bottom: 2.5rem !important;
     }
 
+    body[data-page="student"] #clientApp,
     body[data-page="famo"] #adminApp,
     body[data-page="admin_office"] #adminApp,
     body[data-page="admin"] #adminApp {
@@ -1301,6 +1296,7 @@ h3,
 @media print {
 
     body[data-page="student"] main.container,
+    #clientApp,
     #adminApp {
         display: block
     }

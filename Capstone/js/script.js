@@ -528,8 +528,8 @@ function initBorrowClient() {
 }
 
 const ADMIN_TABS = {
-    famo: ["#tabClean", "#tabSupplies", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"],
-    admin_office: ["#tabAssets", "#tabReports", "#tabHistory", "#tabPersonnel", "#tabTickets"]
+    famo: ["#tabClean", "#tabSupplies", "#tabPersonnel", "#tabTickets", "#tabReports", "#tabHistory"],
+    admin_office: ["#tabAssets", "#tabTickets", "#tabReports", "#tabHistory"]
 };
 
 function applyAdminTabVisibility() {
@@ -1319,36 +1319,12 @@ function initProfile(cfg) {
     });
 }
 
-function buildUserMenu(nav) {
-    if (!nav) return { tag: document.createElement("button"), prof: document.createElement("button"), out: document.createElement("button"), hdr: null };
-    const wrap = document.createElement("div"); wrap.className = "dropdown user-menu";
-    const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-    wrap.innerHTML = `<button type="button" class="user-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
-        <span class="user-avatar"></span><span class="user-name"></span>${svg('<path d="M6 9l6 6 6-6"/>')}</button>
-      <div class="dropdown-menu dropdown-menu-end user-dd">
-        <div class="user-card"><span class="user-avatar lg"></span><div><div class="user-card-name"></div><div class="user-card-meta"></div></div></div>
-        <div class="dropdown-divider"></div>
-        <button type="button" class="dropdown-item">${svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')}Edit profile</button>
-        <div class="dropdown-divider"></div>
-        <button type="button" class="dropdown-item text-danger">${svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>')}Log out</button>
-      </div>`;
-    nav.append(wrap);
-    const tag = wrap.querySelector(".user-toggle"), [prof, out] = wrap.querySelectorAll(".dropdown-item");
-    return { tag, prof, out, hdr: null };
-}
 function fillChip(id, name, meta) {
     const c = $(id); if (!c) return;
     c.querySelector(".user-avatar").textContent = (name.trim().charAt(0) || "?").toUpperCase();
     c.querySelector(".who-name").textContent = name; c.querySelector(".who-meta").textContent = meta;
 }
-function fillUserMenu(tag, name, meta) {
-    const w = tag ? tag.closest(".user-menu") : null; if (!w) return;
-    const ini = (name.trim().charAt(0) || "?").toUpperCase();
-    w.querySelectorAll(".user-avatar").forEach(a => a.textContent = ini);
-    w.querySelector(".user-name").textContent = name;
-    w.querySelector(".user-card-name").textContent = name;
-    w.querySelector(".user-card-meta").textContent = meta;
-}
+
 function addEyes(gate) {
     if (!gate) return;
     const svg = p => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -1365,43 +1341,91 @@ function addEyes(gate) {
         wrap.appendChild(b);
     });
 }
+
 function initAuth() {
     const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
     if (!gate || !app || !nav) return;
-    const { tag, prof, out } = buildUserMenu(nav);
+    const picBtn = $("topProfilePicBtn");
+    const picAvatar = picBtn ? picBtn.querySelector(".user-avatar") : null;
     addEyes(gate);
-    window.doLogout = () => out.click();
+
+    const logoutNow = () => {
+        localStorage.removeItem("fixit_session");
+        apply();
+        toast("You have been logged out");
+    };
+    window.doLogout = logoutNow;
+
     const apply = () => {
         const u = currentUser();
-        gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
+        gate.classList.toggle("d-none", !!u);
+        app.classList.toggle("d-none", !u);
         nav.querySelectorAll("button[data-bs-toggle]").forEach(b => b.classList.toggle("d-none", !u));
-        tag.classList.toggle("d-none", !u); out.classList.toggle("d-none", !u); prof.classList.toggle("d-none", !u);
-        fillUserMenu(tag, u ? u.name : "", u ? `${u.role} - ${u.idNo}` : "");
-        if (u) Idle.start(() => { closeEverything(); localStorage.removeItem("fixit_session"); apply(); toast("You were logged out after 15 minutes of inactivity."); }); else Idle.stop();
+        if (picBtn) {
+            picBtn.classList.toggle("d-none", !u);
+            if (picAvatar) {
+                picAvatar.textContent = u && u.name ? u.name.trim().charAt(0).toUpperCase() : "";
+            }
+        }
+        if (u) {
+            Idle.start(() => {
+                closeEverything();
+                localStorage.removeItem("fixit_session");
+                apply();
+                toast("You were logged out after 15 minutes of inactivity.");
+            });
+        } else {
+            Idle.stop();
+        }
         gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
         window.dispatchEvent(new Event("authchange"));
     };
+
     const fail = (id, m) => { if ($(id)) { $(id).textContent = m; $(id).classList.remove("d-none"); } };
+
+    if (picBtn) {
+        picBtn.addEventListener("click", () => {
+            const sheetEl = $("accountSheet");
+            if (window.innerWidth < 768 && sheetEl && window.bootstrap?.Offcanvas) {
+                bootstrap.Offcanvas.getOrCreateInstance(sheetEl).show();
+            } else if (typeof window.openProfile === "function") {
+                window.openProfile();
+            }
+        });
+    }
+
     if ($("loginForm")) {
         $("loginForm").addEventListener("submit", async e => {
-            e.preventDefault(); const f = e.target; if ($("loginErr")) $("loginErr").classList.add("d-none"); if ($("loginOk")) $("loginOk").classList.add("d-none");
+            e.preventDefault();
+            const f = e.target;
+            if ($("loginErr")) $("loginErr").classList.add("d-none");
+            if ($("loginOk")) $("loginOk").classList.add("d-none");
             if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
             const d = Object.fromEntries(new FormData(f)), id = (d.idNo || "").trim().toLowerCase();
             const u = Users.all().find(x => x.idNo.toLowerCase() === id);
             if (!u || u.pw !== await hashPw(d.password, id)) return fail("loginErr", "Wrong ID number or password.");
-            localStorage.setItem("fixit_session", u.idNo); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome back, " + u.name);
+            localStorage.setItem("fixit_session", u.idNo);
+            f.reset();
+            f.classList.remove("was-validated");
+            apply();
+            toast("Welcome back, " + u.name);
         });
     }
+
     if ($("regForm")) {
         $("regForm").addEventListener("submit", async e => {
-            e.preventDefault(); const f = e.target; if ($("regErr")) $("regErr").classList.add("d-none");
+            e.preventDefault();
+            const f = e.target;
+            if ($("regErr")) $("regErr").classList.add("d-none");
             if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
             const d = Object.fromEntries(new FormData(f)), idNo = d.idNo.trim(), users = Users.all();
             if (users.some(u => u.idNo.toLowerCase() === idNo.toLowerCase())) return fail("regErr", "This ID number already has an account. Try logging in.");
             if (d.password.length < 6) return fail("regErr", "Use a password with at least 6 characters.");
             if (d.password !== d.confirm) return fail("regErr", "The two passwords do not match.");
             users.push({ idNo, name: d.name.trim(), role: d.role, pw: await hashPw(d.password, idNo.toLowerCase()), createdAt: Date.now() });
-            Users.save(users); f.reset(); f.classList.remove("was-validated");
+            Users.save(users);
+            f.reset();
+            f.classList.remove("was-validated");
             gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
             bootstrap.Tab.getOrCreateInstance('[data-bs-target="#paneLogin"]').show();
             if ($("lgId")) $("lgId").value = idNo;
@@ -1409,8 +1433,11 @@ function initAuth() {
             if ($("lgPw")) $("lgPw").focus();
         });
     }
-    out.addEventListener("click", () => { localStorage.removeItem("fixit_session"); apply(); toast("You have been logged out"); });
-    prof.addEventListener("click", () => window.openProfile());
+
+    if ($("sideLogoutBtn")) {
+        $("sideLogoutBtn").addEventListener("click", logoutNow);
+    }
+
     initProfile({
         get: currentUser, salt: u => u.idNo.toLowerCase(), idText: u => u.idNo,
         save: (u, patch) => { const l = Users.all(); Object.assign(l.find(x => x.idNo === u.idNo), patch); Users.save(l); }
@@ -1423,11 +1450,6 @@ function initAuth() {
 function initAdminAuth() {
     const gate = $("authGate"), app = document.querySelector("main"), nav = document.querySelector(".topbar nav");
     if (!gate || !app || !nav) return;
-    const isAdminPage = ["admin", "famo", "admin_office"].includes((document.body.dataset.page || document.body.dataset.role || "").toLowerCase());
-    const menu = isAdminPage ? null : buildUserMenu(nav);
-    const tag = menu ? menu.tag : null;
-    const prof = menu ? menu.prof : null;
-    const out = menu ? menu.out : null;
     const picBtn = $("topProfilePicBtn");
     const picAvatar = picBtn ? picBtn.querySelector(".user-avatar") : null;
     addEyes(gate);
@@ -1436,38 +1458,54 @@ function initAdminAuth() {
     const fail = (id, m) => { if ($(id)) { $(id).textContent = m; $(id).classList.remove("d-none"); } };
     const apply = () => {
         const u = current(), setup = admins().length === 0;
-        gate.classList.toggle("d-none", !!u); app.classList.toggle("d-none", !u);
-        if (tag) tag.classList.toggle("d-none", !u);
-        if (out) out.classList.toggle("d-none", !u);
-        if (prof) prof.classList.toggle("d-none", !u);
-        if (tag) fillUserMenu(tag, u ? u.name : "", u ? "Admin - " + u.username : "");
+        gate.classList.toggle("d-none", !!u);
+        app.classList.toggle("d-none", !u);
         if (picBtn) {
             picBtn.classList.toggle("d-none", !u);
             if (picAvatar) {
                 picAvatar.textContent = u && u.name ? u.name.trim().charAt(0).toUpperCase() : "A";
             }
         }
-        if (u) Idle.start(() => { closeEverything(); sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You were logged out after 15 minutes of inactivity."); }); else Idle.stop();
+        if (u) {
+            Idle.start(() => {
+                closeEverything();
+                sessionStorage.removeItem("fixit_admin_session");
+                apply();
+                toast("You were logged out after 15 minutes of inactivity.");
+            });
+        } else {
+            Idle.stop();
+        }
         if ($("loginForm")) $("loginForm").classList.toggle("d-none", setup);
         if ($("setupForm")) $("setupForm").classList.toggle("d-none", !setup);
         if ($("gateTitle")) $("gateTitle").textContent = setup ? "Set up the admin account" : "Admin sign in";
         if ($("gateHint")) $("gateHint").textContent = setup ? "No admin account exists yet. Create the first one." : "Log in to manage assets, reports, history, personnel, and damage reports.";
         if (u) sessionStorage.setItem("fixit_admin_name", u.name); else sessionStorage.removeItem("fixit_admin_name");
         gate.querySelectorAll(".pw-eye").forEach(b => b.reset());
+        window.dispatchEvent(new Event("authchange"));
     };
     if ($("loginForm")) {
         $("loginForm").addEventListener("submit", async e => {
-            e.preventDefault(); const f = e.target; if ($("loginErr")) $("loginErr").classList.add("d-none"); if ($("loginOk")) $("loginOk").classList.add("d-none");
+            e.preventDefault();
+            const f = e.target;
+            if ($("loginErr")) $("loginErr").classList.add("d-none");
+            if ($("loginOk")) $("loginOk").classList.add("d-none");
             if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
             const d = Object.fromEntries(new FormData(f)), id = (d.username || "").trim().toLowerCase();
             const a = admins().find(x => x.username.toLowerCase() === id);
             if (!a || a.pw !== await hashPw(d.password, "admin:" + id)) return fail("loginErr", "Wrong username or password.");
-            sessionStorage.setItem("fixit_admin_session", a.username); f.reset(); f.classList.remove("was-validated"); apply(); toast("Welcome, " + a.name);
+            sessionStorage.setItem("fixit_admin_session", a.username);
+            f.reset();
+            f.classList.remove("was-validated");
+            apply();
+            toast("Welcome, " + a.name);
         });
     }
     if ($("setupForm")) {
         $("setupForm").addEventListener("submit", async e => {
-            e.preventDefault(); const f = e.target; if ($("setupErr")) $("setupErr").classList.add("d-none");
+            e.preventDefault();
+            const f = e.target;
+            if ($("setupErr")) $("setupErr").classList.add("d-none");
             if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
             const d = Object.fromEntries(new FormData(f)), username = d.username.trim();
             if (d.password.length < 6) return fail("setupErr", "Use a password with at least 6 characters.");
@@ -1479,14 +1517,14 @@ function initAdminAuth() {
                 createdAt: Date.now(),
                 personnel: []
             }]));
-            f.reset(); f.classList.remove("was-validated"); apply();
+            f.reset();
+            f.classList.remove("was-validated");
+            apply();
             if ($("lgId")) $("lgId").value = username;
             if ($("loginOk")) { $("loginOk").textContent = "Admin account created. Please log in."; $("loginOk").classList.remove("d-none"); }
             if ($("lgPw")) $("lgPw").focus();
         });
     }
-    if (out) out.addEventListener("click", () => { sessionStorage.removeItem("fixit_admin_session"); apply(); toast("You have been logged out"); });
-    if (prof) prof.addEventListener("click", () => window.openProfile());
     initProfile({
         get: current, salt: u => "admin:" + u.username.toLowerCase(), idText: u => u.username,
         save: (u, patch) => { const l = admins(); Object.assign(l.find(x => x.username === u.username), patch); localStorage.setItem("fixit_admins", JSON.stringify(l)); }
@@ -1578,52 +1616,75 @@ function initSheets() {
 
 /* ---------- My history (client) ---------- */
 function initHistoryClient() {
-    const input = $("hSearch"), hlBody = $("hlRows"), htBody = $("htRows");
-    if (!input || !htBody) return;
-    const me = () => { try { return JSON.parse(localStorage.getItem("fixit_me")) || {}; } catch { return {}; } };
+    const hlInput = $("hlSearch"), htInput = $("htSearch");
+    const hlBody = $("hlRows"), htBody = $("htRows");
+    if (!hlBody || !htBody) return;
+
     const none = (t, cols = 5) => `<tr><td colspan="${cols}" class="empty">${t}</td></tr>`;
+
     const render = () => {
         const u = currentUser();
-        input.classList.toggle("d-none", !!u);
-        const q = input.value.trim().toLowerCase();
-        if (!u && q.length < 3) {
-            if ($("hSummary")) $("hSummary").textContent = "Type your name or ID number (at least 3 characters) to see your borrowing records and damage reports.";
-            if (hlBody) hlBody.innerHTML = none("Nothing to show yet.");
-            htBody.innerHTML = none("Nothing to show yet."); return;
+        const lq = (hlInput ? hlInput.value : "").trim().toLowerCase();
+        const tq = (htInput ? htInput.value : "").trim().toLowerCase();
+
+        if (!u) {
+            if ($("hSummary")) $("hSummary").textContent = "Log in to view your borrowing records and submitted damage reports.";
+            hlBody.innerHTML = none("Log in to see your borrowing and return history.");
+            htBody.innerHTML = none("Log in to see your submitted damage reports.");
+            return;
         }
-        const L = Loans.all().filter(l => u
-            ? (l.borrowerId ? l.borrowerId === u.idNo : l.borrowerName === u.name)
-            : ((l.borrowerName || "") + " " + (l.borrowerId || "")).toLowerCase().includes(q));
-        const T = Tickets.all().filter(t => !t.archived && (u
-            ? (t.idNo ? t.idNo === u.idNo : t.reporter === u.name)
-            : ((t.reporter || "") + " " + (t.idNo || t.studentNo || "")).toLowerCase().includes(q)));
+
+        const userLoans = Loans.all().filter(l =>
+            l.borrowerId ? l.borrowerId === u.idNo : l.borrowerName === u.name
+        );
+        const userTickets = Tickets.all().filter(t => !t.archived && (
+            t.idNo ? t.idNo === u.idNo : t.reporter === u.name
+        ));
 
         if ($("hSummary")) {
-            $("hSummary").textContent = (u ? `Records for ${u.name} (${u.idNo}). ` : "") +
-                `${L.length} borrowing record${L.length === 1 ? "" : "s"} (${L.filter(l => l.status === "Borrowed").length} active) · ` +
-                `${T.length} damage report${T.length === 1 ? "" : "s"} (${T.filter(t => t.status === "Fixed").length} fixed).`;
+            $("hSummary").textContent =
+                `Records for ${u.name} (${u.idNo}). ` +
+                `${userLoans.length} borrowing record${userLoans.length === 1 ? "" : "s"} (${userLoans.filter(l => l.status === "Borrowed").length} active) · ` +
+                `${userTickets.length} damage report${userTickets.length === 1 ? "" : "s"} (${userTickets.filter(t => t.status === "Fixed").length} fixed).`;
         }
 
-        if (hlBody) {
-            hlBody.innerHTML = L.length ? L.map(l => `<tr>
-              <td>${tlBtn("l", l.id)}</td>
-              <td><div class="fw-semibold">${esc(l.itemName)}</div><div class="small text-secondary">${Number(l.qty) || 1} ${esc(l.unit || "pcs")} &bull; ${esc(l.assetId)}</div></td>
-              <td>${badge(l.status)}</td>
-              <td class="small">${fmt(l.createdAt)}</td>
-              <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td>
-            </tr>`).join("") : none("No borrowing or return records yet.");
-        }
+        const filteredLoans = userLoans.filter(l => !lq ||
+            [l.id, l.itemName, l.assetId, l.status, l.unit]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase()
+                .includes(lq)
+        );
 
-        htBody.innerHTML = T.length ? T.map(t => `<tr><td>${tlBtn("t", t.id)}</td>
+        hlBody.innerHTML = filteredLoans.length ? filteredLoans.map(l => `<tr>
+          <td>${tlBtn("l", l.id)}</td>
+          <td><div class="fw-semibold">${esc(l.itemName)}</div><div class="small text-secondary">${Number(l.qty) || 1} ${esc(l.unit || "pcs")} &bull; ${esc(l.assetId)}</div></td>
+          <td>${badge(l.status)}</td>
+          <td class="small">${fmt(l.createdAt)}</td>
+          <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td>
+        </tr>`).join("") : none(lq ? "No matching borrowing or return records." : "No borrowing or return records yet.");
+
+        const filteredTickets = userTickets.filter(t => !tq ||
+            [t.id, t.title, t.building, t.location, t.status, t.assignee]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase()
+                .includes(tq)
+        );
+
+        htBody.innerHTML = filteredTickets.length ? filteredTickets.map(t => `<tr>
+          <td>${tlBtn("t", t.id)}</td>
           <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
           <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
-          <td class="small">${fmt(t.createdAt)}</td><td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td></tr>`).join("") : none("No damage reports found.");
+          <td class="small">${fmt(t.createdAt)}</td>
+          <td class="small">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td>
+        </tr>`).join("") : none(tq ? "No matching damage reports." : "No damage reports found.");
     };
-    input.addEventListener("input", render);
+
+    if (hlInput) hlInput.addEventListener("input", render);
+    if (htInput) htInput.addEventListener("input", render);
     document.addEventListener("shown.bs.tab", e => {
-        if (e.target.getAttribute("data-bs-target") !== "#tabHist") return;
-        if (!input.value) input.value = me().idNo || me().name || "";
-        render();
+        if (e.target.getAttribute("data-bs-target") === "#tabHist") render();
     });
     window.addEventListener("storage", render);
     window.addEventListener("authchange", render);
@@ -1653,10 +1714,12 @@ const M_TITLES = {
     famo: ADMIN_TITLES,
     admin_office: ADMIN_TITLES
 };
+
 function updateMobileHead(t) {
     const m = (M_TITLES[document.body.dataset.page] || {})[t];
     if (m && $("mTitle")) { $("mTitle").textContent = m[0]; if ($("mSub")) $("mSub").textContent = m[1]; }
 }
+
 function initHero() {
     if (!$("heroName")) return;
     const render = () => {
