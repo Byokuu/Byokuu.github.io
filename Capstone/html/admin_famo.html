@@ -18,7 +18,8 @@
             <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span
                     class="brand-text">CampusCare<small>Admin console &bull; FAMO</small></span></div>
             <nav class="nav align-items-center">
-                <button type="button" class="top-profile-pic-btn d-none" id="topProfilePicBtn" aria-label="Profile picture">
+                <button type="button" class="top-profile-pic-btn d-none" id="topProfilePicBtn"
+                    aria-label="Profile picture">
                     <span class="user-avatar"></span>
                 </button>
             </nav>
@@ -136,7 +137,7 @@
                         </svg>
                         <span>Account Settings</span>
                     </button>
-                    <button type="button" class="admin-side-action logout-btn" id="sideLogoutBtn">
+                    <button type="button" class="admin-side-action logout-btn" id="sideLogoutBtn" data-logout>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -301,61 +302,114 @@
                                     <span class="ws-role-pill">FAMO</span>
                                 </div>
                                 <p class="text-secondary small mb-0 mt-1">Complete log of cleaning updates, ticket
-                                    resolutions, and archived items.</p>
+                                    resolutions, fixed damage history, and archived items.</p>
                             </div>
                         </div>
 
-                        <section class="panel mb-3">
-                            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-                                <h3 class="h6 fw-bold mb-0">Activity Log</h3>
-                                <div class="d-flex gap-2">
-                                    <input id="gSearch" class="form-control form-control-sm" type="search"
-                                        placeholder="Search activity" aria-label="Search activity">
-                                    <select id="gKind" class="form-select form-select-sm w-auto"
-                                        aria-label="Filter activity">
-                                        <option value="">Everything</option>
-                                        <option value="ticket">Tickets</option>
-                                        <option value="asset">Assets</option>
-                                        <option value="cleaning">Cleaning</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="ws-table-card">
-                                <div class="table-responsive log-scroll">
-                                    <table class="table table-sm mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>When</th>
-                                                <th>Type</th>
-                                                <th>What happened</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="logRows"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </section>
+                        <ul class="nav nav-tabs history-subtabs mb-3" id="famoHistoryTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="famoHistLogTab" data-bs-toggle="tab"
+                                    data-bs-target="#famoHistLogPane" type="button" role="tab"
+                                    aria-controls="famoHistLogPane" aria-selected="true">Activity Log</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="famoHistArchTab" data-bs-toggle="tab"
+                                    data-bs-target="#famoHistArchPane" type="button" role="tab"
+                                    aria-controls="famoHistArchPane" aria-selected="false">Archived Items</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="famoHistFixedTab" data-bs-toggle="tab"
+                                    data-bs-target="#famoHistFixedPane" type="button" role="tab"
+                                    aria-controls="famoHistFixedPane" aria-selected="false">Fixed Damage
+                                    History</button>
+                            </li>
+                        </ul>
 
-                        <section class="panel">
-                            <h3 class="h6 fw-bold mb-1">Archived Items</h3>
-                            <p class="small text-secondary mb-3">Archived tickets and assets are hidden from the lists
-                                and reports. Restore them any time, or delete them forever.</p>
-                            <div class="ws-table-card">
-                                <div class="table-responsive">
-                                    <table class="table table-sm mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Type</th>
-                                                <th>Item</th>
-                                                <th>Archived</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="archRows"></tbody>
-                                    </table>
+                        <div class="tab-content" id="famoHistoryTabContent">
+                            <div class="tab-pane fade show active" id="famoHistLogPane" role="tabpanel"
+                                aria-labelledby="famoHistLogTab">
+                                <div class="ws-toolbar">
+                                    <input id="gSearch" class="form-control flex-grow-1" style="min-width:220px"
+                                        type="search" placeholder="Search activity..." aria-label="Search activity">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <select id="gKind" class="form-select w-auto" aria-label="Filter activity">
+                                            <option value="">Everything</option>
+                                            <option value="ticket">Tickets</option>
+                                            <option value="asset">Assets</option>
+                                            <option value="supply">Supplies</option>
+                                            <option value="cleaning">Cleaning</option>
+                                            <option value="loan">Borrowing</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="ws-table-card">
+                                    <div class="table-responsive log-scroll">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>When</th>
+                                                    <th>Type</th>
+                                                    <th>What happened</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="logRows"></tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                        </section>
+
+                            <div class="tab-pane fade" id="famoHistArchPane" role="tabpanel"
+                                aria-labelledby="famoHistArchTab">
+                                <p class="text-secondary small mb-3">Archived tickets and items are hidden from the
+                                    lists and reports. Restore them any time, or delete them forever.</p>
+
+                                <div class="ws-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Type</th>
+                                                    <th>Item</th>
+                                                    <th>Archived</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="archRows"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="famoHistFixedPane" role="tabpanel"
+                                aria-labelledby="famoHistFixedTab">
+                                <p class="text-secondary small mb-3">Completed damage reports separated from active
+                                    reported damages.</p>
+
+                                <div class="ws-toolbar">
+                                    <input id="fixedHistSearch" class="form-control flex-grow-1" style="min-width:220px"
+                                        type="search" placeholder="Search fixed damages..."
+                                        aria-label="Search fixed damages">
+                                </div>
+
+                                <div class="ws-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticket</th>
+                                                    <th>Damage</th>
+                                                    <th>Status</th>
+                                                    <th>Reported</th>
+                                                    <th>Fixed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="fixedHistRows"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- PERSONNEL TAB -->
@@ -750,12 +804,12 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade modal-admin" id="assetModal" tabindex="-1" aria-labelledby="assetModalT" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header"><span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            aria-hidden="true">
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
                             <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
                         </svg></span>
@@ -771,14 +825,10 @@
                         <input type="hidden" id="assetId2">
                         <div class="form-section" style="margin-top:0">Item</div>
                         <div class="row g-3 mb-3">
-                            <div class="col-sm-8"><label class="form-label" for="nName">Item name</label>
+                            <div class="col-12"><label class="form-label" for="nName">Item name</label>
                                 <input class="form-control" id="nName" name="name"
                                     placeholder="e.g. Liquid hand soap, Floor mop" required>
                                 <div class="invalid-feedback">Enter the item name.</div>
-                            </div>
-                            <div class="col-sm-4"><label class="form-label" for="nTag">ID number</label>
-                                <input class="form-control" id="nTag" name="tag" placeholder="e.g. SOAP-001" required>
-                                <div class="invalid-feedback">Enter a unique ID number.</div>
                             </div>
                         </div>
                         <div class="mb-1"><label class="form-label" for="nCat">Category</label>
@@ -815,15 +865,10 @@
                         </div>
                         <div class="form-section">Storage</div>
                         <div class="row g-3">
-                            <div class="col-sm-6"><label class="form-label" for="nLoc">Location</label>
+                            <div class="col-12"><label class="form-label" for="nLoc">Location</label>
                                 <input class="form-control" id="nLoc" name="location"
                                     placeholder="e.g. Janitor's stockroom" required>
                                 <div class="invalid-feedback">Enter the location.</div>
-                            </div>
-                            <div class="col-sm-6"><label class="form-label" for="nDept">Assigned department</label>
-                                <input class="form-control" id="nDept" name="dept"
-                                    placeholder="e.g. Facility Management Office" required>
-                                <div class="invalid-feedback">Enter the department.</div>
                             </div>
                         </div>
                     </form>
@@ -834,6 +879,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade modal-admin" id="historyModal" tabindex="-1" aria-labelledby="historyModalT"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">

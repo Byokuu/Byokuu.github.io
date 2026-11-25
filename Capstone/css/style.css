@@ -1594,6 +1594,42 @@ h3,
     box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
 }
 
+/* Sub-tabs inside History & Activity Log */
+.history-subtabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    padding: .25rem;
+    background: #f1eced;
+    border-radius: 10px;
+    border-bottom: 0;
+}
+
+.history-subtabs .nav-link {
+    border: 0;
+    border-radius: 8px;
+    padding: .45rem .85rem;
+    color: var(--mute);
+    font-weight: 500;
+    font-size: .88rem;
+}
+
+.history-subtabs .nav-link:hover {
+    color: var(--maroon);
+}
+
+.history-subtabs .nav-link.active {
+    background: #fff;
+    color: var(--maroon);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+
+/* Keep #tabHistory cleanly clipped and non-overlapping */
+#tabHistory {
+    overflow: hidden;
+}
+
 /* delete-or-archive choices */
 .choice {
     display: flex;

@@ -311,9 +311,13 @@ body[data-page="student"] #htRows tr td:nth-child(5) {
     border-radius: 999px;
 }
 
-#assetRows tr td:nth-child(5):not(.text-end),
-#assetRows tr td:nth-child(6):not(.text-end),
-#assetRows tr td:nth-child(7):not(.text-end) {
+#assetRows tr td:nth-child(4)::before {
+    content: "Location: ";
+    font-weight: 600;
+    color: var(--ink);
+}
+
+#assetRows tr td:nth-child(5):not(.text-end) {
     order: 5;
     flex: 1 1 100%;
     font-size: .82rem;
@@ -321,18 +325,12 @@ body[data-page="student"] #htRows tr td:nth-child(5) {
 }
 
 #assetRows tr td:nth-child(5):not(.text-end)::before {
-    content: "Location: ";
-    font-weight: 600;
-    color: var(--ink);
-}
-
-#assetRows tr td:nth-child(6):not(.text-end)::before {
     content: "Updated: ";
     font-weight: 600;
     color: var(--ink);
 }
 
-#assetRows tr[data-archived="true"] td:nth-child(6):not(.text-end)::before {
+#assetRows tr[data-archived="true"] td:nth-child(5):not(.text-end)::before {
     content: "Archived: ";
 }
 
@@ -749,6 +747,44 @@ textarea.form-control {
     font-size: .82rem;
 }
 
+.history-subtabs {
+    display: flex;
+    width: 100%;
+}
+
+.history-subtabs .nav-item {
+    flex: 1 1 0;
+}
+
+.history-subtabs .nav-link {
+    width: 100%;
+    text-align: center;
+    padding: .45rem .5rem;
+    font-size: .82rem;
+}
+
+#tabHistory .log-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: .2rem;
+}
+
+#tabHistory #logRows tr td:nth-child(3) {
+    order: -1;
+    flex: 1 1 100%;
+    font-weight: 600;
+}
+
+#tabHistory #logRows tr td:nth-child(1) {
+    font-size: .76rem;
+    color: var(--mute);
+}
+
+#tabHistory #logRows tr td:nth-child(2) {
+    margin-left: auto;
+}
+
 /* Admin office history cards */
 body[data-page="admin_office"] #officeFixedRows tr {
     position: relative;
@@ -778,7 +814,7 @@ body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) .badge-status
     right: .9rem;
 }
 
-body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) > div {
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3)>div {
     text-align: left;
     margin-top: 0 !important;
     font-size: .82rem;
@@ -927,7 +963,7 @@ body[data-page="student"] #myLoanRows tr td.text-end {
 }
 
 /* Hide redundant mobile title block on admin pages */
-#adminApp > .m-head {
+#adminApp>.m-head {
     display: none !important;
 }
 
@@ -998,7 +1034,7 @@ body[data-page="student"] #myLoanRows tr td.text-end {
 }
 
 /* Hide redundant mobile title block on student page (matches #adminApp > .m-head) */
-#clientApp > .m-head {
+#clientApp>.m-head {
     display: none !important;
 }
 
@@ -1028,7 +1064,7 @@ body[data-page="student"] .ws-actions .btn {
     width: 100%;
 }
 
-body[data-page="student"] .tab-pane > section.panel {
+body[data-page="student"] .tab-pane>section.panel {
     padding: .85rem;
     border-radius: 12px;
 }
@@ -1067,7 +1103,7 @@ body[data-page="student"] .tab-pane .table:not(.table-sm) tr:last-child {
     min-width: 0 !important;
 }
 
-.ws-toolbar > .d-flex,
+.ws-toolbar>.d-flex,
 .ws-toolbar .d-flex.flex-wrap {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -1090,8 +1126,8 @@ body[data-page="student"] .tab-pane .table:not(.table-sm) tr:last-child {
     flex-direction: row !important;
 }
 
-.ws-toolbar .d-flex.flex-wrap.gap-2:has(> .form-select:nth-child(2):last-child) > .form-select,
-.ws-toolbar .d-flex.gap-2:has(> .form-select:nth-child(2):last-child) > .form-select {
+.ws-toolbar .d-flex.flex-wrap.gap-2:has(> .form-select:nth-child(2):last-child)>.form-select,
+.ws-toolbar .d-flex.gap-2:has(> .form-select:nth-child(2):last-child)>.form-select {
     flex: 1 1 0;
     width: auto !important;
 }
@@ -1100,7 +1136,7 @@ body[data-page="student"] .tab-pane .table:not(.table-sm) tr:last-child {
     width: auto;
 }
 
-#tabHistory .panel > .d-flex > .d-flex {
+#tabHistory .panel>.d-flex>.d-flex {
     flex-direction: column;
     align-items: stretch;
     gap: .55rem !important;

@@ -1,35 +1,101 @@
 const $ = id => document.getElementById(id);
 const fmtT = ms => new Date(ms).toLocaleString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 const labelOf = o => o.title || o.name || o.area || o.itemName || "";
-const coll = (key, prefix, pad, kind) => ({
-    all() { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } },
-    save(l) { localStorage.setItem(key, JSON.stringify(l)); },
-    note(o, text) {
-        const by = sessionStorage.getItem("fixit_admin_name");
-        if (by) text += " (by " + by + ")";
-        o.events = (o.events || []).concat({ ts: Date.now(), text });
-        if (kind) Log.add({ kind, ref: o.id, text: `${o.id} (${labelOf(o)}) - ${text}` });
-    },
-    add(o, text) {
-        const l = this.all();
-        const n = Math.max(0, ...l.map(x => parseInt(x.id.split("-")[1], 10) || 0)) + 1;
-        o.id = prefix + "-" + String(n).padStart(pad, "0");
-        o.createdAt = o.updatedAt = Date.now(); o.events = [];
-        if (text) this.note(o, text);
-        l.unshift(o); this.save(l); return o;
-    },
-    patch(id, p, text) {
-        const l = this.all(), o = l.find(x => x.id === id);
-        if (o) { Object.assign(o, p, { updatedAt: Date.now() }); if (text) this.note(o, text); this.save(l); }
-        return o;
-    },
-    remove(id, text) {
-        const o = this.all().find(x => x.id === id);
-        if (o && text) this.note(o, text);
-        this.save(this.all().filter(x => x.id !== id));
-    }
-});
-const Tickets = coll("fixit_tickets", "FX", 4, "ticket"), Assets = coll("fixit_assets", "AS", 3, "asset"), Cleanings = coll("fixit_cleanings", "CL", 4, "cleaning"), Loans = coll("fixit_loans", "LN", 4, "loan"), Log = coll("fixit_log", "LG", 5);
+
+const isSupplyPage = () => (document.body.dataset.page || document.body.dataset.role || "").toLowerCase() === "famo";
+const currentOfficeScope = () => {
+    const p = (document.body.dataset.page || document.body.dataset.role || "").toLowerCase();
+    return (p === "famo" || p === "admin_office") ? p : "";
+};
+
+const coll = (key, prefix, pad, kind, opts = {}) => {
+    const scoped = !!opts.scoped;
+    const rawAll = () => {
+        try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
+    };
+    const saveRaw = l => localStorage.setItem(key, JSON.stringify(l));
+
+    return {
+        rawAll,
+        all() {
+            const list = rawAll();
+            const scope = scoped ? currentOfficeScope() : "";
+            if (!scope) return list;
+            return list.filter(x => (x.scope || x.office || "") === scope);
+        },
+        save(l) {
+            const scope = scoped ? currentOfficeScope() : "";
+            if (!scope) { saveRaw(l); return; }
+            const others = rawAll().filter(x => (x.scope || x.office || "") !== scope);
+            saveRaw([...l, ...others]);
+        },
+        note(o, text) {
+            const by = sessionStorage.getItem("fixit_admin_name");
+            if (by) text += " (by " + by + ")";
+            o.events = (o.events || []).concat({ ts: Date.now(), text });
+            if (kind) {
+                Log.add({
+                    kind,
+                    ref: o.id,
+                    text: `${o.id} (${labelOf(o)}) - ${text}`
+                }, o.scope || currentOfficeScope());
+            }
+        },
+        add(o, text) {
+            const scope = scoped ? currentOfficeScope() : "";
+            if (scope && !o.scope) o.scope = scope;
+            const l = this.all();
+            const n = Math.max(0, ...l.map(x => parseInt((x.id || "").split("-")[1], 10) || 0)) + 1;
+            o.id = prefix + "-" + String(n).padStart(pad, "0");
+            o.createdAt = o.updatedAt = Date.now();
+            o.events = [];
+            if (text) this.note(o, text);
+            l.unshift(o);
+            this.save(l);
+            return o;
+        },
+        patch(id, p, text) {
+            const l = this.all(), o = l.find(x => x.id === id);
+            if (o) {
+                Object.assign(o, p, { updatedAt: Date.now() });
+                if (text) this.note(o, text);
+                this.save(l);
+            }
+            return o;
+        },
+        remove(id, text) {
+            const o = this.all().find(x => x.id === id);
+            if (o && text) this.note(o, text);
+            this.save(this.all().filter(x => x.id !== id));
+        }
+    };
+};
+
+const Tickets = coll("fixit_tickets", "FX", 4, "ticket"),
+    Assets = coll("fixit_assets", "AS", 3, "asset", { scoped: true }),
+    Supplies = coll("fixit_supplies", "SP", 3, "supply", { scoped: true }),
+    Cleanings = coll("fixit_cleanings", "CL", 4, "cleaning"),
+    Loans = coll("fixit_loans", "LN", 4, "loan"),
+    Log = {
+        ...coll("fixit_log", "LG", 5, null, { scoped: true }),
+        add(entry, scopeOverride) {
+            const list = this.all();
+            const n = Math.max(0, ...list.map(x => parseInt((x.id || "").split("-")[1], 10) || 0)) + 1;
+            const rec = {
+                ...entry,
+                id: "LG-" + String(n).padStart(5, "0"),
+                createdAt: Date.now(),
+                scope: scopeOverride || currentOfficeScope() || ""
+            };
+            list.unshift(rec);
+            this.save(list);
+            return rec;
+        }
+    };
+
+const invStore = () => (isSupplyPage() ? Supplies : Assets);
+const invItemOf = id => invStore().all().find(a => a.id === id);
+
 Tickets.setStatus = (id, s) => {
     const msg = { Fixed: "Marked as fixed", "In progress": "Work started", Pending: "Reopened (back to pending)" }[s];
     Tickets.patch(id, { status: s, fixedAt: s === "Fixed" ? Date.now() : null }, msg);
@@ -354,8 +420,12 @@ function initStudent() {
     if (!body || !search) return;
 
     function render() {
+        const u = currentUser();
         const q = search.value.trim().toLowerCase();
-        const allActive = Store.all().filter(t => !t.archived);
+        const allActive = Store.all().filter(t => !t.archived && u && (
+            (t.idNo && t.idNo === u.idNo) ||
+            (!t.idNo && t.reporter === u.name)
+        ));
         const list = allActive.filter(t => !q || (t.id + t.title + t.building + t.location).toLowerCase().includes(q));
         body.innerHTML = list.length ? list.map(t => `
       <tr>
@@ -365,7 +435,7 @@ function initStudent() {
         <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
         <td class="small text-secondary">${fmt(t.createdAt)}</td>
       </tr>`).join("")
-            : `<tr><td colspan="5" class="empty">No damage reports submitted yet.</td></tr>`;
+            : `<tr><td colspan="5" class="empty">${u ? "No damage reports submitted yet." : "Log in to view your submitted damage reports."}</td></tr>`;
 
         if (histBody) {
             const hq = (histSearch ? histSearch.value : "").trim().toLowerCase();
@@ -379,7 +449,7 @@ function initStudent() {
         <td class="small text-secondary">${fmt(t.createdAt)}</td>
         <td class="small text-secondary">${t.fixedAt ? fmt(t.fixedAt) : "-"}</td>
       </tr>`).join("")
-                : `<tr><td colspan="5" class="empty">No fixed damage reports in history yet.</td></tr>`;
+                : `<tr><td colspan="5" class="empty">${u ? "No fixed damage reports in history yet." : "Log in to view your fixed damage report history."}</td></tr>`;
         }
     }
 
@@ -387,6 +457,7 @@ function initStudent() {
     search.addEventListener("input", render);
     if (histSearch) histSearch.addEventListener("input", render);
     window.addEventListener("storage", render);
+    window.addEventListener("authchange", render);
     render();
 }
 
@@ -578,12 +649,10 @@ function initAdmin() {
     function mineForOffice(list) {
         const sessUser = (sessionStorage.getItem("fixit_admin_session") || "").toLowerCase();
         const sessName = (sessionStorage.getItem("fixit_admin_name") || "").toLowerCase();
-        const own = list.filter(t =>
+        return list.filter(t =>
             (sessUser && (t.reporterUser || "").toLowerCase() === sessUser) ||
             (sessName && (t.reporter || "").toLowerCase() === sessName)
         );
-        if (own.length) return own;
-        return list.filter(t => t.role === "Office");
     }
 
     function render() {
@@ -850,8 +919,12 @@ function initAdminExtras() {
         Tickets.all().map(t => [t.id, t.title, t.building, t.location, t.category, t.urgency, t.status, t.onBehalf || t.reporter, t.role, t.idNo || t.studentNo || "", t.assignee || "", t.assetId || "", fmtT(t.createdAt), t.fixedAt ? fmtT(t.fixedAt) : "", t.archived ? "Yes" : "", t.description || ""])));
     csvBtn("tabClean", () => downloadCSV("facility-cleaning", ["Facility ID", "Building", "Area", "Area type", "Status today", "Cleaned today at", "Total cleaned", "Last cleaned", "Notes"],
         Cleanings.all().map(c => { const log = logOf(c), d = doneToday(c), last = log.slice(-1)[0]; return [c.id, c.building, c.area, c.areaType, d ? "Cleaned" : "For Cleaning", d ? clock(d.ts) : "", log.length, last ? last.date : "", c.notes || ""]; })));
-    csvBtn("tabAssets", () => downloadCSV("assets", ["ID", "Asset", "ID no.", "Category", "Quantity", "Unit", "Location", "Department", "Archived"],
-        Assets.all().map(a => [a.id, a.name, a.tag, a.category, a.qty ?? "", a.unit || "", a.location, a.dept, a.archived ? "Yes" : ""])));
+    const invPaneId = isSupplyPage() ? "tabSupplies" : "tabAssets";
+    csvBtn(invPaneId, () => {
+        const store = invStore();
+        downloadCSV(isSupplyPage() ? "supplies" : "assets", ["ID", isSupplyPage() ? "Supply" : "Asset", "ID no.", "Category", "Quantity", "Unit", "Location", "Archived"],
+            store.all().map(a => [a.id, a.name, a.tag, a.category, a.qty ?? "", a.unit || "", a.location, a.archived ? "Yes" : ""]));
+    });
 
     if ($("assignForm")) {
         $("assignForm").addEventListener("submit", e => {
@@ -957,24 +1030,18 @@ function initAdminExtras() {
     }
     setInterval(() => { if ($("cleanRows") && today() !== shownDay) renderAll(); }, 60000);
 
-    /* assets: add, edit, archive, delete + category filter */
+    /* assets & supplies: add, edit, archive, delete + category filter */
     let assetView = "active", delId = null, pendingEdit = null;
-    const assetHead = {
-        active: "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Department</th><th>Updated</th><th></th></tr>",
-        archived: "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Archived on</th><th></th></tr>"
-    };
     function renderAssets() {
         const assetRows = $("assetRows");
         if (!assetRows) return;
-        const page = document.body.dataset.page || document.body.dataset.role || "famo";
-        const hideDept = page === "admin_office";
+        const store = invStore();
+        const itemLabel = isSupplyPage() ? "Supply" : "Asset";
         const assetHead = {
-            active: hideDept
-                ? "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Updated</th><th></th></tr>"
-                : "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Department</th><th>Updated</th><th></th></tr>",
-            archived: "<tr><th>ID no.</th><th>Asset</th><th>Quantity</th><th>Location</th><th>Archived on</th><th></th></tr>"
+            active: `<tr><th>ID no.</th><th>${itemLabel}</th><th>Quantity</th><th>Location</th><th>Updated</th><th></th></tr>`,
+            archived: `<tr><th>ID no.</th><th>${itemLabel}</th><th>Quantity</th><th>Location</th><th>Archived on</th><th></th></tr>`
         };
-        const all = Assets.all();
+        const all = store.all();
         const q = ($("sSearch") ? $("sSearch").value : "").trim().toLowerCase();
         const cat = ($("assetCatFilter") ? $("assetCatFilter").value : "").trim().toLowerCase();
         const supCat = ($("supplyCatFilter") ? $("supplyCatFilter").value : "").trim().toLowerCase();
@@ -986,21 +1053,19 @@ function initAdminExtras() {
             !!a.archived === arch &&
             (!cat || String(a.category || "").toLowerCase() === cat) &&
             (!supCat || String(a.category || "").toLowerCase() === supCat) &&
-            (!q || (a.id + a.name + a.tag + a.location + (hideDept ? "" : a.dept) + a.category).toLowerCase().includes(q))
+            (!q || ((a.tag || "") + a.name + (a.location || "") + (a.category || "")).toLowerCase().includes(q))
         );
         const btns = a => arch
             ? `<button class="btn btn-sm btn-success" data-act="restore" data-id="${a.id}">Restore</button> <button class="btn btn-sm btn-outline-danger" data-act="purge" data-id="${a.id}">Delete permanently</button>`
             : `<button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${a.id}">Edit</button> <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${a.id}">Delete</button>`;
-        const emptyColspan = arch || hideDept ? 6 : 7;
         assetRows.innerHTML = list.length ? list.map(a => `<tr>
-          <td><span class="tid">${a.id}</span><div class="small text-secondary">${esc(a.tag)}</div></td>
-          <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category)}</div></td>
+          <td><span class="tid">${esc(a.tag || a.id)}</span></td>
+          <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category || "")}</div></td>
           <td class="fw-semibold">${a.qty ?? "-"} <span class="small text-secondary fw-normal">${esc(a.unit || "")}</span></td>
-          <td class="small">${esc(a.location)}</td>
-          ${arch || hideDept ? "" : `<td class="small">${esc(a.dept)}</td>`}
+          <td class="small">${esc(a.location || "")}</td>
           <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
           <td class="text-end text-nowrap">${btns(a)}</td></tr>`).join("")
-            : `<tr><td colspan="${emptyColspan}" class="empty">${arch ? "Nothing in the archive." : 'No items yet. Use "+ Add asset" to record one.'}</td></tr>`;
+            : `<tr><td colspan="6" class="empty">${arch ? "Nothing in the archive." : 'No items yet. Use "+ Add" to record one.'}</td></tr>`;
     }
     if ($("assetView")) {
         $("assetView").addEventListener("click", e => {
@@ -1010,29 +1075,25 @@ function initAdminExtras() {
             renderAssets();
         });
     }
-    const nextAssetTag = (prefix = "AST") => {
+    const nextAssetTag = (prefix = "AS") => {
         const re = new RegExp(`^${prefix}-(\\d+)$`, "i");
         let maxNum = 0;
-        let pad = 3;
-        Assets.all().forEach(a => {
+        const pad = 3;
+        invStore().all().forEach(a => {
             const m = String(a.tag || "").trim().match(re);
             if (!m) return;
             const n = parseInt(m[1], 10);
             if (!Number.isNaN(n) && n > maxNum) maxNum = n;
-            if (m[1].length > pad) pad = m[1].length;
         });
         return `${prefix}-${String(maxNum + 1).padStart(pad, "0")}`;
     };
     const setAssetForm = a => {
         const f = $("assetForm"); if (!f) return;
+        const label = isSupplyPage() ? "supply" : "asset";
         f.reset(); f.classList.remove("was-validated");
-        if ($("nTag")) {
-            $("nTag").setCustomValidity("");
-            $("nTag").value = a ? (a.tag || "") : "";
-        }
         if ($("assetId2")) $("assetId2").value = a ? a.id : "";
-        if ($("assetModalT")) $("assetModalT").textContent = a ? "Edit asset" : "Add asset";
-        if ($("assetSave")) $("assetSave").textContent = a ? "Save changes" : "Save asset";
+        if ($("assetModalT")) $("assetModalT").textContent = a ? `Edit ${label}` : `Add ${label}`;
+        if ($("assetSave")) $("assetSave").textContent = a ? "Save changes" : `Save ${label}`;
         if (a) {
             if ($("nName")) $("nName").value = a.name;
             if ($("nCat")) $("nCat").value = a.category;
@@ -1047,31 +1108,31 @@ function initAdminExtras() {
     if ($("assetForm")) {
         $("assetForm").addEventListener("submit", e => {
             e.preventDefault();
+            const store = invStore();
             const f = e.target, tag = $("nTag"), eid = $("assetId2") ? $("assetId2").value : "";
-            const page = document.body.dataset.page || document.body.dataset.role || "famo";
-            const defaultPrefix = page === "famo" ? "SUP" : "AST";
+            const defaultPrefix = isSupplyPage() ? "AS" : "AST";
             if (tag) {
-                tag.setCustomValidity(Assets.all().some(a => a.id !== eid && a.tag.toLowerCase() === tag.value.trim().toLowerCase()) ? "dup" : "");
+                tag.setCustomValidity(store.all().some(a => a.id !== eid && String(a.tag || "").toLowerCase() === tag.value.trim().toLowerCase()) ? "dup" : "");
             }
             if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
             const d = Object.fromEntries(new FormData(f));
-            const existing = eid ? assetOf(eid) : null;
+            const existing = eid ? invItemOf(eid) : null;
             const resolvedTag = tag
-                ? (d.tag || "").trim()
-                : (existing ? existing.tag : nextAssetTag(defaultPrefix));
+                ? ((tag.value || "").trim() || (existing && existing.tag) || nextAssetTag(defaultPrefix))
+                : ((existing && existing.tag) || nextAssetTag(defaultPrefix));
             const data = {
                 name: (d.name || "").trim(),
                 tag: resolvedTag,
                 category: d.category,
                 qty: Number(d.qty),
                 unit: (d.unit || "").trim(),
-                location: $("nLoc") ? (d.location || "").trim() : (existing ? existing.location : "Admin Office")
+                location: $("nLoc") ? (d.location || "").trim() : (existing ? existing.location : (isSupplyPage() ? "FAMO Storage" : "Admin Office"))
             };
             if (eid) {
-                Assets.patch(eid, data, "Asset details updated" + (existing && existing.qty !== data.qty ? ` (quantity ${existing.qty ?? 0} to ${data.qty})` : ""));
+                store.patch(eid, data, "Details updated" + (existing && existing.qty !== data.qty ? ` (quantity ${existing.qty ?? 0} to ${data.qty})` : ""));
                 toast(`${data.name} updated`);
             } else {
-                Assets.add({ ...data, condition: "Good" }, `Added to inventory (${data.qty} ${data.unit})`);
+                store.add({ ...data, condition: "Good" }, `Added to inventory (${data.qty} ${data.unit})`);
                 toast(`${data.name} added to the inventory`);
             }
             modal("#assetModal").hide(); renderAll();
@@ -1085,7 +1146,7 @@ function initAdminExtras() {
     };
     function openDelete(a, permanentOnly) {
         delId = a.id;
-        if ($("delItem")) $("delItem").innerHTML = `<b>${esc(a.name)}</b> <span class="text-secondary">(${esc(a.tag)})</span>`;
+        if ($("delItem")) $("delItem").innerHTML = `<b>${esc(a.name)}</b> <span class="text-secondary">(${esc(a.tag || a.id)})</span>`;
         if ($("delBack")) $("delBack").classList.toggle("d-none", permanentOnly);
         showStep(permanentOnly);
         modal("#delAssetModal").show();
@@ -1093,16 +1154,17 @@ function initAdminExtras() {
     if ($("assetRows")) {
         $("assetRows").addEventListener("click", e => {
             const b = e.target.closest("button[data-act]"); if (!b) return;
-            const { act, id } = b.dataset, a = assetOf(id); if (!a) return;
+            const store = invStore();
+            const { act, id } = b.dataset, a = invItemOf(id); if (!a) return;
             if (act === "edit") { pendingEdit = a; modal("#assetModal").show(); }
-            else if (act === "restore") { Assets.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${a.name} restored`); renderAll(); }
+            else if (act === "restore") { store.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${a.name} restored`); renderAll(); }
             else openDelete(a, act === "purge");
         });
     }
     if ($("chArchive")) {
         $("chArchive").addEventListener("click", () => {
-            const a = assetOf(delId); if (!a) return;
-            Assets.patch(delId, { archived: true, archivedAt: Date.now() }, "Moved to archive");
+            const a = invItemOf(delId); if (!a) return;
+            invStore().patch(delId, { archived: true, archivedAt: Date.now() }, "Moved to archive");
             modal("#delAssetModal").hide(); toast(`${a.name} moved to the archive`); renderAll();
         });
     }
@@ -1110,8 +1172,8 @@ function initAdminExtras() {
     if ($("delBack")) $("delBack").addEventListener("click", () => showStep(false));
     if ($("delGo")) {
         $("delGo").addEventListener("click", () => {
-            const a = assetOf(delId); if (!a) return;
-            Assets.remove(delId, "Deleted permanently");
+            const a = invItemOf(delId); if (!a) return;
+            invStore().remove(delId, "Deleted permanently");
             modal("#delAssetModal").hide(); toast(`${a.name} deleted permanently`); renderAll(); window.renderTickets();
         });
     }
@@ -1123,7 +1185,7 @@ function initAdminExtras() {
         const isOffice = page === "admin_office";
 
         const T = Tickets.all().filter(t => !t.archived);
-        const A = Assets.all().filter(a => !a.archived);
+        const A = invStore().all().filter(a => !a.archived);
         const C = Cleanings.all();
         const L = Loans.all();
         const fixed = T.filter(t => t.status === "Fixed");
@@ -1188,12 +1250,18 @@ function initAdminExtras() {
     /* history: activity log + archive */
     function renderHistory() {
         if (!$("logRows") || !$("archRows")) return;
+        const store = invStore();
+        const invKind = isSupplyPage() ? "supply" : "asset";
+        const invLabel = isSupplyPage() ? "Supply" : "Asset";
         const q = ($("gSearch") ? $("gSearch").value : "").trim().toLowerCase(), k = $("gKind") ? $("gKind").value : "";
         const logs = Log.all().filter(g => (!k || g.kind === k) && (!q || g.text.toLowerCase().includes(q))).slice(0, 200);
-        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Report", asset: "Asset", cleaning: "Cleaning", loan: "Borrowing" }[g.kind] || g.kind}</span></td><td>${esc(g.text)}</td></tr>`).join("")
+        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Report", asset: "Asset", supply: "Supply", cleaning: "Cleaning", loan: "Borrowing" }[g.kind] || g.kind}</span></td><td>${esc(g.text)}</td></tr>`).join("")
             : `<tr><td colspan="3" class="empty">No activity yet.</td></tr>`;
-        const arch = [...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", o: t, name: t.title })), ...Assets.all().filter(a => a.archived).map(a => ({ k: "asset", o: a, name: `${a.name} (${a.tag})` }))].sort((x, y) => (Number(y.o?.archivedAt) || 0) - (Number(x.o?.archivedAt) || 0));
-        $("archRows").innerHTML = arch.length ? arch.map(x => `<tr><td><span class="badge text-bg-light border">${x.k === "ticket" ? "Report" : "Asset"}</span></td>
+        const arch = [
+            ...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", label: "Report", o: t, name: t.title })),
+            ...store.all().filter(a => a.archived).map(a => ({ k: invKind, label: invLabel, o: a, name: `${a.name} (${a.tag || a.id})` }))
+        ].sort((x, y) => (Number(y.o?.archivedAt) || 0) - (Number(x.o?.archivedAt) || 0));
+        $("archRows").innerHTML = arch.length ? arch.map(x => `<tr><td><span class="badge text-bg-light border">${x.label}</span></td>
           <td><span class="tid">${x.o.id}</span><div class="fw-semibold">${esc(x.name)}</div></td><td class="small">${fmtT(x.o.archivedAt)}</td>
           <td class="text-end text-nowrap"><button class="btn btn-sm btn-success" data-act="restore" data-k="${x.k}" data-id="${x.o.id}">Restore</button>
           <button class="btn btn-sm btn-outline-danger" data-act="purge" data-k="${x.k}" data-id="${x.o.id}">Delete forever</button></td></tr>`).join("")
@@ -1202,7 +1270,7 @@ function initAdminExtras() {
     if ($("archRows")) {
         $("archRows").addEventListener("click", e => {
             const b = e.target.closest("button[data-act]"); if (!b) return;
-            const { act, k, id } = b.dataset, c = k === "ticket" ? Tickets : Assets;
+            const { act, k, id } = b.dataset, c = k === "ticket" ? Tickets : invStore();
             if (act === "restore") {
                 c.patch(id, { archived: false, archivedAt: null }, "Restored from archive");
                 toast(`${id} restored`);
@@ -1226,9 +1294,9 @@ function initAdminExtras() {
                     }
                 });
             }
-            renderAll(); window.renderTickets();
         });
     }
+
     ["gSearch", "gKind"].forEach(id => { if ($(id)) $(id).addEventListener("input", renderHistory); });
     const renderAll = () => { renderPersonnel(); renderCleanings(); renderAssets(); renderReports(); renderHistory(); };
     ["cSearch", "cStatus", "cType"].forEach(id => { if ($(id)) $(id).addEventListener("input", renderCleanings); });
@@ -1742,7 +1810,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (b) showTimeline({ t: Tickets, c: Cleanings, l: Loans }[b.dataset.tl], b.dataset.id);
     });
     document.addEventListener("shown.bs.tab", e => {
-        if (e.target.closest(".damage-subtabs")) return;
+        if (e.target.closest(".damage-subtabs, .history-subtabs")) return;
         const t = e.target.getAttribute("data-bs-target");
         updateMobileHead(t);
         document.querySelectorAll("[data-main-nav]").forEach(b => {
