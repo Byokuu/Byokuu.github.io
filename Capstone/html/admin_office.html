@@ -218,60 +218,113 @@
                                     <span class="ws-role-pill">Admin Office</span>
                                 </div>
                                 <p class="text-secondary small mb-0 mt-1">Audit trail of asset updates, ticket actions,
-                                    and archived records.</p>
+                                    fixed damage history, and archived records.</p>
                             </div>
                         </div>
 
-                        <section class="panel mb-3">
-                            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-                                <h3 class="h6 fw-bold mb-0">Activity Log</h3>
-                                <div class="d-flex gap-2">
-                                    <input id="gSearch" class="form-control form-control-sm" type="search"
-                                        placeholder="Search activity" aria-label="Search activity">
-                                    <select id="gKind" class="form-select form-select-sm w-auto"
-                                        aria-label="Filter activity">
-                                        <option value="">Everything</option>
-                                        <option value="ticket">Tickets</option>
-                                        <option value="asset">Assets</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="ws-table-card">
-                                <div class="table-responsive log-scroll">
-                                    <table class="table table-sm mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>When</th>
-                                                <th>Type</th>
-                                                <th>What happened</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="logRows"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </section>
+                        <ul class="nav nav-tabs history-subtabs mb-3" id="officeHistoryTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="officeHistLogTab" data-bs-toggle="tab"
+                                    data-bs-target="#officeHistLogPane" type="button" role="tab"
+                                    aria-controls="officeHistLogPane" aria-selected="true">Activity Log</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="officeHistArchTab" data-bs-toggle="tab"
+                                    data-bs-target="#officeHistArchPane" type="button" role="tab"
+                                    aria-controls="officeHistArchPane" aria-selected="false">Archived Items</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="officeHistFixedTab" data-bs-toggle="tab"
+                                    data-bs-target="#officeHistFixedPane" type="button" role="tab"
+                                    aria-controls="officeHistFixedPane" aria-selected="false">Fixed Damage
+                                    History</button>
+                            </li>
+                        </ul>
 
-                        <section class="panel">
-                            <h3 class="h6 fw-bold mb-1">Archived Items</h3>
-                            <p class="small text-secondary mb-3">Archived tickets and assets are hidden from the lists
-                                and reports. Restore them any time, or delete them forever.</p>
-                            <div class="ws-table-card">
-                                <div class="table-responsive">
-                                    <table class="table table-sm mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Type</th>
-                                                <th>Item</th>
-                                                <th>Archived</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="archRows"></tbody>
-                                    </table>
+                        <div class="tab-content" id="officeHistoryTabContent">
+                            <div class="tab-pane fade show active" id="officeHistLogPane" role="tabpanel"
+                                aria-labelledby="officeHistLogTab">
+                                <div class="ws-toolbar">
+                                    <input id="gSearch" class="form-control flex-grow-1" style="min-width:220px"
+                                        type="search" placeholder="Search activity..." aria-label="Search activity">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <select id="gKind" class="form-select w-auto" aria-label="Filter activity">
+                                            <option value="">Everything</option>
+                                            <option value="ticket">Tickets</option>
+                                            <option value="asset">Assets</option>
+                                            <option value="loan">Borrowing</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="ws-table-card">
+                                    <div class="table-responsive log-scroll">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>When</th>
+                                                    <th>Type</th>
+                                                    <th>What happened</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="logRows"></tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                        </section>
+
+                            <div class="tab-pane fade" id="officeHistArchPane" role="tabpanel"
+                                aria-labelledby="officeHistArchTab">
+                                <p class="text-secondary small mb-3">Archived tickets and items are hidden from the
+                                    lists
+                                    and reports. Restore them any time, or delete them forever.</p>
+
+                                <div class="ws-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Type</th>
+                                                    <th>Item</th>
+                                                    <th>Archived</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="archRows"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="officeHistFixedPane" role="tabpanel"
+                                aria-labelledby="officeHistFixedTab">
+                                <p class="text-secondary small mb-3">Completed damage reports logged by Admin Office.
+                                </p>
+
+                                <div class="ws-toolbar">
+                                    <input id="aoFixedHistSearch" class="form-control flex-grow-1"
+                                        style="min-width:220px" type="search" placeholder="Search fixed damages..."
+                                        aria-label="Search fixed damages">
+                                </div>
+
+                                <div class="ws-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticket</th>
+                                                    <th>Damage</th>
+                                                    <th>Status</th>
+                                                    <th>Reported</th>
+                                                    <th>Fixed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="officeFixedRows"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- DAMAGE REPORTS TAB -->
@@ -332,17 +385,17 @@
                             <div class="tab-pane fade show active" id="officePaneReported" role="tabpanel"
                                 aria-labelledby="officeSubReportedTab">
                                 <div class="ws-toolbar">
-                                    <input id="search" class="form-control flex-grow-1" style="min-width:220px"
+                                    <input id="aoDmgSearch" class="form-control flex-grow-1" style="min-width:220px"
                                         type="search" placeholder="Search ticket, building, or room..."
                                         aria-label="Search reported damages">
                                     <div class="d-flex gap-2">
-                                        <select id="fStatus" class="form-select w-auto" aria-label="Filter by status">
+                                        <select id="aoDmgStatus" class="form-select w-auto"
+                                            aria-label="Filter by status">
                                             <option value="">All statuses</option>
                                             <option>Pending</option>
                                             <option>In progress</option>
-                                            <option>Fixed</option>
                                         </select>
-                                        <select id="fUrg" class="form-select" aria-label="Filter by urgency">
+                                        <select id="aoDmgUrg" class="form-select" aria-label="Filter by urgency">
                                             <option value="">All urgency</option>
                                             <option>High</option>
                                             <option>Medium</option>
@@ -360,9 +413,10 @@
                                                     <th>Urgency</th>
                                                     <th>Status</th>
                                                     <th>Reported</th>
+                                                    <th class="text-end">Actions</th>
                                                 </tr>
                                             </thead>
-                                            <tbody id="rows"></tbody>
+                                            <tbody id="aoDmgRows"></tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -382,7 +436,7 @@
                                                     <th>Fixed</th>
                                                 </tr>
                                             </thead>
-                                            <tbody id="officeFixedRows"></tbody>
+                                            <tbody id="officeSubFixedRows"></tbody>
                                         </table>
                                     </div>
                                 </div>

@@ -413,20 +413,39 @@ function initReportForm(afterSave) {
 
 /* ---------- Student page ---------- */
 function initStudent() {
-    const body = document.getElementById("rows");
+    const body = document.getElementById("clDmgRows") || document.getElementById("rows");
     const histBody = document.getElementById("clientDamageHistRows");
-    const search = document.getElementById("search");
+    const search = document.getElementById("clDmgSearch") || document.getElementById("search");
+    const statusFilter = document.getElementById("clDmgStatus") || document.getElementById("fStatus");
+    const urgFilter = document.getElementById("clFUrg");
     const histSearch = document.getElementById("clientHistSearch");
     if (!body || !search) return;
 
     function render() {
         const u = currentUser();
         const q = search.value.trim().toLowerCase();
+        const st = statusFilter ? statusFilter.value : "";
+        const urg = urgFilter ? urgFilter.value : "";
         const allActive = Store.all().filter(t => !t.archived && u && (
             (t.idNo && t.idNo === u.idNo) ||
             (!t.idNo && t.reporter === u.name)
         ));
-        const list = allActive.filter(t => !q || (t.id + t.title + t.building + t.location).toLowerCase().includes(q));
+
+        const openList = allActive.filter(t => t.status !== "Fixed");
+        const fixedAll = allActive.filter(t => t.status === "Fixed");
+
+        if ($("clTotal")) $("clTotal").textContent = allActive.length;
+        if ($("clOpen")) $("clOpen").textContent = openList.length;
+        if ($("clFixed")) $("clFixed").textContent = fixedAll.length;
+
+        // Keep unfixed damages in Reported damages; Fixed items go to the history tab
+        const effectiveStatus = st === "Fixed" ? "" : st;
+        const list = openList.filter(t =>
+            (!effectiveStatus || t.status === effectiveStatus) &&
+            (!urg || t.urgency === urg) &&
+            (!q || (t.id + t.title + t.building + t.location).toLowerCase().includes(q))
+        );
+
         body.innerHTML = list.length ? list.map(t => `
       <tr>
         <td>${tlBtn("t", t.id)}</td>
@@ -435,12 +454,12 @@ function initStudent() {
         <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
         <td class="small text-secondary">${fmt(t.createdAt)}</td>
       </tr>`).join("")
-            : `<tr><td colspan="5" class="empty">${u ? "No damage reports submitted yet." : "Log in to view your submitted damage reports."}</td></tr>`;
+            : `<tr><td colspan="5" class="empty">${u ? "No active damage reports match your filters." : "Log in to view your submitted damage reports."}</td></tr>`;
 
         if (histBody) {
             const hq = (histSearch ? histSearch.value : "").trim().toLowerCase();
-            const fixedList = allActive.filter(t => t.status === "Fixed" &&
-                (!hq || (t.id + t.title + t.building + t.location).toLowerCase().includes(hq)));
+            const fixedList = fixedAll.filter(t =>
+                !hq || (t.id + t.title + t.building + t.location).toLowerCase().includes(hq));
             histBody.innerHTML = fixedList.length ? fixedList.map(t => `
       <tr>
         <td>${tlBtn("t", t.id)}</td>
@@ -455,6 +474,8 @@ function initStudent() {
 
     initReportForm(render);
     search.addEventListener("input", render);
+    if (statusFilter) statusFilter.addEventListener("change", render);
+    if (urgFilter) urgFilter.addEventListener("change", render);
     if (histSearch) histSearch.addEventListener("input", render);
     window.addEventListener("storage", render);
     window.addEventListener("authchange", render);
@@ -636,15 +657,30 @@ function applyAdminTabVisibility() {
 
 /* ---------- Admin page ---------- */
 function initAdmin() {
-    const body = document.getElementById("rows");
-    const fixedBody = document.getElementById("officeFixedRows");
-    const fStatus = document.getElementById("fStatus"), fUrg = document.getElementById("fUrg"), search = document.getElementById("search");
+    const isOffice = document.body.dataset.page === "admin_office";
+    const body = isOffice
+        ? (document.getElementById("aoDmgRows") || document.getElementById("rows"))
+        : document.getElementById("rows");
+    const fixedBody = isOffice
+        ? document.getElementById("officeFixedRows")
+        : (document.getElementById("fixedHistRows") || document.getElementById("famoFixedRows"));
+    const fixedSearch = isOffice
+        ? document.getElementById("aoFixedHistSearch")
+        : document.getElementById("fixedHistSearch");
+    const fStatus = isOffice
+        ? (document.getElementById("aoDmgStatus") || document.getElementById("fStatus"))
+        : document.getElementById("fStatus");
+    const fUrg = isOffice
+        ? (document.getElementById("aoDmgUrg") || document.getElementById("fUrg"))
+        : document.getElementById("fUrg");
+    const search = isOffice
+        ? (document.getElementById("aoDmgSearch") || document.getElementById("search"))
+        : document.getElementById("search");
+
     if (!body || !fStatus || !fUrg || !search) {
         window.renderTickets = () => { };
         return;
     }
-
-    const isOffice = document.body.dataset.page === "admin_office";
 
     function mineForOffice(list) {
         const sessUser = (sessionStorage.getItem("fixit_admin_session") || "").toLowerCase();
@@ -653,6 +689,25 @@ function initAdmin() {
             (sessUser && (t.reporterUser || "").toLowerCase() === sessUser) ||
             (sessName && (t.reporter || "").toLowerCase() === sessName)
         );
+    }
+
+    function renderFixedTable(targetBody, items, queryStr, emptyText, isOfficeView) {
+        if (!targetBody) return;
+        const fq = (queryStr || "").trim().toLowerCase();
+        const filtered = items.filter(t =>
+            !fq || (t.id + t.title + t.building + t.location + t.category + (t.reporter || "")).toLowerCase().includes(fq)
+        );
+        targetBody.innerHTML = filtered.length ? filtered.map(t => `
+          <tr>
+            <td>${tlBtn("t", t.id)}</td>
+            <td><div class="fw-semibold">${esc(t.title)}</div>
+                <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}</div>
+                ${t.description ? `<div class="small mt-1">${esc(t.description)}</div>` : ""}${photoStrip(t)}</td>
+            <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">${isOfficeView ? "Fixed by" : "Assigned to"} ${esc(t.assignee)}</div>` : ""}</td>
+            <td class="small text-secondary">${fmt(t.createdAt)}</td>
+            <td class="small text-secondary">${t.fixedAt ? fmt(t.fixedAt) : fmt(t.updatedAt)}</td>
+          </tr>`).join("")
+            : `<tr><td colspan="5" class="empty">${emptyText}</td></tr>`;
     }
 
     function render() {
@@ -668,8 +723,10 @@ function initAdmin() {
             if ($("cOpen")) $("cOpen").textContent = openList.length;
             if ($("cFixed")) $("cFixed").textContent = fixedList.length;
 
+            // Only unfixed ("Pending" / "In progress") reports stay in the reported damages tab
+            const effectiveStatus = fStatus.value === "Fixed" ? "" : fStatus.value;
             const filteredOpen = openList.filter(t =>
-                (!fStatus.value || t.status === fStatus.value) &&
+                (!effectiveStatus || t.status === effectiveStatus) &&
                 (!fUrg.value || t.urgency === fUrg.value) &&
                 (!q || (t.id + t.title + t.building + t.location + t.category).toLowerCase().includes(q))
             );
@@ -683,37 +740,37 @@ function initAdmin() {
                 <td class="urg-${t.urgency}">${t.urgency}</td>
                 <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
                 <td class="small text-secondary">${fmt(t.createdAt)}</td>
+                <td class="text-end text-nowrap">
+                  <button type="button" class="btn btn-sm btn-outline-danger" data-act="cancel-report" data-id="${t.id}">Cancel report</button>
+                </td>
               </tr>`).join("")
-                : `<tr><td colspan="5" class="empty">No active damage reports match your filters.</td></tr>`;
+                : `<tr><td colspan="6" class="empty">No active damage reports match your filters.</td></tr>`;
 
-            if (fixedBody) {
-                const filteredFixed = fixedList.filter(t =>
-                    !q || (t.id + t.title + t.building + t.location + t.category).toLowerCase().includes(q)
-                );
-                fixedBody.innerHTML = filteredFixed.length ? filteredFixed.map(t => `
-                  <tr>
-                    <td>${tlBtn("t", t.id)}</td>
-                    <td><div class="fw-semibold">${esc(t.title)}</div>
-                        <div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)} &bull; ${esc(t.category)}</div>
-                        ${photoStrip(t)}</td>
-                    <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Fixed by ${esc(t.assignee)}</div>` : ""}</td>
-                    <td class="small text-secondary">${fmt(t.createdAt)}</td>
-                    <td class="small text-secondary">${t.fixedAt ? fmt(t.fixedAt) : fmt(t.updatedAt)}</td>
-                  </tr>`).join("")
-                    : `<tr><td colspan="5" class="empty">No fixed damage reports in your history yet.</td></tr>`;
-            }
+            renderFixedTable(
+                fixedBody,
+                fixedList,
+                fixedSearch ? fixedSearch.value : q,
+                "No fixed damage reports in your history yet.",
+                true
+            );
             return;
         }
 
-        if ($("cTotal")) $("cTotal").textContent = baseAll.length;
-        if ($("cPending")) $("cPending").textContent = baseAll.filter(t => t.status === "Pending").length;
-        if ($("cProg")) $("cProg").textContent = baseAll.filter(t => t.status === "In progress").length;
-        if ($("cFixed")) $("cFixed").textContent = baseAll.filter(t => t.status === "Fixed").length;
+        const openTickets = baseAll.filter(t => t.status !== "Fixed");
+        const fixedTickets = baseAll.filter(t => t.status === "Fixed");
 
-        const list = baseAll.filter(t =>
-            (!fStatus.value || t.status === fStatus.value) &&
+        if ($("cTotal")) $("cTotal").textContent = baseAll.length;
+        if ($("cPending")) $("cPending").textContent = openTickets.filter(t => t.status === "Pending").length;
+        if ($("cProg")) $("cProg").textContent = openTickets.filter(t => t.status === "In progress").length;
+        if ($("cFixed")) $("cFixed").textContent = fixedTickets.length;
+
+        // Keep unfixed damages in the reported/active tab; move Fixed tickets to history
+        const effectiveStatus = fStatus.value === "Fixed" ? "" : fStatus.value;
+        const list = openTickets.filter(t =>
+            (!effectiveStatus || t.status === effectiveStatus) &&
             (!fUrg.value || t.urgency === fUrg.value) &&
-            (!q || (t.id + t.title + t.building + t.location + t.reporter).toLowerCase().includes(q)));
+            (!q || (t.id + t.title + t.building + t.location + t.reporter).toLowerCase().includes(q))
+        );
 
         body.innerHTML = list.length ? list.map(t => `
           <tr>
@@ -726,20 +783,49 @@ function initAdmin() {
             <td>${badge(t.status)}<div class="small text-secondary mt-1">${fmt(t.updatedAt)}</div></td>
             <td class="small">${t.assignee ? esc(t.assignee) : '<span class="text-secondary">Unassigned</span>'}</td>
             <td class="text-end text-nowrap">
-              ${t.status !== "Fixed" ? `<button class="btn btn-sm btn-outline-secondary" data-act="assign" data-id="${t.id}">${t.assignee ? "Reassign" : "Assign"}</button>` : ""}
+              <button class="btn btn-sm btn-outline-secondary" data-act="assign" data-id="${t.id}">${t.assignee ? "Reassign" : "Assign"}</button>
               ${t.status === "Pending" ? `<button class="btn btn-sm btn-outline-primary" data-act="In progress" data-id="${t.id}">Start work</button>` : ""}
-              ${t.status !== "Fixed" ? `<button class="btn btn-sm btn-success" data-act="Fixed" data-id="${t.id}">Mark as fixed</button>`
-                : `<button class="btn btn-sm btn-outline-secondary" data-act="Pending" data-id="${t.id}">Reopen</button>`}
+              <button class="btn btn-sm btn-success" data-act="Fixed" data-id="${t.id}">Mark as fixed</button>
               <button class="btn btn-sm btn-outline-danger" data-act="delete" data-id="${t.id}" aria-label="Archive ${t.id}">Archive</button>
             </td>
           </tr>`).join("")
-            : `<tr><td colspan="7" class="empty">No damage reports match these filters.</td></tr>`;
+            : `<tr><td colspan="7" class="empty">No active damage reports match these filters.</td></tr>`;
+
+        renderFixedTable(
+            fixedBody,
+            fixedTickets,
+            fixedSearch ? fixedSearch.value : q,
+            "No fixed damage reports in history yet.",
+            false
+        );
     }
 
     body.addEventListener("click", e => {
-        if (isOffice) return;
         const b = e.target.closest("button[data-act]"); if (!b) return;
         const { act, id } = b.dataset;
+        if (isOffice) {
+            if (act === "cancel-report") {
+                const t = Store.all().find(x => x.id === id);
+                if (!t || t.status === "Fixed") return;
+                openConfirmDelete({
+                    title: `Cancel report ${id}?`,
+                    item: `${id} - ${t.title}`,
+                    desc: "This removes an open report logged in error and records the cancellation in the activity log.",
+                    btnText: "Cancel report",
+                    onConfirm: () => {
+                        (t.photos || []).forEach(p => {
+                            revokePhotoUrl(p);
+                            PhotoDB.remove(p).catch(() => { });
+                        });
+                        Store.remove(id, "Cancelled accidental report");
+                        toast(`${id} cancelled`);
+                        render();
+                        window.dispatchEvent(new Event("storage"));
+                    }
+                });
+            }
+            return;
+        }
         if (act === "assign") { openAssign(id); return; }
         if (act === "delete") {
             openConfirmDelete({
@@ -755,11 +841,13 @@ function initAdmin() {
             });
             return;
         }
-        Store.setStatus(id, act); toast(`${id} marked as ${act.toLowerCase()}`);
+        Store.setStatus(id, act);
+        toast(act === "Fixed" ? `${id} marked as fixed and moved to History` : `${id} marked as ${act.toLowerCase()}`);
         render();
     });
     [fStatus, fUrg].forEach(el => el.addEventListener("change", render));
     search.addEventListener("input", render);
+    if (fixedSearch) fixedSearch.addEventListener("input", render);
     window.addEventListener("storage", render);
     window.renderTickets = render;
 
@@ -811,6 +899,9 @@ function openConfirmDelete({ title, item, desc, btnText, onConfirm }) {
 
 function initAdminExtras() {
     const modal = id => bootstrap.Modal.getOrCreateInstance(id);
+    const refreshTickets = () => {
+        if (typeof window.renderTickets === "function") window.renderTickets();
+    };
 
     if ($("cfmDelBtn")) {
         $("cfmDelBtn").addEventListener("click", () => {
@@ -933,7 +1024,7 @@ function initAdminExtras() {
             if (!t) return;
             Staff.add(name);
             Tickets.patch(id, { assignee: name, status: t.status === "Pending" ? "In progress" : t.status }, "Assigned to " + name + (t.status === "Pending" ? " (work started)" : ""));
-            modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); window.renderTickets(); renderPersonnel();
+            modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); refreshTickets(); renderPersonnel();
         });
     }
 
@@ -1174,7 +1265,7 @@ function initAdminExtras() {
         $("delGo").addEventListener("click", () => {
             const a = invItemOf(delId); if (!a) return;
             invStore().remove(delId, "Deleted permanently");
-            modal("#delAssetModal").hide(); toast(`${a.name} deleted permanently`); renderAll(); window.renderTickets();
+            modal("#delAssetModal").hide(); toast(`${a.name} deleted permanently`); renderAll(); refreshTickets();
         });
     }
 
@@ -1253,9 +1344,17 @@ function initAdminExtras() {
         const store = invStore();
         const invKind = isSupplyPage() ? "supply" : "asset";
         const invLabel = isSupplyPage() ? "Supply" : "Asset";
+        const kindLabels = {
+            ticket: "Report",
+            asset: "Asset",
+            supply: "Supply",
+            cleaning: "Cleaning",
+            loan: "Borrowing",
+            office: "Admin Office"
+        };
         const q = ($("gSearch") ? $("gSearch").value : "").trim().toLowerCase(), k = $("gKind") ? $("gKind").value : "";
         const logs = Log.all().filter(g => (!k || g.kind === k) && (!q || g.text.toLowerCase().includes(q))).slice(0, 200);
-        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${{ ticket: "Report", asset: "Asset", supply: "Supply", cleaning: "Cleaning", loan: "Borrowing" }[g.kind] || g.kind}</span></td><td>${esc(g.text)}</td></tr>`).join("")
+        $("logRows").innerHTML = logs.length ? logs.map(g => `<tr><td class="small text-nowrap">${fmtT(g.createdAt)}</td><td><span class="badge text-bg-light border">${esc(kindLabels[g.kind] || g.kind)}</span></td><td>${esc(g.text)}</td></tr>`).join("")
             : `<tr><td colspan="3" class="empty">No activity yet.</td></tr>`;
         const arch = [
             ...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", label: "Report", o: t, name: t.title })),
@@ -1275,7 +1374,7 @@ function initAdminExtras() {
                 c.patch(id, { archived: false, archivedAt: null }, "Restored from archive");
                 toast(`${id} restored`);
                 renderAll();
-                window.renderTickets();
+                refreshTickets();
             } else {
                 openConfirmDelete({
                     title: `Delete ${id} forever?`,
@@ -1290,7 +1389,7 @@ function initAdminExtras() {
                         c.remove(id, "Deleted forever");
                         toast(`${id} deleted forever`);
                         renderAll();
-                        window.renderTickets();
+                        refreshTickets();
                     }
                 });
             }

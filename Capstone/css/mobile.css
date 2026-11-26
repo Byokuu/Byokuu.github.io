@@ -156,16 +156,18 @@ main.container {
     border: 0;
 }
 
-/* Client cards (#rows and #htRows on index.html) */
+/* Client cards (#rows, #htRows, #clDmgRows, and #clientDamageHistRows on index.html) */
 body[data-page="student"] #rows tr,
-body[data-page="student"] #htRows tr {
+body[data-page="student"] #htRows tr,
+body[data-page="student"] #clDmgRows tr {
     position: relative;
     gap: .3rem .5rem;
     padding: .8rem .9rem;
 }
 
 body[data-page="student"] #rows tr td:nth-child(1),
-body[data-page="student"] #htRows tr td:nth-child(1) {
+body[data-page="student"] #htRows tr td:nth-child(1),
+body[data-page="student"] #clDmgRows tr td:nth-child(1) {
     order: 1;
     flex: 1 1 auto;
     min-width: 0;
@@ -173,7 +175,8 @@ body[data-page="student"] #htRows tr td:nth-child(1) {
 }
 
 body[data-page="student"] #rows tr td:nth-child(4),
-body[data-page="student"] #htRows tr td:nth-child(3) {
+body[data-page="student"] #htRows tr td:nth-child(3),
+body[data-page="student"] #clDmgRows tr td:nth-child(4) {
     position: static;
     order: 3;
     flex: 1 1 100%;
@@ -183,35 +186,89 @@ body[data-page="student"] #htRows tr td:nth-child(3) {
 }
 
 body[data-page="student"] #rows tr td:nth-child(4) .badge-status,
-body[data-page="student"] #htRows tr td:nth-child(3) .badge-status {
+body[data-page="student"] #htRows tr td:nth-child(3) .badge-status,
+body[data-page="student"] #clDmgRows tr td:nth-child(4) .badge-status {
     position: absolute;
     top: .8rem;
     right: .9rem;
 }
 
 body[data-page="student"] #rows tr td:nth-child(4)>div,
-body[data-page="student"] #htRows tr td:nth-child(3)>div {
+body[data-page="student"] #htRows tr td:nth-child(3)>div,
+body[data-page="student"] #clDmgRows tr td:nth-child(4)>div {
     text-align: left;
     margin-top: 0 !important;
     font-size: .82rem;
 }
 
 body[data-page="student"] #rows tr td:nth-child(2),
-body[data-page="student"] #htRows tr td:nth-child(2) {
+body[data-page="student"] #htRows tr td:nth-child(2),
+body[data-page="student"] #clDmgRows tr td:nth-child(2) {
     order: 2;
     flex: 1 1 100%;
     padding-top: .15rem !important;
 }
 
-body[data-page="student"] #rows tr td:nth-child(3) {
+body[data-page="student"] #rows tr td:nth-child(3),
+body[data-page="student"] #clDmgRows tr td:nth-child(3) {
     order: 4;
     font-size: .82rem;
 }
 
 body[data-page="student"] #rows tr td:nth-child(5),
 body[data-page="student"] #htRows tr td:nth-child(4),
-body[data-page="student"] #htRows tr td:nth-child(5) {
+body[data-page="student"] #htRows tr td:nth-child(5),
+body[data-page="student"] #clDmgRows tr td:nth-child(5) {
     order: 5;
+    font-size: .78rem;
+    color: var(--mute);
+    padding-top: .1rem !important;
+}
+
+/* Client fixed damage history cards (#clientDamageHistRows) */
+body[data-page="student"] #clientDamageHistRows tr {
+    position: relative;
+    gap: .3rem .5rem;
+    padding: .8rem .9rem;
+}
+
+body[data-page="student"] #clientDamageHistRows tr td:nth-child(1) {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 6.5rem !important;
+}
+
+body[data-page="student"] #clientDamageHistRows tr td:nth-child(2) {
+    order: 2;
+    flex: 1 1 100%;
+    padding-top: .15rem !important;
+}
+
+body[data-page="student"] #clientDamageHistRows tr td:nth-child(3) {
+    position: static;
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: left;
+    padding-top: .1rem !important;
+}
+
+body[data-page="student"] #clientDamageHistRows tr td:nth-child(3) .badge-status {
+    position: absolute;
+    top: .8rem;
+    right: .9rem;
+}
+
+body[data-page="student"] #clientDamageHistRows tr td:nth-child(3)>div {
+    text-align: left;
+    margin-top: 0 !important;
+    font-size: .82rem;
+}
+
+body[data-page="student"] #clientDamageHistRows tr td:nth-child(4),
+body[data-page="student"] #clientDamageHistRows tr td:nth-child(5) {
+    order: 4;
     font-size: .78rem;
     color: var(--mute);
     padding-top: .1rem !important;
@@ -447,6 +504,115 @@ body[data-page="admin"] #rows tr td:nth-child(6) {
 
 body[data-page="admin"] #rows tr td.text-end {
     order: 7;
+}
+
+/* FAMO fixed damage history cards (#fixedHistRows) */
+body[data-page="admin"] #fixedHistRows tr,
+#fixedHistRows tr {
+    position: relative;
+    gap: .3rem .5rem;
+    padding: .8rem .9rem;
+}
+
+#fixedHistRows tr td:nth-child(1) {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 6.5rem !important;
+}
+
+#fixedHistRows tr td:nth-child(2) {
+    order: 2;
+    flex: 1 1 100%;
+    padding-top: .15rem !important;
+}
+
+#fixedHistRows tr td:nth-child(3) {
+    position: static;
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: left;
+    padding-top: .1rem !important;
+}
+
+#fixedHistRows tr td:nth-child(3) .badge-status {
+    position: absolute;
+    top: .8rem;
+    right: .9rem;
+}
+
+#fixedHistRows tr td:nth-child(3)>div {
+    text-align: left;
+    margin-top: 0 !important;
+    font-size: .82rem;
+}
+
+#fixedHistRows tr td:nth-child(4),
+#fixedHistRows tr td:nth-child(5) {
+    order: 4;
+    font-size: .78rem;
+    color: var(--mute);
+    padding-top: .1rem !important;
+}
+
+/* Admin Office reported damages cards (#aoDmgRows) */
+body[data-page="admin_office"] #aoDmgRows tr {
+    position: relative;
+    gap: .3rem .5rem;
+    padding: .8rem .9rem;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td:nth-child(1) {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 6.5rem !important;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td:nth-child(2) {
+    order: 2;
+    flex: 1 1 100%;
+    padding-top: .15rem !important;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td:nth-child(4) {
+    position: static;
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: left;
+    padding-top: .1rem !important;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td:nth-child(4) .badge-status {
+    position: absolute;
+    top: .8rem;
+    right: .9rem;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td:nth-child(4)>div {
+    text-align: left;
+    margin-top: 0 !important;
+    font-size: .82rem;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td:nth-child(3) {
+    order: 4;
+    font-size: .82rem;
+    padding-top: .1rem !important;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td:nth-child(5) {
+    order: 5;
+    margin-left: auto;
+    font-size: .78rem;
+    color: var(--mute);
+    padding-top: .1rem !important;
+}
+
+body[data-page="admin_office"] #aoDmgRows tr td.text-end {
+    order: 6;
 }
 
 .panel .table-responsive {
@@ -716,7 +882,7 @@ textarea.form-control {
 
 .mh-icon {
     width: 38px;
-    height: 38px
+    height: 38px;
 }
 
 .modal-header {
@@ -785,21 +951,24 @@ textarea.form-control {
     margin-left: auto;
 }
 
-/* Admin office history cards */
-body[data-page="admin_office"] #officeFixedRows tr {
+/* Admin office history cards (#officeFixedRows and #officeSubFixedRows) */
+body[data-page="admin_office"] #officeFixedRows tr,
+body[data-page="admin_office"] #officeSubFixedRows tr {
     position: relative;
     gap: .3rem .5rem;
     padding: .8rem .9rem;
 }
 
-body[data-page="admin_office"] #officeFixedRows tr td:nth-child(1) {
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(1),
+body[data-page="admin_office"] #officeSubFixedRows tr td:nth-child(1) {
     order: 1;
     flex: 1 1 auto;
     min-width: 0;
     padding-right: 6.5rem !important;
 }
 
-body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) {
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3),
+body[data-page="admin_office"] #officeSubFixedRows tr td:nth-child(3) {
     position: static;
     order: 3;
     flex: 1 1 100%;
@@ -808,26 +977,31 @@ body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) {
     padding-top: .1rem !important;
 }
 
-body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) .badge-status {
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3) .badge-status,
+body[data-page="admin_office"] #officeSubFixedRows tr td:nth-child(3) .badge-status {
     position: absolute;
     top: .8rem;
     right: .9rem;
 }
 
-body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3)>div {
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(3)>div,
+body[data-page="admin_office"] #officeSubFixedRows tr td:nth-child(3)>div {
     text-align: left;
     margin-top: 0 !important;
     font-size: .82rem;
 }
 
-body[data-page="admin_office"] #officeFixedRows tr td:nth-child(2) {
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(2),
+body[data-page="admin_office"] #officeSubFixedRows tr td:nth-child(2) {
     order: 2;
     flex: 1 1 100%;
     padding-top: .15rem !important;
 }
 
 body[data-page="admin_office"] #officeFixedRows tr td:nth-child(4),
-body[data-page="admin_office"] #officeFixedRows tr td:nth-child(5) {
+body[data-page="admin_office"] #officeFixedRows tr td:nth-child(5),
+body[data-page="admin_office"] #officeSubFixedRows tr td:nth-child(4),
+body[data-page="admin_office"] #officeSubFixedRows tr td:nth-child(5) {
     order: 4;
     font-size: .78rem;
     color: var(--mute);
@@ -1009,17 +1183,6 @@ body[data-page="student"] #myLoanRows tr td.text-end {
     height: 6px;
     border-radius: 50%;
     background: var(--gold);
-}
-
-#adminApp .ws-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
-    width: 100%;
-}
-
-#adminApp .ws-actions .btn {
-    flex: 1 1 auto;
 }
 
 #adminApp .ws-actions {

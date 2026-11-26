@@ -412,45 +412,6 @@
                         </div>
                     </div>
 
-                    <!-- PERSONNEL TAB -->
-                    <div class="tab-pane fade" id="tabPersonnel">
-                        <div class="ws-header">
-                            <div>
-                                <div class="ws-title-group">
-                                    <h2 class="ws-title">Maintenance Personnel</h2>
-                                    <span class="ws-role-pill">FAMO</span>
-                                </div>
-                                <p class="text-secondary small mb-0 mt-1">Manage facility staff, specialties, and
-                                    attendance status.</p>
-                            </div>
-                            <div class="ws-actions">
-                                <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
-                                    data-bs-target="#personnelModal">+ Add Personnel</button>
-                            </div>
-                        </div>
-
-                        <div class="ws-toolbar">
-                            <input id="pSearch" class="form-control flex-grow-1" style="min-width:240px" type="search"
-                                placeholder="Search personnel name or role..." aria-label="Search personnel">
-                        </div>
-
-                        <div class="ws-table-card">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Role / Specialty</th>
-                                            <th>Status</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="personnelRows"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- DAMAGE REPORTS TAB -->
                     <div class="tab-pane fade" id="tabTickets">
                         <div class="ws-header">
@@ -503,7 +464,6 @@
                                     <option value="">All statuses</option>
                                     <option>Pending</option>
                                     <option>In progress</option>
-                                    <option>Fixed</option>
                                 </select>
                                 <select id="fUrg" class="form-select w-auto" aria-label="Filter by urgency">
                                     <option value="">All urgency</option>
@@ -529,6 +489,45 @@
                                         </tr>
                                     </thead>
                                     <tbody id="rows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PERSONNEL TAB -->
+                    <div class="tab-pane fade" id="tabPersonnel">
+                        <div class="ws-header">
+                            <div>
+                                <div class="ws-title-group">
+                                    <h2 class="ws-title">Maintenance Personnel</h2>
+                                    <span class="ws-role-pill">FAMO</span>
+                                </div>
+                                <p class="text-secondary small mb-0 mt-1">Manage facility staff, specialties, and
+                                    attendance status.</p>
+                            </div>
+                            <div class="ws-actions">
+                                <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#personnelModal">+ Add Personnel</button>
+                            </div>
+                        </div>
+
+                        <div class="ws-toolbar">
+                            <input id="pSearch" class="form-control flex-grow-1" style="min-width:240px" type="search"
+                                placeholder="Search personnel name or role..." aria-label="Search personnel">
+                        </div>
+
+                        <div class="ws-table-card">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Role / Specialty</th>
+                                            <th>Status</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="personnelRows"></tbody>
                                 </table>
                             </div>
                         </div>
