@@ -325,19 +325,22 @@ body[data-page="student"] #clientDamageHistRows tr td:nth-child(5) {
     order: 4;
 }
 
-/* Assets cards */
-#assetRows tr {
+/* Assets & Inventory cards */
+#assetRows tr,
+#invRows tr {
     gap: .45rem .6rem;
     padding: .9rem .95rem;
 }
 
-#assetRows tr td:nth-child(1) {
+#assetRows tr td:nth-child(1),
+#invRows tr td:nth-child(1) {
     order: 1;
     font-weight: 700;
     font-size: .82rem;
 }
 
-#assetRows tr td:nth-child(2) {
+#assetRows tr td:nth-child(2),
+#invRows tr td:nth-child(2) {
     order: 2;
     margin-left: auto;
     text-align: right;
@@ -345,19 +348,22 @@ body[data-page="student"] #clientDamageHistRows tr td:nth-child(5) {
     color: var(--mute);
 }
 
-#assetRows tr td:nth-child(3) {
+#assetRows tr td:nth-child(3),
+#invRows tr td:nth-child(3) {
     order: 3;
     flex: 1 1 100%;
     font-size: 1rem;
     padding-top: .15rem !important;
 }
 
-#assetRows tr td:nth-child(3) .fw-semibold {
+#assetRows tr td:nth-child(3) .fw-semibold,
+#invRows tr td:nth-child(3) .fw-semibold {
     font-size: 1.05rem;
     color: var(--ink);
 }
 
-#assetRows tr td:nth-child(4) {
+#assetRows tr td:nth-child(4),
+#invRows tr td:nth-child(4) {
     order: 4;
     flex: 0 0 auto;
     background: #f7e9ea;
@@ -368,35 +374,99 @@ body[data-page="student"] #clientDamageHistRows tr td:nth-child(5) {
     border-radius: 999px;
 }
 
-#assetRows tr td:nth-child(4)::before {
+#assetRows tr td:nth-child(4)::before,
+#invRows tr td:nth-child(4)::before {
     content: "Location: ";
     font-weight: 600;
     color: var(--ink);
 }
 
-#assetRows tr td:nth-child(5):not(.text-end) {
+#assetRows tr td:nth-child(5):not(.text-end),
+#invRows tr td:nth-child(5):not(.text-end) {
     order: 5;
     flex: 1 1 100%;
     font-size: .82rem;
     color: var(--mute);
 }
 
-#assetRows tr td:nth-child(5):not(.text-end)::before {
+#assetRows tr td:nth-child(5):not(.text-end)::before,
+#invRows tr td:nth-child(5):not(.text-end)::before {
     content: "Updated: ";
     font-weight: 600;
     color: var(--ink);
 }
 
-#assetRows tr[data-archived="true"] td:nth-child(5):not(.text-end)::before {
+#assetRows tr[data-archived="true"] td:nth-child(5):not(.text-end)::before,
+#invRows tr[data-archived="true"] td:nth-child(5):not(.text-end)::before {
     content: "Archived: ";
 }
 
-#assetRows tr td.text-end {
+#assetRows tr td.text-end,
+#invRows tr td.text-end {
     order: 10;
 }
 
-#assetRows tr td.text-end::before {
+#assetRows tr td.text-end::before,
+#invRows tr td.text-end::before {
     content: none;
+}
+
+/* Room asset cards (#assetRows) — 5 columns: Room, Building, Summary, Updated/Archived, Actions */
+#assetRows tr td:nth-child(1) {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+#assetRows tr td:nth-child(2) {
+    order: 2;
+    margin-left: auto;
+    flex: 0 0 auto;
+    background: #f7e9ea;
+    color: var(--maroon) !important;
+    font-weight: 700 !important;
+    font-size: .78rem !important;
+    padding: .22rem .55rem !important;
+    border-radius: 999px;
+    text-align: right;
+}
+
+#assetRows tr td:nth-child(3) {
+    order: 3;
+    flex: 1 1 100%;
+    font-size: .88rem;
+    padding-top: .1rem !important;
+}
+
+#assetRows tr td:nth-child(3)::before {
+    content: none;
+}
+
+#assetRows tr td:nth-child(4):not(.text-end) {
+    order: 4;
+    flex: 1 1 100%;
+    font-size: .8rem;
+    color: var(--mute);
+    padding-top: .1rem !important;
+}
+
+#assetRows tr td:nth-child(4):not(.text-end)::before {
+    content: "Updated: ";
+    font-weight: 600;
+    color: var(--ink);
+}
+
+#assetRows tr[data-archived="true"] td:nth-child(4):not(.text-end)::before {
+    content: "Archived: ";
+}
+
+#assetRows tr td:nth-child(5):not(.text-end) {
+    order: 5;
+    flex: 1 1 100%;
+    font-size: .8rem;
+    color: var(--mute);
 }
 
 /* Cleaning cards (admin) */
@@ -897,16 +967,20 @@ textarea.form-control {
     margin-top: 1.25rem
 }
 
-.damage-subtabs {
+/* Sub-tabs inside Damage Reports & Borrow & Return */
+.damage-subtabs,
+.borrow-subtabs {
     display: flex;
     width: 100%;
 }
 
-.damage-subtabs .nav-item {
+.damage-subtabs .nav-item,
+.borrow-subtabs .nav-item {
     flex: 1 1 0;
 }
 
-.damage-subtabs .nav-link {
+.damage-subtabs .nav-link,
+.borrow-subtabs .nav-link {
     width: 100%;
     text-align: center;
     padding: .45rem .5rem;

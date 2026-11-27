@@ -85,6 +85,8 @@
                         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
                                 data-bs-target="#tabAssets" type="button" role="tab">Assets</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabInventory" type="button" role="tab">Inventory</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                                 data-bs-target="#tabTickets" type="button" role="tab">Damage Reports</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                                 data-bs-target="#tabReports" type="button" role="tab">Reports</button></li>
@@ -146,11 +148,11 @@
                         <div class="ws-header">
                             <div>
                                 <div class="ws-title-group">
-                                    <h2 class="ws-title">Assets Inventory</h2>
+                                    <h2 class="ws-title">Room Assets</h2>
                                     <span class="ws-role-pill">Admin Office</span>
                                 </div>
-                                <p class="text-secondary small mb-0 mt-1">Track office assets, equipment stock, and
-                                    storage locations.</p>
+                                <p class="text-secondary small mb-0 mt-1">Track tables, chairs, TVs, fans, and equipment
+                                    assigned to each room.</p>
                             </div>
                             <div class="ws-actions">
                                 <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
@@ -159,7 +161,7 @@
                         </div>
 
                         <div class="ws-toolbar">
-                            <div class="seg" id="assetView" role="group" aria-label="Show items"
+                            <div class="seg" id="assetView" role="group" aria-label="Show room assets"
                                 style="min-width:240px">
                                 <button type="button" class="seg-btn active" data-av="active" aria-pressed="true">Active
                                     <span class="text-secondary" id="cntActive">0</span></button>
@@ -167,11 +169,67 @@
                                     <span class="text-secondary" id="cntArch">0</span></button>
                             </div>
                             <div class="d-flex flex-wrap gap-2 align-items-center flex-grow-1 justify-content-md-end">
-                                <input id="sSearch" class="form-control w-auto" style="min-width:250px" type="search"
-                                    placeholder="Search asset name, ID, or location..." aria-label="Search assets">
-                                <select id="assetCatFilter" class="form-select w-auto" style="min-width:190px"
+                                <input id="sSearch" class="form-control w-auto" style="min-width:240px" type="search"
+                                    placeholder="Search room asset, ID, or room..." aria-label="Search room assets">
+                                <select id="assetBuildingFilter" class="form-select w-auto" style="min-width:190px"
+                                    aria-label="Filter by building">
+                                    <option value="">All Buildings</option>
+                                    <option value="New Building">New Building</option>
+                                    <option value="Main Building">Main Building</option>
+                                    <option value="Cultural Building">Cultural Building</option>
+                                </select>
+                                <select id="assetCatFilter" class="form-select w-auto" style="min-width:180px"
                                     aria-label="Filter by asset category">
-                                    <option value="">All asset categories</option>
+                                    <option value="">All Categories</option>
+                                    <option>Furniture</option>
+                                    <option>Equipment</option>
+                                    <option>Office Supplies</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="ws-table-card">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead id="assetHead"></thead>
+                                    <tbody id="assetRows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INVENTORY TAB -->
+                    <div class="tab-pane fade" id="tabInventory">
+                        <div class="ws-header">
+                            <div>
+                                <div class="ws-title-group">
+                                    <h2 class="ws-title">Inventory</h2>
+                                    <span class="ws-role-pill">Admin Office</span>
+                                </div>
+                                <p class="text-secondary small mb-0 mt-1">Track office inventory, equipment stock, and
+                                    storage locations.</p>
+                            </div>
+                            <div class="ws-actions">
+                                <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#inventoryModal">+ Add Item</button>
+                            </div>
+                        </div>
+
+                        <div class="ws-toolbar">
+                            <div class="seg" id="invView" role="group" aria-label="Show inventory items"
+                                style="min-width:240px">
+                                <button type="button" class="seg-btn active" data-iv="active" aria-pressed="true">Active
+                                    <span class="text-secondary" id="invCntActive">0</span></button>
+                                <button type="button" class="seg-btn" data-iv="archived" aria-pressed="false">Archived
+                                    <span class="text-secondary" id="invCntArch">0</span></button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center flex-grow-1 justify-content-md-end">
+                                <input id="invSearch" class="form-control w-auto" style="min-width:250px" type="search"
+                                    placeholder="Search item name, ID, or location..." aria-label="Search inventory">
+                                <select id="invCatFilter" class="form-select w-auto" style="min-width:190px"
+                                    aria-label="Filter by category">
+                                    <option value="">All categories</option>
                                     <option>Furniture</option>
                                     <option>Equipment</option>
                                     <option>Office supplies</option>
@@ -183,8 +241,8 @@
                         <div class="ws-table-card">
                             <div class="table-responsive">
                                 <table class="table table-hover mb-0">
-                                    <thead id="assetHead"></thead>
-                                    <tbody id="assetRows"></tbody>
+                                    <thead id="invHead"></thead>
+                                    <tbody id="invRows"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -456,6 +514,12 @@
                     <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
                 </svg><span>Assets</span></button>
             <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
+                data-bs-target="#tabInventory" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M7 7h13l-3-3M17 17H4l3 3" />
+                </svg><span>Inventory</span></button>
+            <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
                 data-bs-target="#tabTickets" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     aria-hidden="true">
@@ -673,7 +737,120 @@
         </div>
     </div>
 
-    <div class="modal fade modal-admin" id="assetModal" tabindex="-1" aria-labelledby="assetModalT" aria-hidden="true">
+    <!-- ASSET MODAL (Room items: tables, chairs, TVs, fans, etc.) -->
+    <div class="modal fade slide-up modal-admin" id="assetModal" tabindex="-1" aria-labelledby="assetModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
+                            <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
+                        </svg></span>
+                    <div>
+                        <h2 class="h5 mb-0" id="assetModalT">Add room assets</h2>
+                        <p class="small mb-0 opacity-75">Select or enter a room and add one or more assets (tables,
+                            chairs, TVs, fans, etc.) for that room.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assetForm" novalidate>
+                        <input type="hidden" id="assetId2">
+
+                        <div class="form-section" style="margin-top:0">Room details</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="rmPresetSelect">Existing room <span
+                                        class="text-secondary">(optional)</span></label>
+                                <select class="form-select" id="rmPresetSelect" aria-label="Choose an existing room">
+                                    <option value="">-- New or custom room --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="rmBuilding">Building</label>
+                                <input class="form-control" id="rmBuilding" name="building" list="buildingList"
+                                    placeholder="e.g. Main Building, Academic Bldg" required>
+                                <datalist id="buildingList">
+                                    <option>Main Building</option>
+                                    <option>New Building</option>
+                                    <option>Cultural Building</option>
+                                </datalist>
+                                <div class="invalid-feedback">Enter the building.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="rmName">Room</label>
+                                <input class="form-control" id="rmName" name="room"
+                                    placeholder="e.g. Room 201, Computer Lab 1" required>
+                                <div class="invalid-feedback">Enter the room name or number.</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4 mb-2">
+                            <div class="form-section flex-grow-1 my-0">Room assets</div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="addRoomAssetRowBtn">
+                                + Add another asset
+                            </button>
+                        </div>
+
+                        <div id="roomAssetRows" class="d-flex flex-column gap-3"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="assetForm" class="btn btn-maroon" id="assetSave">Save room
+                        assets</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROOM ASSETS MONITOR MODAL -->
+    <div class="modal fade slide-up modal-admin" id="roomMonitorModal" tabindex="-1" aria-labelledby="roomMonitorModalT"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg></span>
+                    <div>
+                        <h2 class="h5 mb-0" id="roomMonitorModalT">Room assets</h2>
+                        <p class="small mb-0 opacity-75" id="roomMonitorSub">Monitoring assets assigned to this room.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID no.</th>
+                                    <th>Asset</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roomMonitorRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-maroon" id="roomMonitorEditBtn">Edit room assets</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVENTORY MODAL (Office stock & borrowable items) -->
+    <div class="modal fade modal-admin" id="inventoryModal" tabindex="-1" aria-labelledby="invModalT"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header"><span class="mh-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
@@ -683,14 +860,14 @@
                             <path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5" />
                         </svg></span>
                     <div>
-                        <h2 class="h5 mb-0" id="assetModalT">Add item</h2>
+                        <h2 class="h5 mb-0" id="invModalT">Add item</h2>
                         <p class="small mb-0 opacity-75">Items and equipment the office keeps in stock.</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="assetForm" novalidate>
-                        <input type="hidden" id="assetId2">
+                    <form id="inventoryForm" novalidate>
+                        <input type="hidden" id="invItemId">
                         <div class="form-section" style="margin-top:0">Item</div>
                         <div class="row g-3 mb-3">
                             <div class="col-sm-12"><label class="form-label" for="nName">Item name</label>
@@ -730,8 +907,8 @@
                     </form>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-outline-secondary"
-                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="assetForm"
-                        class="btn btn-maroon" id="assetSave">Save item</button></div>
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" form="inventoryForm"
+                        class="btn btn-maroon" id="invSave">Save item</button></div>
             </div>
         </div>
     </div>
