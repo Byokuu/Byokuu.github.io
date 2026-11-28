@@ -155,6 +155,8 @@
                                     assigned to each room.</p>
                             </div>
                             <div class="ws-actions">
+                                <button class="btn btn-outline-secondary btn-sm px-3" type="button"
+                                    data-qr-scan="room_asset">Scan QR</button>
                                 <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
                                     data-bs-target="#assetModal">+ Add Asset</button>
                             </div>
@@ -211,6 +213,8 @@
                                     storage locations.</p>
                             </div>
                             <div class="ws-actions">
+                                <button class="btn btn-outline-secondary btn-sm px-3" type="button"
+                                    data-qr-scan="office_inv">Scan QR</button>
                                 <button class="btn btn-gold btn-sm px-3" type="button" data-bs-toggle="modal"
                                     data-bs-target="#inventoryModal">+ Add Item</button>
                             </div>
@@ -1041,6 +1045,61 @@
         </div>
     </div>
 
+    <!-- QR SCANNER MODAL -->
+    <div class="modal fade slide-up modal-admin" id="qrScanModal" tabindex="-1" aria-labelledby="qrScanTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="qrScanTitle">Scan QR Code</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="qrReaderBox" class="rounded-3 overflow-hidden border mb-3" style="min-height:240px"></div>
+                    <div class="mb-2">
+                        <label class="form-label small" for="qrFileInput">Or upload a QR image</label>
+                        <input class="form-control form-control-sm" type="file" id="qrFileInput" accept="image/*">
+                    </div>
+                    <div class="text-danger small d-none" id="qrScanErr"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR ITEM VIEW / QUICK ACTION MODAL -->
+    <div class="modal fade slide-up modal-admin" id="qrItemModal" tabindex="-1" aria-labelledby="qrItemTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h5 mb-0" id="qrItemTitle">Item QR Code</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrCanvasWrap"
+                        class="d-flex justify-content-center p-3 bg-white rounded-3 border mx-auto mb-3"
+                        style="width:fit-content"></div>
+                    <div class="fw-bold" id="qrItemName"></div>
+                    <div class="small text-secondary mb-2" id="qrItemMeta"></div>
+                    <div class="fw-semibold mb-3" id="qrItemStock"></div>
+                    <div id="qrQuickStockBar" class="d-flex justify-content-center gap-2 mb-2 d-none">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="qrDecBtn">-1</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="qrIncBtn">+1</button>
+                    </div>
+                </div>
+                <div class="modal-footer flex-wrap">
+                    <button type="button" class="btn btn-outline-secondary" id="qrPrintBtn">Print Label</button>
+                    <button type="button" class="btn btn-outline-danger d-none" id="qrReportDmgBtn">Report
+                        Damage</button>
+                    <button type="button" class="btn btn-maroon" id="qrEditItemBtn">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade modal-admin" id="confirmDelModal" tabindex="-1" aria-labelledby="cfmDelT" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -1064,6 +1123,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="../js/script.js"></script>
 </body>
 

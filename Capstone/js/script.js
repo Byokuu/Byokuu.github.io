@@ -1290,6 +1290,10 @@ function initAdminExtras() {
     /* room assets (admin_office #tabAssets) + inventory/supplies (#tabInventory) */
     let assetView = "active", invView = "active", delId = null, delKind = "inv", pendingEdit = null, pendingInvEdit = null;
     let editingRoomKey = null, editingRoomInitialIds = [], monitoringRoomKey = null;
+    window.openRoomAssetEditor = rkey => {
+        editingRoomKey = rkey;
+        modal("#assetModal").show();
+    };
 
     const buildingOf = a => {
         const bld = (a.building || "").trim();
@@ -2614,6 +2618,305 @@ function initHero() {
     render();
 }
 
+function initQRIntegration() {
+    const scanModalEl = $("qrScanModal");
+    const itemModalEl = $("qrItemModal");
+    if (!scanModalEl || !itemModalEl) return;
+
+    let activeQrCtx = null;
+    let html5Qr = null;
+
+    const resolveRecord = (kind, idOrTag) => {
+        const needle = String(idOrTag || "").trim().toLowerCase();
+        if (!needle) return null;
+        if (kind === "room_asset") {
+            return RoomAssets.all().find(x =>
+                String(x.id || "").toLowerCase() === needle ||
+                String(x.tag || "").toLowerCase() === needle
+            ) || null;
+        }
+        const store = kind === "supply" ? Supplies : Assets;
+        return store.all().find(x =>
+            String(x.id || "").toLowerCase() === needle ||
+            String(x.tag || "").toLowerCase() === needle
+        ) || null;
+    };
+
+    const openItemQrModal = (kind, id) => {
+        const rec = resolveRecord(kind, id);
+        if (!rec) { toast("Item not found."); return; }
+        activeQrCtx = { kind, id: rec.id };
+
+        const wrap = $("qrCanvasWrap");
+        wrap.innerHTML = "";
+        if (typeof QRCode !== "undefined") {
+            const payload = JSON.stringify({
+                app: "campuscare",
+                kind,
+                id: rec.id,
+                tag: rec.tag || rec.id
+            });
+            new QRCode(wrap, {
+                text: payload,
+                width: 176,
+                height: 176,
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        $("qrItemTitle").textContent = `${rec.tag || rec.id} — QR`;
+        $("qrItemName").textContent = rec.name || "Unnamed Item";
+        $("qrItemMeta").textContent = kind === "room_asset"
+            ? `${roomLabelOf(rec)} • ${rec.category || "Asset"}`
+            : `${rec.location || (kind === "supply" ? "FAMO Storage" : "Admin Office")} • ${rec.category || "Item"}`;
+        $("qrItemStock").textContent = `Quantity: ${Number(rec.qty) || 0} ${rec.unit || "pcs"}`;
+
+        const canAdjustStock = kind === "office_inv" || kind === "supply";
+        $("qrQuickStockBar").classList.toggle("d-none", !canAdjustStock);
+        $("qrReportDmgBtn").classList.toggle("d-none", kind !== "room_asset");
+
+        bootstrap.Modal.getOrCreateInstance(itemModalEl).show();
+    };
+
+    const adjustStockBy = delta => {
+        if (!activeQrCtx) return;
+        const { kind, id } = activeQrCtx;
+        const store = kind === "supply" ? Supplies : Assets;
+        const rec = store.all().find(x => x.id === id);
+        if (!rec) return;
+        const nextQty = Math.max(0, (Number(rec.qty) || 0) + delta);
+        store.patch(id, { qty: nextQty }, `QR stock adjusted by ${delta > 0 ? "+" + delta : delta} (now ${nextQty} ${rec.unit || "pcs"})`);
+        $("qrItemStock").textContent = `Quantity: ${nextQty} ${rec.unit || "pcs"}`;
+        toast(`${rec.name}: ${nextQty} ${rec.unit || "pcs"}`);
+        window.dispatchEvent(new Event("storage"));
+    };
+
+    if ($("qrDecBtn")) $("qrDecBtn").addEventListener("click", () => adjustStockBy(-1));
+    if ($("qrIncBtn")) $("qrIncBtn").addEventListener("click", () => adjustStockBy(1));
+
+    if ($("qrEditItemBtn")) {
+        $("qrEditItemBtn").addEventListener("click", () => {
+            if (!activeQrCtx) return;
+            const { kind, id } = activeQrCtx;
+            const rec = resolveRecord(kind, id);
+            if (!rec) return;
+            bootstrap.Modal.getOrCreateInstance(itemModalEl).hide();
+
+            if (kind === "room_asset") {
+                if (typeof window.openRoomAssetEditor === "function") {
+                    window.openRoomAssetEditor(roomLabelOf(rec).toLowerCase());
+                } else {
+                    bootstrap.Modal.getOrCreateInstance("#assetModal").show();
+                }
+            } else if (kind === "office_inv") {
+                if ($("invItemId")) $("invItemId").value = rec.id;
+                if ($("nName")) $("nName").value = rec.name || "";
+                if ($("nCat")) $("nCat").value = rec.category || "Other";
+                if ($("nQty")) $("nQty").value = rec.qty ?? 0;
+                if ($("nUnit")) $("nUnit").value = rec.unit || "pcs";
+                if ($("invModalT")) $("invModalT").textContent = "Edit item";
+                if ($("invSave")) $("invSave").textContent = "Save changes";
+                bootstrap.Modal.getOrCreateInstance("#inventoryModal").show();
+            } else if (kind === "supply") {
+                if ($("assetId2")) $("assetId2").value = rec.id;
+                if ($("nName")) $("nName").value = rec.name || "";
+                if ($("nCat")) $("nCat").value = rec.category || "Cleaning supplies";
+                if ($("nQty")) $("nQty").value = rec.qty ?? 0;
+                if ($("nUnit")) $("nUnit").value = rec.unit || "pcs";
+                if ($("nLoc")) $("nLoc").value = rec.location || "FAMO Storage";
+                if ($("assetModalT")) $("assetModalT").textContent = "Edit supply";
+                if ($("assetSave")) $("assetSave").textContent = "Save changes";
+                bootstrap.Modal.getOrCreateInstance("#assetModal").show();
+            }
+        });
+    }
+
+    if ($("qrReportDmgBtn")) {
+        $("qrReportDmgBtn").addEventListener("click", () => {
+            if (!activeQrCtx || activeQrCtx.kind !== "room_asset") return;
+            const rec = resolveRecord("room_asset", activeQrCtx.id);
+            if (!rec) return;
+            bootstrap.Modal.getOrCreateInstance(itemModalEl).hide();
+            const rmModal = $("reportModal");
+            if (!rmModal) return;
+            rmModal.addEventListener("shown.bs.modal", () => {
+                if ($("title")) $("title").value = `${rec.name} (${rec.tag || rec.id}) damaged`;
+                if ($("building")) $("building").value = rec.building || "";
+                if ($("location")) $("location").value = rec.room || rec.location || "";
+            }, { once: true });
+            bootstrap.Modal.getOrCreateInstance(rmModal).show();
+        });
+    }
+
+    if ($("qrPrintBtn")) {
+        $("qrPrintBtn").addEventListener("click", () => {
+            const img = $("qrCanvasWrap").querySelector("img") || $("qrCanvasWrap").querySelector("canvas");
+            const src = img ? (img.tagName === "IMG" ? img.src : img.toDataURL("image/png")) : "";
+            const win = window.open("", "_blank", "width=340,height=420");
+            if (!win) { window.print(); return; }
+            win.document.write(`
+                <html><body style="font-family:sans-serif;text-align:center;padding:20px;">
+                <h3 style="margin:0 0 6px;">${esc($("qrItemName").textContent)}</h3>
+                <div style="font-size:13px;color:#555;margin-bottom:12px;">${esc($("qrItemMeta").textContent)}</div>
+                ${src ? `<img src="${src}" width="180" height="180" alt="QR Code">` : ""}
+                <div style="margin-top:10px;font-family:monospace;font-weight:bold;">${esc($("qrItemTitle").textContent)}</div>
+                <script>window.onload=()=>{window.print();window.close();};<\/script>
+                </body></html>
+            `);
+            win.document.close();
+        });
+    }
+
+    document.addEventListener("click", e => {
+        const qrViewBtn = e.target.closest("[data-qr-view]");
+        if (qrViewBtn) {
+            openItemQrModal(qrViewBtn.dataset.qrKind, qrViewBtn.dataset.qrId);
+            return;
+        }
+
+        const scanTrigger = e.target.closest("[data-qr-scan]");
+        if (scanTrigger) {
+            const expectedKind = scanTrigger.dataset.qrScan || null;
+            scanModalEl.dataset.expectedKind = expectedKind || "";
+            if ($("qrScanErr")) $("qrScanErr").classList.add("d-none");
+            bootstrap.Modal.getOrCreateInstance(scanModalEl).show();
+        }
+    });
+
+    const enhanceRowsWithQr = () => {
+        document.querySelectorAll("#roomMonitorRows tr").forEach(tr => {
+            const delBtn = tr.querySelector("[data-rmact='del-one'], [data-rmact='restore-one']");
+            const actionTd = tr.querySelector("td.text-end");
+            if (delBtn && actionTd && !actionTd.querySelector("[data-qr-view]")) {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn btn-sm btn-outline-dark me-1";
+                btn.textContent = "QR";
+                btn.dataset.qrView = "1";
+                btn.dataset.qrKind = "room_asset";
+                btn.dataset.qrId = delBtn.dataset.id;
+                actionTd.prepend(btn);
+            }
+        });
+
+        document.querySelectorAll("#invRows tr").forEach(tr => {
+            const editBtn = tr.querySelector("button[data-id]");
+            const actionTd = tr.querySelector("td.text-end");
+            if (editBtn && actionTd && !actionTd.querySelector("[data-qr-view]")) {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn btn-sm btn-outline-dark";
+                btn.textContent = "QR";
+                btn.dataset.qrView = "1";
+                btn.dataset.qrKind = "office_inv";
+                btn.dataset.qrId = editBtn.dataset.id;
+                actionTd.prepend(btn);
+            }
+        });
+
+        if (isSupplyPage()) {
+            document.querySelectorAll("#assetRows tr").forEach(tr => {
+                const actBtn = tr.querySelector("button[data-id]");
+                const actionTd = tr.querySelector("td.text-end");
+                if (actBtn && actionTd && !actionTd.querySelector("[data-qr-view]")) {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "btn btn-sm btn-outline-dark";
+                    btn.textContent = "QR";
+                    btn.dataset.qrView = "1";
+                    btn.dataset.qrKind = "supply";
+                    btn.dataset.qrId = actBtn.dataset.id;
+                    actionTd.prepend(btn);
+                }
+            });
+        }
+    };
+
+    new MutationObserver(enhanceRowsWithQr).observe(document.body, { childList: true, subtree: true });
+    enhanceRowsWithQr();
+
+    const handleDecodedText = decodedText => {
+        let kind = scanModalEl.dataset.expectedKind || (isSupplyPage() ? "supply" : "office_inv");
+        let code = decodedText.trim();
+        try {
+            const parsed = JSON.parse(decodedText);
+            if (parsed && parsed.app === "campuscare") {
+                if (parsed.kind) kind = parsed.kind;
+                code = parsed.id || parsed.tag || code;
+            }
+        } catch { /* plain text tag/ID fallback */ }
+
+        const rec = resolveRecord(kind, code)
+            || resolveRecord("room_asset", code)
+            || resolveRecord("office_inv", code)
+            || resolveRecord("supply", code);
+
+        if (!rec) {
+            if ($("qrScanErr")) {
+                $("qrScanErr").textContent = `No item found for code "${code}".`;
+                $("qrScanErr").classList.remove("d-none");
+            }
+            return;
+        }
+
+        const recId = String(rec.id || "");
+        const matchedKind = recId.startsWith("RM-") ? "room_asset" : (recId.startsWith("SP-") ? "supply" : "office_inv");
+        bootstrap.Modal.getOrCreateInstance(scanModalEl).hide();
+        openItemQrModal(matchedKind, rec.id);
+    };
+
+    const stopScanner = async () => {
+        if (html5Qr) {
+            try {
+                if (html5Qr.isScanning) await html5Qr.stop();
+                await html5Qr.clear();
+            } catch { /* ignore stop errors */ }
+            html5Qr = null;
+        }
+    };
+
+    scanModalEl.addEventListener("shown.bs.modal", async () => {
+        if (typeof Html5Qrcode === "undefined" || !$("qrReaderBox")) return;
+        await stopScanner();
+        html5Qr = new Html5Qrcode("qrReaderBox");
+        try {
+            await html5Qr.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 200, height: 200 } },
+                handleDecodedText,
+                () => { }
+            );
+        } catch {
+            if ($("qrScanErr")) {
+                $("qrScanErr").textContent = "Camera unavailable on this device/connection. Use the image upload below.";
+                $("qrScanErr").classList.remove("d-none");
+            }
+        }
+    });
+
+    scanModalEl.addEventListener("hidden.bs.modal", () => {
+        stopScanner();
+    });
+
+    if ($("qrFileInput")) {
+        $("qrFileInput").addEventListener("change", async e => {
+            const file = e.target.files && e.target.files[0];
+            e.target.value = "";
+            if (!file || typeof Html5Qrcode === "undefined") return;
+            const tempScanner = html5Qr || new Html5Qrcode("qrReaderBox");
+            try {
+                const text = await tempScanner.scanFile(file, true);
+                handleDecodedText(text);
+            } catch {
+                if ($("qrScanErr")) {
+                    $("qrScanErr").textContent = "Could not read a QR code from that image.";
+                    $("qrScanErr").classList.remove("d-none");
+                }
+            }
+        });
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", e => {
         const b = e.target.closest("[data-tl]");
@@ -2639,6 +2942,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initAdminAuth();
         initAdmin();
         initAdminExtras();
+        initQRIntegration();
         applyAdminTabVisibility();
         initAdminSidebarAndAvatars();
 
