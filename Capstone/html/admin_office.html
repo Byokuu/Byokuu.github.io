@@ -310,6 +310,7 @@
                                             <option value="">Everything</option>
                                             <option value="ticket">Tickets</option>
                                             <option value="asset">Assets</option>
+                                            <option value="room_asset">Room Assets</option>
                                             <option value="loan">Borrowing</option>
                                         </select>
                                     </div>
@@ -825,6 +826,7 @@
                                     <th>Category</th>
                                     <th>Quantity</th>
                                     <th>Updated</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="roomMonitorRows"></tbody>
@@ -833,6 +835,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-danger d-none" id="roomMonitorArchiveBtn">Archive
+                        room</button>
                     <button type="button" class="btn btn-maroon" id="roomMonitorEditBtn">Edit room assets</button>
                 </div>
             </div>

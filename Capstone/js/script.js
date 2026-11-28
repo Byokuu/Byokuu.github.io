@@ -380,6 +380,20 @@ function initReportForm(afterSave) {
     const form = document.getElementById("ticketForm");
     const rm = document.getElementById("reportModal");
     if (!form || !rm) return;
+    let openDoneAfterHide = false;
+
+    rm.addEventListener("hidden.bs.modal", () => {
+        const shouldOpenDone = openDoneAfterHide;
+        openDoneAfterHide = false;
+        form.reset();
+        form.classList.remove("was-validated");
+        syncId();
+        Photos.clear();
+        if (shouldOpenDone && $("doneModal")) {
+            bootstrap.Modal.getOrCreateInstance("#doneModal").show();
+        }
+    });
+
     form.addEventListener("submit", async e => {
         e.preventDefault();
         if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
@@ -421,11 +435,12 @@ function initReportForm(afterSave) {
         if ($("lastStatus")) $("lastStatus").innerHTML = badge(t.status);
         if ($("copyId")) $("copyId").textContent = "Copy";
         afterSave();
-        rm.addEventListener("hidden.bs.modal", () => bootstrap.Modal.getOrCreateInstance("#doneModal").show(), { once: true });
+        openDoneAfterHide = true;
         bootstrap.Modal.getOrCreateInstance(rm).hide();
     });
     const syncId = bindRole("role", "idWrap", "idNo");
     rm.addEventListener("show.bs.modal", () => {
+        openDoneAfterHide = false;
         populateAssigneeSelect();
         const lock = el => { el.setAttribute("aria-readonly", "true"); el.tabIndex = -1; el.classList.add("locked"); if (el.tagName !== "SELECT") el.readOnly = true; };
         if ($("role")) {
@@ -441,7 +456,6 @@ function initReportForm(afterSave) {
         }
     });
     Photos.init();
-    rm.addEventListener("hidden.bs.modal", () => { form.reset(); form.classList.remove("was-validated"); syncId(); Photos.clear(); });
     if ($("copyId")) {
         $("copyId").addEventListener("click", async e => {
             const id = $("lastId") ? $("lastId").textContent : "";
@@ -613,10 +627,11 @@ function initBorrowClient() {
             const liveItem = officeItemOf(l.assetId);
             const displayName = liveItem ? (liveItem.name || l.itemName) : l.itemName;
             const displayCode = liveItem ? (liveItem.tag || liveItem.id) : l.assetId;
+            const shownQty = Number.isFinite(Number(l.qty)) ? Number(l.qty) : 0;
             return `
           <tr>
             <td>${tlBtn("l", l.id)}</td>
-            <td><div class="fw-semibold">${esc(displayName)}</div><div class="small text-secondary">${Number(l.qty) || 1} ${esc(l.unit || "pcs")} &bull; ${esc(displayCode)}</div></td>
+            <td><div class="fw-semibold">${esc(displayName)}</div><div class="small text-secondary">${shownQty} ${esc(l.unit || "pcs")} &bull; ${esc(displayCode)}</div></td>
             <td>${badge(l.status)}</td>
             <td class="small">${fmt(l.createdAt)}</td>
             <td class="small">${l.returnedAt ? fmt(l.returnedAt) : "-"}</td>
@@ -629,13 +644,14 @@ function initBorrowClient() {
     const syncBorrowModalStock = () => {
         if (!bSelect || !bQty) return;
         const chosen = officeItemOf(bSelect.value);
-        const maxQty = chosen ? Math.max(1, Number(chosen.qty) || 1) : 1;
+        const availNow = chosen && !chosen.archived ? Math.max(0, Number(chosen.qty) || 0) : 0;
+        const maxQty = Math.max(1, availNow);
         bQty.max = String(maxQty);
         if ((parseInt(bQty.value, 10) || 1) > maxQty) bQty.value = String(maxQty);
         if ((parseInt(bQty.value, 10) || 0) < 1) bQty.value = "1";
         if (bHint) {
             bHint.textContent = chosen
-                ? `${Number(chosen.qty) || 0} ${chosen.unit || "pcs"} available (${chosen.location || "Admin Office"})`
+                ? `${availNow} ${chosen.unit || "pcs"} available (${chosen.location || "Admin Office"})`
                 : "No items available to borrow.";
         }
     };
@@ -668,7 +684,7 @@ function initBorrowClient() {
             if (!u) { toast("Please log in first."); return; }
             const assetId = bSelect ? bSelect.value : "";
             const asset = officeItemOf(assetId);
-            const avail = asset && !asset.archived ? (Number(asset.qty) || 0) : 0;
+            const avail = asset && !asset.archived ? Math.max(0, Number(asset.qty) || 0) : 0;
             const qty = parseInt(bQty ? bQty.value : "0", 10) || 0;
 
             if (bQty) bQty.setCustomValidity(qty < 1 || qty > avail ? "range" : "");
@@ -706,13 +722,22 @@ function initBorrowClient() {
         if (!loan || loan.status !== "Borrowed") return;
         const u = currentUser();
         const whoTxt = u ? `${u.name} (${u.idNo})` : (loan.borrowerName || "Borrower");
-        const qty = Number(loan.qty) || 1;
-        const note = `Returned ${qty} ${loan.unit || "pcs"} by ${whoTxt}`;
+        const parsedQty = Number(loan.qty);
+        const qty = Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : 0;
+        const unitTxt = loan.unit || "pcs";
         const asset = officeItemOf(loan.assetId);
-        if (asset) {
-            patchOfficeAssetQty(asset.id, (Number(asset.qty) || 0) + qty, note);
+
+        if (asset && asset.archived) {
+            const archNote = `Returned ${qty} ${unitTxt} by ${whoTxt} (asset is archived; stock not restocked)`;
+            Loans.patch(loanId, { status: "Returned", returnedAt: Date.now() }, archNote);
+        } else {
+            const note = `Returned ${qty} ${unitTxt} by ${whoTxt}`;
+            if (asset && qty > 0) {
+                patchOfficeAssetQty(asset.id, Math.max(0, Number(asset.qty) || 0) + qty, note);
+            }
+            Loans.patch(loanId, { status: "Returned", returnedAt: Date.now() }, note);
         }
-        Loans.patch(loanId, { status: "Returned", returnedAt: Date.now() }, note);
+
         toast(`Returned ${loan.itemName}`);
         renderAll();
         window.dispatchEvent(new Event("loanschange"));
@@ -772,9 +797,9 @@ function initAdmin() {
     const body = isOffice
         ? (document.getElementById("aoDmgRows") || document.getElementById("rows"))
         : document.getElementById("rows");
-    const fixedBody = isOffice
-        ? (document.getElementById("officeSubFixedRows") || document.getElementById("officeFixedRows"))
-        : (document.getElementById("fixedHistRows") || document.getElementById("famoFixedRows"));
+    const fixedBodies = isOffice
+        ? [document.getElementById("officeSubFixedRows"), document.getElementById("officeFixedRows")].filter(Boolean)
+        : [document.getElementById("fixedHistRows") || document.getElementById("famoFixedRows")].filter(Boolean);
     const fixedSearch = isOffice
         ? (document.getElementById("aoFixedHistSearch") || document.getElementById("fixedHistSearch"))
         : document.getElementById("fixedHistSearch");
@@ -809,7 +834,16 @@ function initAdmin() {
         if (!targetBody) return;
         const fq = (queryStr || "").trim().toLowerCase();
         const filtered = items.filter(t =>
-            !fq || (t.id + t.title + t.building + t.location + t.category + (t.reporter || "")).toLowerCase().includes(fq)
+            !fq || (
+                (t.id || "") +
+                (t.title || "") +
+                (t.building || "") +
+                (t.location || "") +
+                (t.category || "") +
+                (t.reporter || "") +
+                (t.assignee || "") +
+                (t.description || "")
+            ).toLowerCase().includes(fq)
         );
         targetBody.innerHTML = filtered.length ? filtered.map(t => `
           <tr>
@@ -860,13 +894,15 @@ function initAdmin() {
               </tr>`).join("")
                 : `<tr><td colspan="6" class="empty">No active damage reports match your filters.</td></tr>`;
 
-            renderFixedTable(
-                fixedBody,
-                fixedList,
-                fixedSearch ? fixedSearch.value : q,
-                "No fixed damage reports in your history yet.",
-                true
-            );
+            fixedBodies.forEach(fb => {
+                renderFixedTable(
+                    fb,
+                    fixedList,
+                    fixedSearch ? fixedSearch.value : q,
+                    "No fixed damage reports in your history yet.",
+                    true
+                );
+            });
             return;
         }
 
@@ -911,13 +947,15 @@ function initAdmin() {
           </tr>`).join("")
             : `<tr><td colspan="7" class="empty">No active damage reports match these filters.</td></tr>`;
 
-        renderFixedTable(
-            fixedBody,
-            fixedTickets,
-            fixedSearch ? fixedSearch.value : q,
-            "No fixed damage reports in history yet.",
-            false
-        );
+        fixedBodies.forEach(fb => {
+            renderFixedTable(
+                fb,
+                fixedTickets,
+                fixedSearch ? fixedSearch.value : q,
+                "No fixed damage reports in history yet.",
+                false
+            );
+        });
     }
 
     body.addEventListener("click", e => {
@@ -1251,7 +1289,7 @@ function initAdminExtras() {
 
     /* room assets (admin_office #tabAssets) + inventory/supplies (#tabInventory) */
     let assetView = "active", invView = "active", delId = null, delKind = "inv", pendingEdit = null, pendingInvEdit = null;
-    let editingRoomKey = null, monitoringRoomKey = null;
+    let editingRoomKey = null, editingRoomInitialIds = [], monitoringRoomKey = null;
 
     const buildingOf = a => {
         const bld = (a.building || "").trim();
@@ -1269,12 +1307,28 @@ function initAdminExtras() {
     const assetsInRoom = (key, arch = false) =>
         roomStore().all().filter(a => !!a.archived === arch && roomKeyOf(a) === key);
 
-    function openRoomMonitor(key, arch = false) {
+    let monitoringRoomArch = false;
+
+    function refreshRoomMonitorIfOpen() {
+        const el = $("roomMonitorModal");
+        if (!monitoringRoomKey || !el || !el.classList.contains("show")) return;
+        const remaining = assetsInRoom(monitoringRoomKey, monitoringRoomArch);
+        if (!remaining.length) {
+            monitoringRoomKey = null;
+            modal(el).hide();
+            return;
+        }
+        openRoomMonitor(monitoringRoomKey, monitoringRoomArch, { alreadyOpen: true });
+    }
+
+    function openRoomMonitor(key, arch = false, { alreadyOpen = false } = {}) {
         const list = assetsInRoom(key, arch).sort((x, y) => String(x.name || "").localeCompare(String(y.name || "")));
         const tbody = $("roomMonitorRows");
-        if (!list.length || !tbody) return;
+        const el = $("roomMonitorModal");
+        if (!list.length || !tbody || !el) return;
 
         monitoringRoomKey = key;
+        monitoringRoomArch = !!arch;
         const sample = list[0];
         const title = roomLabelOf(sample);
         const totalQty = list.reduce((sum, x) => sum + (Number(x.qty) || 0), 0);
@@ -1286,29 +1340,112 @@ function initAdminExtras() {
         if ($("roomMonitorEditBtn")) {
             $("roomMonitorEditBtn").classList.toggle("d-none", arch);
         }
+        if ($("roomMonitorArchiveBtn")) {
+            $("roomMonitorArchiveBtn").classList.toggle("d-none", arch);
+            $("roomMonitorArchiveBtn").dataset.rkey = key;
+        }
 
-        tbody.innerHTML = list.map(a => `<tr>
-          <td><span class="tid">${esc(a.tag || a.id)}</span></td>
-          <td class="fw-semibold">${esc(a.name)}</td>
-          <td class="small text-secondary">${esc(a.category || "Other")}</td>
-          <td class="fw-semibold">${a.qty ?? 0} <span class="small text-secondary fw-normal">${esc(a.unit || "pcs")}</span></td>
-          <td class="small text-secondary">${fmt(a.updatedAt)}</td>
-        </tr>`).join("");
+        tbody.innerHTML = list.map(a => {
+            const qNum = Number(a.qty) || 0;
+            const unitTxt = a.unit || "pcs";
+            const actionCell = arch
+                ? `<button type="button" class="btn btn-sm btn-success" data-rmact="restore-one" data-id="${a.id}">Restore</button>
+                   <button type="button" class="btn btn-sm btn-outline-danger" data-rmact="purge-one" data-id="${a.id}">Delete</button>`
+                : `${qNum > 1 ? `<button type="button" class="btn btn-sm btn-outline-warning" data-rmact="archive-one-unit" data-id="${a.id}" title="Archive 1 ${esc(unitTxt)}">-1 ${esc(unitTxt)}</button>` : ""}
+                   <button type="button" class="btn btn-sm btn-outline-danger" data-rmact="del-one" data-id="${a.id}">Remove</button>`;
 
-        modal("#roomMonitorModal").show();
+            return `<tr>
+              <td><span class="tid">${esc(a.tag || a.id)}</span></td>
+              <td class="fw-semibold">${esc(a.name)}</td>
+              <td class="small text-secondary">${esc(a.category || "Other")}</td>
+              <td class="fw-semibold">${qNum} <span class="small text-secondary fw-normal">${esc(unitTxt)}</span></td>
+              <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
+              <td class="text-end text-nowrap">${actionCell}</td>
+            </tr>`;
+        }).join("");
+
+        if (!alreadyOpen && !el.classList.contains("show")) {
+            modal(el).show();
+        }
+    }
+
+    if ($("roomMonitorArchiveBtn")) {
+        $("roomMonitorArchiveBtn").addEventListener("click", () => {
+            const rkey = $("roomMonitorArchiveBtn").dataset.rkey || monitoringRoomKey;
+            if (!rkey) return;
+            const items = assetsInRoom(rkey, false);
+            if (!items.length) return;
+            const roomTitle = roomLabelOf(items[0]);
+            openConfirmDelete({
+                title: `Archive ${roomTitle} assets?`,
+                item: `${roomTitle} (${items.length} ${items.length === 1 ? "asset" : "assets"})`,
+                desc: "All assets in this room will be moved to the archive and can be restored anytime.",
+                btnText: "Move to archive",
+                onConfirm: () => {
+                    items.forEach(a => roomStore().patch(a.id, { archived: true, archivedAt: Date.now() }, "Moved to archive"));
+                    toast(`${roomTitle} moved to archive`);
+                    renderAll();
+                    refreshRoomMonitorIfOpen();
+                }
+            });
+        });
     }
 
     if ($("roomMonitorEditBtn")) {
         $("roomMonitorEditBtn").addEventListener("click", () => {
-            if (!monitoringRoomKey) return;
-            const key = monitoringRoomKey;
-            const el = $("roomMonitorModal");
-            const goEdit = () => { editingRoomKey = key; modal("#assetModal").show(); };
-            if (el && el.classList.contains("show")) {
-                el.addEventListener("hidden.bs.modal", goEdit, { once: true });
-                modal(el).hide();
+            const rkey = monitoringRoomKey;
+            if (!rkey) return;
+            const monEl = $("roomMonitorModal");
+            const openEditor = () => {
+                editingRoomKey = rkey;
+                modal("#assetModal").show();
+            };
+            if (monEl && monEl.classList.contains("show")) {
+                monEl.addEventListener("hidden.bs.modal", openEditor, { once: true });
+                modal(monEl).hide();
             } else {
-                goEdit();
+                openEditor();
+            }
+        });
+    }
+
+    if ($("roomMonitorRows")) {
+        $("roomMonitorRows").addEventListener("click", e => {
+            const b = e.target.closest("button[data-rmact]"); if (!b) return;
+            const { rmact, id } = b.dataset;
+            const a = roomItemOf(id); if (!a) return;
+            const unitTxt = a.unit || "pcs";
+            const locTxt = roomLabelOf(a);
+
+            if (rmact === "archive-one-unit") {
+                const curQty = Number(a.qty) || 0;
+                if (curQty <= 1) return;
+                roomStore().patch(id, { qty: curQty - 1 }, `Archived 1 ${unitTxt} of ${a.name} in ${locTxt} (${curQty - 1} remaining)`);
+                roomStore().add({
+                    name: a.name,
+                    tag: nextTagIn(roomStore(), "RM"),
+                    category: a.category || "Furniture",
+                    qty: 1,
+                    unit: unitTxt,
+                    building: a.building || buildingOf(a) || "",
+                    room: a.room || a.location || "",
+                    location: a.location || locTxt,
+                    condition: a.condition || "Good",
+                    archived: true,
+                    archivedAt: Date.now()
+                }, `1 ${unitTxt} of ${a.name} from ${locTxt} moved to archive`);
+                toast(`Archived 1 ${unitTxt} of ${a.name}`);
+                renderAll();
+                refreshRoomMonitorIfOpen();
+            } else if (rmact === "del-one") {
+                openDelete(a, "room", false);
+            } else if (rmact === "restore-one") {
+                roomStore().patch(id, { archived: false, archivedAt: null }, "Restored from archive");
+                toast(`${a.name} restored`);
+                renderAll();
+                refreshRoomMonitorIfOpen();
+            } else if (rmact === "purge-one") {
+                openDelete(a, "room", true);
             }
         });
     }
@@ -1610,12 +1747,14 @@ function initAdminExtras() {
         const isRoomMode = isAdminOffice();
         f.reset(); f.classList.remove("was-validated");
         if ($("assetId2")) $("assetId2").value = a ? a.id : "";
+        editingRoomInitialIds = [];
 
         if (isRoomMode && $("roomAssetRows")) {
             const roomItems = editingRoomKey
                 ? assetsInRoom(editingRoomKey, false).sort((x, y) => String(x.name || "").localeCompare(String(y.name || "")))
                 : [];
             const isRoomEdit = roomItems.length > 0;
+            editingRoomInitialIds = isRoomEdit ? roomItems.map(item => item.id) : [];
 
             populateRoomPresetSelect();
             if ($("addRoomAssetRowBtn")) $("addRoomAssetRowBtn").classList.remove("d-none");
@@ -1656,12 +1795,13 @@ function initAdminExtras() {
 
     if ($("assetModal")) {
         $("assetModal").addEventListener("show.bs.modal", () => {
-            setAssetForm(pendingEdit);
+            const editTarget = pendingEdit;
             pendingEdit = null;
-            editingRoomKey = null;
+            setAssetForm(editTarget);
         });
         $("assetModal").addEventListener("hidden.bs.modal", () => {
             editingRoomKey = null;
+            editingRoomInitialIds = [];
         });
     }
 
@@ -1685,6 +1825,16 @@ function initAdminExtras() {
                 })).filter(r => r.name);
 
                 if (!rows.length) { f.classList.add("was-validated"); return; }
+
+                const keptIds = new Set(rows.map(r => r.existingId).filter(Boolean));
+                editingRoomInitialIds.forEach(oldId => {
+                    if (!keptIds.has(oldId)) {
+                        const removedItem = roomItemOf(oldId);
+                        if (removedItem) {
+                            roomStore().remove(oldId, `Removed ${removedItem.name} from ${location}`);
+                        }
+                    }
+                });
 
                 rows.forEach(r => {
                     const payload = {
@@ -1711,6 +1861,7 @@ function initAdminExtras() {
                     }
                 });
 
+                editingRoomInitialIds = [];
                 toast(rows.length > 1 ? `Saved ${rows.length} assets for ${location}` : `Saved ${rows[0].name} for ${location}`);
                 modal("#assetModal").hide();
                 renderAll();
@@ -1987,7 +2138,13 @@ function initAdminExtras() {
         if (!$("archRows")) return;
         const arch = [
             ...Tickets.all().filter(t => t.archived).map(t => ({ k: "ticket", label: "Report", o: t, name: t.title })),
-            ...store.all().filter(a => a.archived).map(a => ({ k: invKind, label: invLabel, o: a, name: `${a.name} (${a.tag || a.id})` }))
+            ...store.all().filter(a => a.archived).map(a => ({ k: invKind, label: invLabel, o: a, name: `${a.name} (${a.tag || a.id})` })),
+            ...(isAdminOffice() ? roomStore().all().filter(a => a.archived).map(a => ({
+                k: "room",
+                label: "Room Asset",
+                o: a,
+                name: `${a.name} (${a.qty ?? 0} ${a.unit || "pcs"}) · ${roomLabelOf(a)}`
+            })) : [])
         ].sort((x, y) => (Number(y.o?.archivedAt) || 0) - (Number(x.o?.archivedAt) || 0));
         $("archRows").innerHTML = arch.length ? arch.map(x => `<tr><td><span class="badge text-bg-light border">${x.label}</span></td>
           <td><span class="tid">${x.o.id}</span><div class="fw-semibold">${esc(x.name)}</div></td><td class="small">${fmtT(x.o.archivedAt)}</td>
@@ -1995,15 +2152,18 @@ function initAdminExtras() {
           <button class="btn btn-sm btn-outline-danger" data-act="purge" data-k="${x.k}" data-id="${x.o.id}">Delete forever</button></td></tr>`).join("")
             : `<tr><td colspan="4" class="empty">Nothing archived.</td></tr>`;
     }
+
     if ($("archRows")) {
         $("archRows").addEventListener("click", e => {
             const b = e.target.closest("button[data-act]"); if (!b) return;
-            const { act, k, id } = b.dataset, c = k === "ticket" ? Tickets : invStore();
+            const { act, k, id } = b.dataset;
+            const c = k === "ticket" ? Tickets : (k === "room" ? roomStore() : invStore());
             if (act === "restore") {
                 c.patch(id, { archived: false, archivedAt: null }, "Restored from archive");
                 toast(`${id} restored`);
                 renderAll();
                 refreshTickets();
+                refreshRoomMonitorIfOpen();
             } else {
                 openConfirmDelete({
                     title: `Delete ${id} forever?`,
@@ -2019,6 +2179,7 @@ function initAdminExtras() {
                         toast(`${id} deleted forever`);
                         renderAll();
                         refreshTickets();
+                        refreshRoomMonitorIfOpen();
                     }
                 });
             }
