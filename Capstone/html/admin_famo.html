@@ -83,8 +83,8 @@
                     <ul class="nav nav-tabs d-none d-md-flex" id="adminTabs" role="tablist">
                         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-main-nav
                                 data-bs-target="#tabClean" type="button" role="tab">Facilities</button></li>
-                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav 
-                                data-bs-target="#tabSupplies"type="button" role="tab">Cleaning Supplies</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
+                                data-bs-target="#tabSupplies" type="button" role="tab">Cleaning Supplies</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
                                 data-bs-target="#tabPersonnel" type="button" role="tab">Personnel</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-main-nav
@@ -541,7 +541,7 @@
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
                 </svg><span>Facilities</span></button>
             <button class="bnav-item" type="button" role="tab" data-main-nav data-bs-toggle="tab"
-                data-bs-target="#tabSupplies" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" 
+                data-bs-target="#tabSupplies" aria-selected="false"><svg viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     aria-hidden="true">
                     <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
@@ -1091,6 +1091,12 @@
                             <label class="form-label" for="pRole">Role</label>
                             <input class="form-control" id="pRole" name="role" list="pRoleList"
                                 placeholder="e.g. Utility Foreman, Plumber 1" required>
+                            <datalist id="pRoleList">
+                                <option value="Chief"></option>
+                                <option value="Utility Foreman"></option>
+                                <option value="Plumber"></option>
+                                <option value="Maintenance Staff"></option>
+                            </datalist>
                             <div class="invalid-feedback">Enter the role.</div>
                         </div>
                         <div>

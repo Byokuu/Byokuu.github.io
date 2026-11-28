@@ -1751,7 +1751,7 @@ h3,
 }
 
 .log-scroll {
-    max-height: 235px;
+    max-height: none;
     overflow-y: auto;
 }
 

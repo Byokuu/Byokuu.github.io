@@ -354,13 +354,7 @@ const Personnel = {
 /* Keep Staff compatibility with existing callers */
 const Staff = {
     all() { return Personnel.all().filter(p => p.status !== "On Leave").map(p => Personnel.labelOf(p)); },
-    add(n) {
-        const v = (n || "").trim();
-        if (!v) return;
-        if (!Personnel.all().some(p => p.name.toLowerCase() === v.toLowerCase() || Personnel.labelOf(p).toLowerCase() === v.toLowerCase())) {
-            Personnel.add({ name: v, role: "Maintenance Staff", status: "Present" });
-        }
-    },
+    add() { },
     remove(n) {
         const target = Personnel.all().find(p => p.name === n || Personnel.labelOf(p) === n);
         if (target) Personnel.remove(target.id);
@@ -370,6 +364,13 @@ const Staff = {
 function populateAssigneeSelect() {
     const sel = $("rAssignee");
     if (!sel) return;
+    const isFamo = currentPortalSource() === "famo";
+    const wrap = sel.closest(".col-sm-6, .col-md-6, .mb-3");
+    if (wrap) wrap.classList.toggle("d-none", !isFamo);
+    if (!isFamo) {
+        sel.value = "";
+        return;
+    }
     const labels = Personnel.all().filter(p => p.status === "Present").map(p => Personnel.labelOf(p));
     sel.innerHTML = `<option value="">Unassigned</option>` + labels.map(l => `<option value="${esc(l)}">${esc(l)}</option>`).join("");
 }
@@ -486,15 +487,19 @@ function initStudent() {
             (!q || (t.id + t.title + t.building + t.location).toLowerCase().includes(q))
         );
 
-        body.innerHTML = list.length ? list.map(t => `
+        body.innerHTML = list.length ? list.map(t => {
+            const canCancel = t.status !== "Fixed" && t.status !== "Cancelled";
+            return `
       <tr>
         <td>${tlBtn("t", t.id)}</td>
         <td><div class="fw-semibold">${esc(t.title)}</div><div class="small text-secondary">${esc(t.building)} &ndash; ${esc(t.location)}</div>${photoStrip(t)}</td>
         <td class="urg-${t.urgency}">${t.urgency}</td>
         <td>${badge(t.status)}${t.assignee ? `<div class="small text-secondary mt-1">Assigned to ${esc(t.assignee)}</div>` : ""}</td>
         <td class="small text-secondary">${fmt(t.createdAt)}</td>
-      </tr>`).join("")
-            : `<tr><td colspan="5" class="empty">${u ? "No active damage reports match your filters." : "Log in to view your submitted damage reports."}</td></tr>`;
+        <td class="text-end text-nowrap">${canCancel ? `<button type="button" class="btn btn-sm btn-outline-danger" data-act="cancel-report" data-id="${t.id}">Cancel report</button>` : ""}</td>
+      </tr>`;
+        }).join("")
+            : `<tr><td colspan="6" class="empty">${u ? "No active damage reports match your filters." : "Log in to view your submitted damage reports."}</td></tr>`;
 
         if (histBody) {
             const hq = (histSearch ? histSearch.value : "").trim().toLowerCase();
@@ -510,6 +515,43 @@ function initStudent() {
       </tr>`).join("")
                 : `<tr><td colspan="5" class="empty">${u ? "No fixed damage reports in history yet." : "Log in to view your fixed damage report history."}</td></tr>`;
         }
+    }
+
+    if (!body.dataset.cancelBound) {
+        body.dataset.cancelBound = "1";
+        body.addEventListener("click", e => {
+            const btn = e.target.closest("button[data-act='cancel-report']");
+            if (!btn) return;
+            const u = currentUser();
+            const id = btn.dataset.id;
+            const t = Store.all().find(x => x.id === id && !x.archived && isClientTicket(x) && u && (
+                (x.idNo && x.idNo === u.idNo) || (!x.idNo && x.reporter === u.name)
+            ));
+            if (!t || t.status === "Fixed") return;
+
+            const doCancel = () => {
+                (t.photos || []).forEach(p => {
+                    revokePhotoUrl(p);
+                    PhotoDB.remove(p).catch(() => { });
+                });
+                Store.remove(id, `Cancelled by ${u.name}`);
+                toast(`${id} cancelled`);
+                render();
+                window.dispatchEvent(new Event("storage"));
+            };
+
+            if (typeof openConfirmDelete === "function" && $("confirmDelModal")) {
+                openConfirmDelete({
+                    title: `Cancel report ${id}?`,
+                    item: `${id} - ${t.title}`,
+                    desc: "This removes your open damage report and records the cancellation in the activity log.",
+                    btnText: "Cancel report",
+                    onConfirm: doCancel
+                });
+            } else {
+                doCancel();
+            }
+        });
     }
 
     initReportForm(render);
@@ -709,15 +751,18 @@ function applyAdminTabVisibility() {
     const activeDesktop = document.querySelector("#adminTabs .nav-link.active");
     const activeTarget = activeDesktop?.getAttribute("data-bs-target");
     if (!activeTarget || !allowed.includes(activeTarget)) {
-        const firstBtn = document.querySelector(`#adminTabs [data-bs-target="${allowed[0]}"]`);
+        const preferredTarget = page === "admin_office" && allowed.includes("#tabAssets")
+            ? "#tabAssets"
+            : allowed[0];
+        const firstBtn = document.querySelector(`#adminTabs [data-bs-target="${preferredTarget}"]`);
         if (firstBtn) bootstrap.Tab.getOrCreateInstance(firstBtn).show();
 
         document.querySelectorAll("#adminBottomNav [data-main-nav]").forEach(btn => {
-            const isFirst = btn.getAttribute("data-bs-target") === allowed[0];
+            const isFirst = btn.getAttribute("data-bs-target") === preferredTarget;
             btn.classList.toggle("active", isFirst);
             btn.setAttribute("aria-selected", isFirst);
         });
-        updateMobileHead(allowed[0]);
+        updateMobileHead(preferredTarget);
     }
 }
 
@@ -1106,7 +1151,6 @@ function initAdminExtras() {
             e.preventDefault();
             const id = $("aId").value, name = $("aName").value.trim(), t = Tickets.all().find(x => x.id === id);
             if (!t) return;
-            Staff.add(name);
             Tickets.patch(id, { assignee: name, status: t.status === "Pending" ? "In progress" : t.status }, "Assigned to " + name + (t.status === "Pending" ? " (work started)" : ""));
             modal("#assignModal").hide(); toast(`${id} assigned to ${name}`); refreshTickets(); renderPersonnel();
         });
@@ -1206,7 +1250,7 @@ function initAdminExtras() {
     setInterval(() => { if ($("cleanRows") && today() !== shownDay) renderAll(); }, 60000);
 
     /* room assets (admin_office #tabAssets) + inventory/supplies (#tabInventory) */
-    let assetView = "active", invView = "active", delId = null, delKind = "inv", pendingEdit = null;
+    let assetView = "active", invView = "active", delId = null, delKind = "inv", pendingEdit = null, pendingInvEdit = null;
     let editingRoomKey = null, monitoringRoomKey = null;
 
     const buildingOf = a => {
@@ -1269,14 +1313,49 @@ function initAdminExtras() {
         });
     }
 
+    function renderCleaningSupplies() {
+        const rowsEl = $("assetRows");
+        if (!rowsEl) return;
+
+        const store = invStore();
+        const all = store.all();
+        const q = ($("sSearch") ? $("sSearch").value : "").trim().toLowerCase();
+        const supCat = ($("supplyCatFilter") ? $("supplyCatFilter").value : "").trim().toLowerCase();
+        const arch = assetView === "archived";
+
+        if ($("cntActive")) $("cntActive").textContent = all.filter(a => !a.archived).length;
+        if ($("cntArch")) $("cntArch").textContent = all.filter(a => a.archived).length;
+        if ($("assetHead")) {
+            $("assetHead").innerHTML = arch
+                ? `<tr><th>ID no.</th><th>Supply</th><th>Quantity</th><th>Location</th><th>Archived on</th><th class="text-end">Actions</th></tr>`
+                : `<tr><th>ID no.</th><th>Supply</th><th>Quantity</th><th>Location</th><th>Updated</th><th class="text-end">Actions</th></tr>`;
+        }
+
+        const list = all.filter(a =>
+            !!a.archived === arch &&
+            (!supCat || String(a.category || "").toLowerCase() === supCat) &&
+            (!q || ((a.id || "") + " " + (a.tag || "") + " " + (a.name || "") + " " + (a.location || "FAMO Storage") + " " + (a.category || "")).toLowerCase().includes(q))
+        );
+
+        const btns = a => arch
+            ? `<button class="btn btn-sm btn-success" data-act="restore" data-id="${a.id}">Restore</button> <button class="btn btn-sm btn-outline-danger" data-act="purge" data-id="${a.id}">Delete permanently</button>`
+            : `<button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${a.id}">Edit</button> <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${a.id}">Delete</button>`;
+
+        rowsEl.innerHTML = list.length ? list.map(a => `<tr data-archived="${arch ? "true" : "false"}">
+          <td><span class="tid">${esc(a.tag || a.id)}</span></td>
+          <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category || "")}</div></td>
+          <td class="fw-semibold">${a.qty ?? "-"} <span class="small text-secondary fw-normal">${esc(a.unit || "")}</span></td>
+          <td class="small">${esc(a.location || "FAMO Storage")}</td>
+          <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
+          <td class="text-end text-nowrap">${btns(a)}</td></tr>`).join("")
+            : `<tr><td colspan="6" class="empty">${arch ? "Nothing in the archive." : 'No cleaning supplies yet. Use "+ Add Supply" to record one.'}</td></tr>`;
+    }
+
     function renderRoomAssets() {
         const rowsEl = $("assetRows");
         if (!rowsEl) return;
 
-        if (!isAdminOffice()) {
-            rowsEl.innerHTML = `<tr><td colspan="5" class="empty">Room assets are managed by the Admin Office.</td></tr>`;
-            return;
-        }
+        if (!isAdminOffice()) return;
 
         const all = roomStore().all();
         const q = ($("sSearch") ? $("sSearch").value : "").trim().toLowerCase();
@@ -1357,6 +1436,7 @@ function initAdminExtras() {
         const cat = ($(catId) ? $(catId).value : "").trim().toLowerCase();
         const supCat = ($("supplyCatFilter") ? $("supplyCatFilter").value : "").trim().toLowerCase();
         const arch = viewMode === "archived";
+        const defaultLoc = isAdminOffice() ? "Admin Office" : (isSupplyPage() ? "FAMO Storage" : "");
 
         if ($(cntActiveId)) $(cntActiveId).textContent = all.filter(a => !a.archived).length;
         if ($(cntArchId)) $(cntArchId).textContent = all.filter(a => a.archived).length;
@@ -1366,7 +1446,7 @@ function initAdminExtras() {
             !!a.archived === arch &&
             (!cat || String(a.category || "").toLowerCase() === cat) &&
             (!supCat || String(a.category || "").toLowerCase() === supCat) &&
-            (!q || ((a.id || "") + (a.tag || "") + (a.name || "") + (a.location || "") + (a.category || "")).toLowerCase().includes(q))
+            (!q || ((a.id || "") + (a.tag || "") + (a.name || "") + (a.location || defaultLoc) + (a.category || "")).toLowerCase().includes(q))
         );
 
         const btns = a => arch
@@ -1374,17 +1454,21 @@ function initAdminExtras() {
             : `<button class="btn btn-sm btn-outline-secondary" data-act="edit" data-id="${a.id}">Edit</button> <button class="btn btn-sm btn-outline-danger" data-act="del" data-id="${a.id}">Delete</button>`;
 
         rowsEl.innerHTML = list.length ? list.map(a => `<tr data-archived="${arch ? "true" : "false"}">
-          <td><span class="tid">${esc(a.tag || a.id)}</span></td>
-          <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category || "")}</div></td>
-          <td class="fw-semibold">${a.qty ?? "-"} <span class="small text-secondary fw-normal">${esc(a.unit || "")}</span></td>
-          <td class="small">${esc(a.location || "")}</td>
-          <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
-          <td class="text-end text-nowrap">${btns(a)}</td></tr>`).join("")
+      <td><span class="tid">${esc(a.tag || a.id)}</span></td>
+      <td><div class="fw-semibold">${esc(a.name)}</div><div class="small text-secondary">${esc(a.category || "")}</div></td>
+      <td class="fw-semibold">${a.qty ?? "-"} <span class="small text-secondary fw-normal">${esc(a.unit || "")}</span></td>
+      <td class="small">${esc(a.location || defaultLoc)}</td>
+      <td class="small text-secondary">${fmt(arch ? (a.archivedAt || a.updatedAt) : a.updatedAt)}</td>
+      <td class="text-end text-nowrap">${btns(a)}</td></tr>`).join("")
             : `<tr><td colspan="6" class="empty">${arch ? "Nothing in the archive." : `No items yet. Use "${emptyAddText}" to record one.`}</td></tr>`;
     }
 
     function renderAssets() {
-        renderRoomAssets();
+        if (isSupplyPage()) {
+            renderCleaningSupplies();
+        } else if (isAdminOffice()) {
+            renderRoomAssets();
+        }
         renderInventoryTarget({
             rowsId: "invRows",
             headId: "invHead",
@@ -1664,6 +1748,56 @@ function initAdminExtras() {
         });
     }
 
+    if ($("inventoryForm")) {
+        $("inventoryForm").addEventListener("submit", e => {
+            e.preventDefault();
+            const f = e.target;
+            if (!f.checkValidity()) { f.classList.add("was-validated"); return; }
+            const d = Object.fromEntries(new FormData(f));
+            const eid = $("invItemId") ? $("invItemId").value : "";
+            const store = invStore();
+            const existing = eid ? invItemOf(eid) : null;
+            const data = {
+                name: (d.name || "").trim(),
+                tag: (existing && existing.tag) || nextTagIn(store, "AST"),
+                category: d.category || "Other",
+                qty: Number(d.qty ?? 0),
+                unit: (d.unit || "").trim() || "pcs",
+                location: "Admin Office"
+            };
+            if (eid) {
+                store.patch(eid, data, "Details updated" + (existing && existing.qty !== data.qty ? ` (quantity ${existing.qty ?? 0} to ${data.qty})` : ""));
+                toast(`${data.name} updated`);
+            } else {
+                store.add({ ...data, condition: "Good" }, `Added to Admin Office inventory (${data.qty} ${data.unit})`);
+                toast(`${data.name} added to Admin Office inventory`);
+            }
+            modal("#inventoryModal").hide();
+            renderAll();
+        });
+    }
+
+    const setInventoryForm = a => {
+        const f = $("inventoryForm"); if (!f) return;
+        f.reset(); f.classList.remove("was-validated");
+        if ($("invItemId")) $("invItemId").value = a ? a.id : "";
+        if ($("invModalT")) $("invModalT").textContent = a ? "Edit item" : "Add item";
+        if ($("invSave")) $("invSave").textContent = a ? "Save changes" : "Save item";
+        if (a) {
+            if ($("nName")) $("nName").value = a.name || "";
+            if ($("nCat")) $("nCat").value = a.category || "Furniture";
+            if ($("nQty")) $("nQty").value = a.qty ?? 0;
+            if ($("nUnit")) $("nUnit").value = a.unit || "pcs";
+        }
+    };
+
+    if ($("inventoryModal")) {
+        $("inventoryModal").addEventListener("show.bs.modal", () => {
+            setInventoryForm(pendingInvEdit);
+            pendingInvEdit = null;
+        });
+    }
+
     const showStep = confirmStep => {
         if ($("delChoices")) $("delChoices").classList.toggle("d-none", confirmStep);
         if ($("delConfirm")) $("delConfirm").classList.toggle("d-none", !confirmStep);
@@ -1682,7 +1816,17 @@ function initAdminExtras() {
     if ($("assetRows")) {
         $("assetRows").addEventListener("click", e => {
             const b = e.target.closest("[data-act]"); if (!b) return;
-            const { act, rkey } = b.dataset;
+            const { act, rkey, id } = b.dataset;
+
+            if (isSupplyPage()) {
+                const store = invStore();
+                const a = invItemOf(id); if (!a) return;
+                if (act === "edit") { pendingEdit = a; modal("#assetModal").show(); }
+                else if (act === "restore") { store.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${a.name} restored`); renderAll(); }
+                else openDelete(a, "inv", act === "purge");
+                return;
+            }
+
             if (!rkey) return;
             const arch = assetView === "archived";
             const items = assetsInRoom(rkey, arch);
@@ -1726,7 +1870,7 @@ function initAdminExtras() {
             const b = e.target.closest("button[data-act]"); if (!b) return;
             const store = invStore();
             const { act, id } = b.dataset, a = invItemOf(id); if (!a) return;
-            if (act === "edit") { pendingEdit = a; modal("#assetModal").show(); }
+            if (act === "edit") { pendingInvEdit = a; modal("#inventoryModal").show(); }
             else if (act === "restore") { store.patch(id, { archived: false, archivedAt: null }, "Restored from archive"); toast(`${a.name} restored`); renderAll(); }
             else openDelete(a, "inv", act === "purge");
         });
@@ -2336,5 +2480,16 @@ document.addEventListener("DOMContentLoaded", () => {
         initAdminExtras();
         applyAdminTabVisibility();
         initAdminSidebarAndAvatars();
+
+        const currentActiveTab =
+            document.querySelector("#adminTabs .nav-link.active")?.getAttribute("data-bs-target") || defaultTab;
+        document.dispatchEvent(new CustomEvent("shown.bs.tab", {
+            bubbles: true,
+            detail: { target: currentActiveTab }
+        }));
+        const activeTabEl = document.querySelector(`#adminTabs [data-bs-target="${currentActiveTab}"]`);
+        if (activeTabEl) {
+            activeTabEl.dispatchEvent(new Event("shown.bs.tab", { bubbles: true }));
+        }
     }
 });

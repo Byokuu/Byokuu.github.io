@@ -225,6 +225,13 @@ body[data-page="student"] #clDmgRows tr td:nth-child(5) {
     padding-top: .1rem !important;
 }
 
+body[data-page="student"] #clDmgRows tr td:nth-child(6) {
+    order: 6;
+    flex: 1 1 100%;
+    text-align: right;
+    padding-top: .25rem !important;
+}
+
 /* Client fixed damage history cards (#clientDamageHistRows) */
 body[data-page="student"] #clientDamageHistRows tr {
     position: relative;
